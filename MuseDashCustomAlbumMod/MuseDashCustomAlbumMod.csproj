@@ -32,8 +32,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony, Version=2.0.0.8, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Lib.Harmony.2.0.0.8\lib\net35\0Harmony.dll</HintPath>
+    <Reference Include="0Harmony">
+      <HintPath>..\..\MuseDashModLoader\packages\Lib.Harmony.2.0.0.8\lib\net35\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
@@ -42,6 +42,10 @@
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ModHelper">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Muse Dash\ModHelper.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -93,13 +97,6 @@
     <Compile Include="CustomAlbum.cs" />
     <Compile Include="Entry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\MuseDashModLoader\ModHelper\ModHelper.csproj">
-      <Project>{d652d574-c138-4f42-92bd-f42d3d48404a}</Project>
-      <Name>ModHelper</Name>
-      <Private>False</Private>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
