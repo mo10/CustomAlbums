@@ -18,12 +18,13 @@ using System.Reflection;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.UI;
+using Assets.Scripts.PeroTools.Nice.Datas;
 
 namespace MuseDashCustomAlbumMod
 {
     public static class CustomAlbum
     {
-        private static bool IsInited = false;
+        private static bool isJsonLoad = false;
         private static Dictionary<string, string> language = new Dictionary<string, string>();
         public static void DoPatching()
         {
@@ -32,6 +33,14 @@ namespace MuseDashCustomAlbumMod
             var StagePreWarm = AccessTools.Method(typeof(PnlStage), "PreWarm", new Type[] { typeof(int) });
             var StagePreWarmPrefix = AccessTools.Method(typeof(CustomAlbum), "StagePreWarmPrefix");
             harmony.Patch(StagePreWarm, new HarmonyMethod(StagePreWarmPrefix));
+
+            var StageRangeStageList = AccessTools.Method(typeof(PnlStage), "RangeStageList");
+            var StageRangeStageListPostfix = AccessTools.Method(typeof(CustomAlbum), "StageRangeStageListPostfix");
+            harmony.Patch(StageRangeStageList,null, new HarmonyMethod(StageRangeStageListPostfix));
+
+            var AlbumTagName = AccessTools.Method(typeof(AlbumTagName), "GetAlbumTagLocaliztion");
+            var GetAlbumTagLocaliztionPostfix = AccessTools.Method(typeof(CustomAlbum), "GetAlbumTagLocaliztionPostfix");
+            harmony.Patch(AlbumTagName, null, new HarmonyMethod(GetAlbumTagLocaliztionPostfix));
 
             //var InitAlbumDatas = AccessTools.Method(typeof(PnlStage), "InitAlbumDatas");
             //var InitAlbumDatasPrefix = AccessTools.Method(typeof(CustomAlbum), "InitAlbumDatas");
@@ -123,6 +132,9 @@ namespace MuseDashCustomAlbumMod
                 {
                     ModLogger.Debug(ex);
                 }
+                // Bind DataIndex
+                var newObjVarible = newObj.GetComponent<VariableBehaviour>();
+                newObjVarible.result = albumFancyScrollViewContent.childCount - 1;
                 // Print                
                 //if (albumCell)
                 //{
@@ -137,19 +149,21 @@ namespace MuseDashCustomAlbumMod
         }
         private static void AddAlbumTagData(ref List<PnlStage.albumInfo> m_AllAlbumTagData)
         {
+            List<string> list = new List<string>();
+            List<string> nameList = new List<string>();
+
+            list.Add("ALBUM1000");
+            nameList.Add("music_package_999");
+
             m_AllAlbumTagData.Add(new PnlStage.albumInfo
             {
                 uid = "custom",
                 name = "自定义谱面",
-                list = new List<string>(),
-                nameList = new List<string>(),
+                list = list,
+                nameList = nameList,
                 isWeekFree = false,
                 isNew = false
             });
-        }
-        private static void AddAlbumDatas(ref Dictionary<string, JArray> m_Dictionary)
-        {
-
         }
         public static void StagePreWarmPrefix(int slice, ref List<PnlStage.albumInfo> ___m_AllAlbumTagData, ref Transform ___albumFancyScrollViewContent, ref List<GameObject> ___m_AlbumFSVCells)
         {
@@ -160,6 +174,21 @@ namespace MuseDashCustomAlbumMod
 
             AddAlbumTagCell(ref ___albumFancyScrollViewContent);
             AddAlbumTagData(ref ___m_AllAlbumTagData);
+            try
+            {
+                var data_manager = Singleton<DataManager>.instance;
+                data_manager.ToJson();
+                ModLogger.Debug($"DataManager Value:{data_manager.ToJson()}");
+                foreach (var data in data_manager.datas)
+                {
+                    SingletonDataObject singletonDataObject = data.Value as SingletonDataObject;
+                    var json = singletonDataObject.ToJson();
+                    ModLogger.Debug($"Data Key:{data.Key} Value:{json}");
+                }
+            }catch(Exception ex)
+            {
+                ModLogger.Debug(ex);
+            }
 
             //ModLogger.Debug($"slice:{slice}");
             //ModLogger.Debug($"albumFancyScrollViewContent.Count: {___albumFancyScrollViewContent.childCount}");
@@ -174,7 +203,26 @@ namespace MuseDashCustomAlbumMod
             //    ModLogger.Debug($"{albumTag.uid} {albumTag.name} {albumTag.list} {albumTag.nameList} {albumTag.isWeekFree} {albumTag.isNew}");
             //}
         }
-        public static void CompTrack(GameObject gameObject, int layer = 0)
+        public static void StageRangeStageListPostfix(ref List<string> ___m_AllOtherAlbumUid, ref List<string> ___m_AllOtherAlbumName_Re, ref List<string> ___m_AllOtherAlbumUid_Re, ref List<string> ___m_AllOtherAlbumName, ref List<PnlStage.albumInfo> ___m_AllAlbumTagData)
+        {
+            // Rebind data
+            ___m_AllOtherAlbumUid.Remove("ALBUM1000");
+            ___m_AllOtherAlbumName.Remove("music_package_999");
+            ___m_AllOtherAlbumUid_Re.Remove("ALBUM1000");
+            ___m_AllOtherAlbumName_Re.Remove("music_package_999");
+            ___m_AllAlbumTagData[7].list = ___m_AllOtherAlbumUid;
+            ___m_AllAlbumTagData[7].nameList = ___m_AllOtherAlbumName;
+
+        }
+        public static void GetAlbumTagLocaliztionPostfix(string albumUid, ref string __result)
+        {
+            string activeOption = SingletonScriptableObject<LocalizationSettings>.instance.GetActiveOption("Language");
+            if (albumUid == "custom")
+            {
+                __result = language[activeOption];
+            }
+        }
+        public static void GameObjectTracker(GameObject gameObject, int layer = 0)
         {
             foreach (var comps in gameObject.GetComponents(typeof(object)))
             {
@@ -185,61 +233,82 @@ namespace MuseDashCustomAlbumMod
                 ++layer;
                 for (var i = 0; i < gameObject.transform.childCount; i++)
                 {
-                    CompTrack(gameObject.transform.GetChild(i).gameObject, layer);
+                    GameObjectTracker(gameObject.transform.GetChild(i).gameObject, layer);
                 }
             }
         }
         public static void GetJsonPrefix(string name, bool localization,ref Dictionary<string, JArray> ___m_Dictionary)
         {
-            ModLogger.Debug($"name:{name} l10n:{localization}");
+            // ModLogger.Debug($"name:{name} l10n:{localization}");
+
+            string activeOption = SingletonScriptableObject<LocalizationSettings>.instance.GetActiveOption("Language");
             try
             {
-                string activeOption = SingletonScriptableObject<LocalizationSettings>.instance.GetActiveOption("Language");
-
-                if (name.StartsWith("ALBUMCUSTOM"))
+                // Load custom album
+                // Inject ALBUM1000.json
+                if (!localization && name == "ALBUM1000")
                 {
-                    string albums_lang = $"ALBUMCUSTOM_{activeOption}";
-                    // Load localization custom album songs, title and another
-                    if (!___m_Dictionary.ContainsKey(albums_lang))
+                    // Check if already loaded
+                    if (___m_Dictionary.ContainsKey("ALBUM1000"))
                     {
-                        ModLogger.Debug($"Load custom album tab: {albums_lang}");
-                        var obj = new JObject();
-                        obj.Add("name", "测试");
-                        obj.Add("author", "某10");
-
-                        var arr = new JArray();
-                        arr.Add(obj);
-
-                        ___m_Dictionary.Add(albums_lang, arr);
+                        return;
                     }
-                    // Load songs
-                    if (!___m_Dictionary.ContainsKey(name))
-                    {
-                        ModLogger.Debug($"Load custom songs list: {name}");
-                        var obj = new JObject();
-                        obj.Add("uid", "custom-0");
-                        obj.Add("name", "Test");
-                        obj.Add("author", "某10");
-                        obj.Add("bpm", "128");
-                        obj.Add("music", "iyaiya_music");
-                        obj.Add("demo", "iyaiya_demo");
-                        obj.Add("cover", "iyaiya_cover");
-                        obj.Add("noteJson", "iyaiya_map");
-                        obj.Add("scene", "scene_05");
-                        obj.Add("levelDesigner", "Lyt99");
-                        obj.Add("difficulty1", "1");
-                        obj.Add("difficulty2", "20");
-                        obj.Add("difficulty3", "0");
-                        obj.Add("unlockLevel", "1");
+                    // Load albums
+                    ModLogger.Debug($"Load custom songs list: {name}");
+                    var obj = new JObject();
+                    obj.Add("uid", "999-0");
 
-                        var arr = new JArray();
-                        arr.Add(obj);
+                    obj.Add("name", "AlbumString1");
+                    obj.Add("author", "AlbumString2");
 
-                        ___m_Dictionary.Add(name, arr);
-                    }
-                    
+                    obj.Add("bpm", "128");
+                    obj.Add("music", "iyaiya_music");
+                    obj.Add("demo", "iyaiya_demo");
+                    obj.Add("cover", "iyaiya_cover");
+                    obj.Add("noteJson", "iyaiya_map");
+                    obj.Add("scene", "scene_05");
+
+                    obj.Add("levelDesigner", "AlbumString3");
+                    obj.Add("levelDesigner1", "AlbumString4");
+                    obj.Add("levelDesigner2", "AlbumString5");
+                    obj.Add("levelDesigner3", "AlbumString6");
+                    obj.Add("levelDesigner4", "AlbumString7");
+
+                    obj.Add("difficulty1", "10");
+                    obj.Add("difficulty2", "20");
+                    obj.Add("difficulty3", "30");
+                    obj.Add("difficulty4", "40");
+
+                    obj.Add("unlockLevel", "0");
+
+                    var album_list = new JArray();
+                    album_list.Add(obj);
+
+                    ___m_Dictionary.Add(name, album_list);
+                    return;
                 }
-            }catch(Exception ex)
+                // Load custom album localization
+                // Inject ALBUM1000_<lang>.json
+                if (localization && name.StartsWith("ALBUM1000_"))
+                {
+                    string albums_lang = $"ALBUM1000_{activeOption}";
+                    // Check if already loaded
+                    if (___m_Dictionary.ContainsKey(albums_lang))
+                    {
+                        return;
+                    }
+                    var album_lang = new JObject();
+                    album_lang.Add("name", "测试");
+                    album_lang.Add("author", "某10");
+
+                    var album_lang_list = new JArray();
+                    album_lang_list.Add(album_lang);
+
+                    ___m_Dictionary.Add(albums_lang, album_lang_list);
+                    return;
+                }
+            }
+            catch(Exception ex)
             {
                 ModLogger.Debug(ex);
             }
@@ -247,65 +316,58 @@ namespace MuseDashCustomAlbumMod
         }
         public static void GetJsonPostfix(string name, bool localization, ref Dictionary<string, JArray> ___m_Dictionary,ref JArray __result)
         {
-            ModLogger.Debug($"name:{name} l10n:{localization}");
-
+            string activeOption = SingletonScriptableObject<LocalizationSettings>.instance.GetActiveOption("Language");
             try
             {
-                string activeOption = SingletonScriptableObject<LocalizationSettings>.instance.GetActiveOption("Language");
-                // Load localization album title
+                // Load album localization title
+                // Inject albums_<lang>.json
                 if (localization && name.StartsWith("albums_"))
                 {
                     string albums_lang = $"albums_{activeOption}";
-                    var found = false;
+                    // Check if already loaded
                     foreach (var obj in ___m_Dictionary[albums_lang])
                     {
                         if (obj.Value<string>("title") == language[activeOption])
                         {
-                            found = true;
-                            break;
+                            return;
                         }
                     }
-                    if (!found)
-                    {
-                        // add custom title
-                        ModLogger.Debug($"Add Custom l10n Title: {language[activeOption]}");
-                        var @object = new JObject();
-                        @object.Add("title", language[activeOption]);
-                        ___m_Dictionary[albums_lang].Add(@object);
-                        // return new result
-                        __result = ___m_Dictionary[albums_lang];
-                    }
+                    // Add custom l10n title
+                    ModLogger.Debug($"Add custom l10n title: {language[activeOption]}");
+                    var album_lang = new JObject();
+                    album_lang.Add("title", language[activeOption]);
+
+                    ___m_Dictionary[albums_lang].Add(album_lang);
+                    // return new result
+                    __result = ___m_Dictionary[albums_lang];
                     return;
                 }
-                // Load album info
+                // Load album
+                // Inject albums.json
                 if (!localization && name == "albums")
                 {
-                    var found = false;
+                    // Check if already loaded
                     foreach (var obj in ___m_Dictionary[name])
                     {
-                        if (obj.Value<string>("uid") == "custom_0")
+                        if (obj.Value<string>("uid") == "music_package_999")
                         {
-                            found = true;
-                            break;
+                            return;
                         }
                     }
-                    if (!found)
-                    {
-                        // add custom title
-                        ModLogger.Debug($"Add Custom Info");
-                        var jobj = new JObject();
-                        jobj.Add("uid", "custom_0");
-                        jobj.Add("title", "Custom Albums");
-                        jobj.Add("prefabsName", "AlbumDiscoCustom");
-                        jobj.Add("price", "¥25.00");
-                        jobj.Add("jsonName", "ALBUMCUSTOM");
-                        jobj.Add("needPurchase", true);
-                        jobj.Add("free", false);
+                    // Add custom title
+                    ModLogger.Debug($"Add custom album");
+                    var album = new JObject();
+                    album.Add("uid", "music_package_999");
+                    album.Add("title", "Custom Albums");
+                    album.Add("prefabsName", "AlbumDiscoNew");
+                    album.Add("price", "¥25.00");
+                    album.Add("jsonName", "ALBUM1000");
+                    album.Add("needPurchase", true);
+                    album.Add("free", false);
 
-                        ___m_Dictionary[name].Add(jobj);
-                        // return new result
-                        __result = ___m_Dictionary[name];
-                    }
+                    ___m_Dictionary[name].Add(album);
+                    // Return new result
+                    __result = ___m_Dictionary[name];
                     return;
                 }
             }
@@ -314,66 +376,14 @@ namespace MuseDashCustomAlbumMod
                 ModLogger.Debug(ex);
             }
         }
-        public static bool InitAlbumDatas()
-        {
-            try
-            {
-                string activeOption = SingletonScriptableObject<LocalizationSettings>.instance.GetActiveOption("Language");
-                string albums_lang = $"albums_{activeOption}";
-                var configManager = Singleton<ConfigManager>.instance;
-                var m_Dictionary = (Dictionary<string, JArray>)AccessTools.Field(typeof(ConfigManager), "m_Dictionary").GetValue(configManager);
 
-                if (!m_Dictionary.ContainsKey(albums_lang))
-                {
-                    // Trigger the load
-                    ModLogger.Debug($"Trigger the load{albums_lang}");
-                    var notused = Singleton<ConfigManager>.instance["albums"];
-                }
-                if (!m_Dictionary.ContainsKey(albums_lang))
-                {
-                    // Trigger failed
-                    ModLogger.Debug("Cannot Trigger load Albums title");
-                    return true;
-                }
-                ModLogger.Debug("Trigger load Albums success");
 
-                var found = false;
-                foreach (var obj in m_Dictionary[albums_lang])
-                {
-                    ModLogger.Debug($"{obj}");
-                    if (obj.Value<string>("title") == language[activeOption])
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found)
-                {
-                    // Not Found Custom
-                    ModLogger.Debug($"Add {language[activeOption]}");
-                    var @object = new JObject();
-                    @object.Add("title", language[activeOption]);
-                    m_Dictionary[albums_lang].Add(@object);
-                }
 
-                var jobj = new JObject();
-                jobj.Add("uid", "custom");
-                jobj.Add("title", "Custom Albums");
-                jobj.Add("prefabsName", "AlbumCustom");
-                jobj.Add("price", "Free");
-                jobj.Add("jsonName", "custom");
-                jobj.Add("needPurchase", false);
-                jobj.Add("free", true);
-                m_Dictionary["albums"].Add(jobj);
 
-            }
-            catch (Exception ex)
-            {
-                ModLogger.Debug(ex);
-            }
 
-            return true;
-        }
+#if false
+
+
         public static void RebuildChildren(FancyScrollView __instance)
         {
             if (__instance.name == "FancyScrollAlbum")
@@ -389,7 +399,7 @@ namespace MuseDashCustomAlbumMod
 
                     customTab.transform.SetSiblingIndex(2);
                     // CompTrack(gameobject.transform.parent.gameObject);
-                    CompTrack(customTab);
+                    GameObjectTracker(customTab);
                     var a = customTab.GetComponent<VariableBehaviour>();
                     if (a != null)
                     {
@@ -480,5 +490,6 @@ namespace MuseDashCustomAlbumMod
             //}
 
         }
+#endif
     }
 }
