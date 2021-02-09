@@ -69,6 +69,11 @@ namespace MuseDashCustomAlbumMod
             language.Add("Korean", "Custom Albums");
             language.Add("Japanese", "Custom Albums");
         }
+        /// <summary>
+        /// Read embedded file from this dll
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
         private static byte[] ReadEmbeddedFile(string file)
         {
             var assembly = Assembly.GetExecutingAssembly();
@@ -77,10 +82,10 @@ namespace MuseDashCustomAlbumMod
             {
                 buffer = new byte[stream.Length];
                 stream.Read(buffer, 0, buffer.Length);
-                // TODO: use the buffer that was read
             }
             return buffer;
         }
+        #region Game Stage UI
         private static void AddAlbumTagCell(ref Transform albumFancyScrollViewContent)
         {
             if (albumFancyScrollViewContent.Find($"AlbumTagCell_Custom") == null)
@@ -174,21 +179,22 @@ namespace MuseDashCustomAlbumMod
 
             AddAlbumTagCell(ref ___albumFancyScrollViewContent);
             AddAlbumTagData(ref ___m_AllAlbumTagData);
-            try
-            {
-                var data_manager = Singleton<DataManager>.instance;
-                data_manager.ToJson();
-                ModLogger.Debug($"DataManager Value:{data_manager.ToJson()}");
-                foreach (var data in data_manager.datas)
-                {
-                    SingletonDataObject singletonDataObject = data.Value as SingletonDataObject;
-                    var json = singletonDataObject.ToJson();
-                    ModLogger.Debug($"Data Key:{data.Key} Value:{json}");
-                }
-            }catch(Exception ex)
-            {
-                ModLogger.Debug(ex);
-            }
+
+            //try
+            //{
+            //    var data_manager = Singleton<DataManager>.instance;
+            //    data_manager.ToJson();
+            //    ModLogger.Debug($"DataManager Value:{data_manager.ToJson()}");
+            //    foreach (var data in data_manager.datas)
+            //    {
+            //        SingletonDataObject singletonDataObject = data.Value as SingletonDataObject;
+            //        var json = singletonDataObject.ToJson();
+            //        ModLogger.Debug($"Data Key:{data.Key} Value:{json}");
+            //    }
+            //}catch(Exception ex)
+            //{
+            //    ModLogger.Debug(ex);
+            //}
 
             //ModLogger.Debug($"slice:{slice}");
             //ModLogger.Debug($"albumFancyScrollViewContent.Count: {___albumFancyScrollViewContent.childCount}");
@@ -222,6 +228,7 @@ namespace MuseDashCustomAlbumMod
                 __result = language[activeOption];
             }
         }
+        #endregion
         public static void GameObjectTracker(GameObject gameObject, int layer = 0)
         {
             foreach (var comps in gameObject.GetComponents(typeof(object)))
@@ -237,6 +244,8 @@ namespace MuseDashCustomAlbumMod
                 }
             }
         }
+
+        #region JSON Injection
         public static void GetJsonPrefix(string name, bool localization,ref Dictionary<string, JArray> ___m_Dictionary)
         {
             // ModLogger.Debug($"name:{name} l10n:{localization}");
@@ -268,7 +277,9 @@ namespace MuseDashCustomAlbumMod
                     obj.Add("noteJson", "iyaiya_map");
                     obj.Add("scene", "scene_05");
 
+                    // level designer of all difficulties
                     obj.Add("levelDesigner", "AlbumString3");
+                    // level designer of difficulty 1 to 4 
                     obj.Add("levelDesigner1", "AlbumString4");
                     obj.Add("levelDesigner2", "AlbumString5");
                     obj.Add("levelDesigner3", "AlbumString6");
@@ -376,7 +387,7 @@ namespace MuseDashCustomAlbumMod
                 ModLogger.Debug(ex);
             }
         }
-
+        #endregion
 
 
 
