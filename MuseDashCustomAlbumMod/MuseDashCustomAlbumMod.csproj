@@ -32,8 +32,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony">
-      <HintPath>..\..\MuseDashModLoader\packages\Lib.Harmony.2.0.0.8\lib\net35\0Harmony.dll</HintPath>
+    <Reference Include="0Harmony, Version=2.0.0.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Lib.Harmony.2.0.0.8\lib\net35\0Harmony.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
@@ -42,6 +42,10 @@
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DotNetZip, Version=1.12.0.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetZip.1.12.0\lib\net20\DotNetZip.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ModHelper">
@@ -94,15 +98,32 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CustomAlbumInfo.cs" />
     <Compile Include="CustomAlbum.cs" />
+    <Compile Include="DataPatch.cs" />
     <Compile Include="Entry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StageUIPatch.cs" />
+    <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\AlbumIcon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\DotNetZip.1.12.0\lib\net20\DotNetZip.dll">
+      <Link>Depends\DotNetZip.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Depends\I18N.CJK.dll" />
+    <EmbeddedResource Include="Depends\I18N.dll" />
+    <EmbeddedResource Include="Depends\I18N.MidEast.dll" />
+    <EmbeddedResource Include="Depends\I18N.Other.dll" />
+    <EmbeddedResource Include="Depends\I18N.Rare.dll" />
+    <EmbeddedResource Include="Depends\I18N.West.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
