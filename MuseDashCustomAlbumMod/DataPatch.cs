@@ -282,11 +282,10 @@ namespace MuseDashCustomAlbumMod
                     if (type == typeof(UnityEngine.Sprite))
                     {
                         // Load cover 
-                        Texture2D newTex = new Texture2D(440, 440);
-                        ImageConversion.LoadImage(newTex, albumInfo.GetCover());
-                        Sprite newSprite = Sprite.Create(newTex, new Rect(0, 0, newTex.width, newTex.height), new Vector2(0, 0), 100);
-                        __result = newSprite;
-
+                        Texture2D texture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+                        ImageConversion.LoadImage(texture, albumInfo.GetCover());
+                        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(texture.width / 2, texture.height / 2));
+                        __result = sprite;
                         return;
                     }
                 }
