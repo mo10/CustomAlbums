@@ -2,10 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.IO.Compression;
 using Ionic.Zip;
+using Assets.Scripts.GameCore;
+using Assets.Scripts.GameCore.Managers;
+using GameLogic;
+using Assets.Scripts.PeroTools.Commons;
 
 namespace MuseDashCustomAlbumMod
 {
@@ -64,22 +67,95 @@ namespace MuseDashCustomAlbumMod
 
         [JsonProperty]
         public string unlockLevel;
+
         [JsonIgnore]
         public string Uid;
-        public static CustomAlbumInfo Load(ZipEntry zipEntry)
+
+        private static byte[] ReadBuffer(ZipEntry zipEntry)
         {
             var stream = zipEntry.OpenReader();
             var buffer = new byte[stream.Length];
             stream.Read(buffer, 0, buffer.Length);
+            return buffer;
+        }
+
+        public static CustomAlbumInfo Load(ZipEntry zipEntry)
+        {
+            var buffer = ReadBuffer(zipEntry);
             var albumInfo = Load(Encoding.Default.GetString(buffer));
 
             return albumInfo;
         }
+
+        public static UnityEngine.AudioClip LoadAsAudioClip(ZipEntry zipEntry)
+        {
+            var buffer = ReadBuffer(zipEntry);
+            // TODO: mp3/more format support
+            return AudioUtility.WavUtility.ToAudioClip(buffer);
+        }
+
+        public static UnityEngine.Sprite LoadAsSprite(ZipEntry zipEntry)
+        {
+            // TODO:
+            throw new NotImplementedException();
+        }
+
+        public static UnityEngine.Sprite LoadAsSprite(ZipEntry zipEntry, int width, int height)
+        {
+            var tex = new UnityEngine.Texture2D(width, height);
+
+            byte[] binary = ReadBuffer(zipEntry);
+
+            UnityEngine.ImageConversion.LoadImage(tex, binary);
+            return UnityEngine.Sprite.Create(tex, new UnityEngine.Rect(0, 0, tex.width, tex.height), new UnityEngine.Vector2(0.0f, 0.0f));
+        }
+
+        public static StageInfo LoadAsStageInfo(ZipEntry zipEntry, string name)
+        {
+            /* 1.加载bms
+             * 2.转换为MusicData
+             * 3.创建StageInfo
+             * */
+
+            var bms = MyBMSCManager.instance.Load(ReadBuffer(zipEntry), name);
+
+            if (bms == null)
+            {
+                return null;
+            }
+
+            MusicConfigReader musicConfigReader = GameLogic.MusicConfigReader.Instance;
+            musicConfigReader.ClearData();
+            musicConfigReader.bms = bms;
+            musicConfigReader.Init("");
+
+
+            var info = musicConfigReader.GetData().Cast<MusicData>();
+            //var info = (from m in musicConfigReader.GetData().ToArray() select (MusicData)m).ToList();
+
+            StageInfo stgInfo = new StageInfo
+            {
+                musicDatas = info,
+                delay = musicConfigReader.delay,
+                mapName = (string)musicConfigReader.bms.info["TITLE"],
+                music = ((string)musicConfigReader.bms.info["WAV10"]).BeginBefore('.'),
+                scene = (string)musicConfigReader.bms.info["GENRE"],
+                difficulty = int.Parse((string)musicConfigReader.bms.info["RANK"]),
+                bpm = musicConfigReader.bms.GetBpm(),
+                md5 = musicConfigReader.bms.md5,
+                sceneEvents = musicConfigReader.sceneEvents
+            };
+
+
+            return stgInfo;
+        }
+
         public static CustomAlbumInfo Load(string rawJson)
         {
             var albumInfo = JsonConvert.DeserializeObject<CustomAlbumInfo>(rawJson);
             return albumInfo;
         }
+
         public override string ToString()
         {
             return

@@ -49,13 +49,14 @@ namespace MuseDashCustomAlbumMod
 
             StageUIPatch.DoPatching(harmony);
             DataPatch.DoPathcing(harmony);
+            ExtraPatch.DoPatching(harmony);
 
             LoadCustomAlbums();
         }
 
         public static void LoadCustomAlbums()
         {
-            
+
             if (!Directory.Exists(AlbumPackPath))
             {
                 // Create custom album path
@@ -66,7 +67,7 @@ namespace MuseDashCustomAlbumMod
             {
                 using (ZipFile zip = ZipFile.Read(file))
                 {
-                    if(zip["info.json"] != null)
+                    if (zip["info.json"] != null)
                     {
                         var albumInfo = CustomAlbumInfo.Load(zip["info.json"]);
                         ModLogger.Debug($"{file} {albumInfo}");

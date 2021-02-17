@@ -1,4 +1,5 @@
 ﻿using ModHelper;
+
 namespace MuseDashCustomAlbumMod
 {
     class Entry : IMod

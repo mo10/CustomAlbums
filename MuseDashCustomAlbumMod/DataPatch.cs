@@ -144,6 +144,7 @@ namespace MuseDashCustomAlbumMod
                         lang.Add("author", albumAuthor);
                         albumArray.Add(lang);
                     }
+                    
                     ___m_Dictionary.Add(name, albumArray);
                     return;
                 }
