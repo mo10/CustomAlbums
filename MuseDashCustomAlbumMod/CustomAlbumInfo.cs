@@ -64,21 +64,74 @@ namespace MuseDashCustomAlbumMod
 
         [JsonProperty]
         public string unlockLevel;
+
+
         [JsonIgnore]
         public string Uid;
-        public static CustomAlbumInfo Load(ZipEntry zipEntry)
-        {
-            var stream = zipEntry.OpenReader();
-            var buffer = new byte[stream.Length];
-            stream.Read(buffer, 0, buffer.Length);
-            var albumInfo = Load(Encoding.Default.GetString(buffer));
 
-            return albumInfo;
-        }
-        public static CustomAlbumInfo Load(string rawJson)
+        [JsonIgnore]
+        public string filePath;
+        public static CustomAlbumInfo LoadFromFile(string filePath)
         {
-            var albumInfo = JsonConvert.DeserializeObject<CustomAlbumInfo>(rawJson);
-            return albumInfo;
+            using (ZipFile zip = ZipFile.Read(filePath))
+            {
+                if (zip["info.json"] == null)
+                {
+                    return null;
+                }
+                var albumInfo = Utils.StreamToJson<CustomAlbumInfo>(zip["info.json"].OpenReader());
+                albumInfo.filePath = filePath;
+                return albumInfo;
+            }
+        }
+        public byte[] GetDemo()
+        {
+            using (ZipFile zip = ZipFile.Read(filePath))
+            {
+                if (zip["demo.wav"] == null)
+                {
+                    return null;
+                }
+                return Utils.StreamToBytes(zip["demo.wav"].OpenReader());
+            }
+        }
+        public byte[] GetMusic()
+        {
+            using (ZipFile zip = ZipFile.Read(filePath))
+            {
+                if (zip["music.wav"] == null)
+                {
+                    return null;
+                }
+                return Utils.StreamToBytes(zip["music.wav"].OpenReader());
+            }
+        }
+        public byte[] GetCover()
+        {
+            using (ZipFile zip = ZipFile.Read(filePath))
+            {
+                if (zip["cover.png"] == null)
+                {
+                    return null;
+                }
+                return Utils.StreamToBytes(zip["cover.png"].OpenReader());
+            }
+        }
+        public byte[] GetMap1()
+        {
+            return null;
+        }
+        public byte[] GetMap2()
+        {
+            return null;
+        }
+        public byte[] GetMap3()
+        {
+            return null;
+        }
+        public byte[] GetMap4()
+        {
+            return null;
         }
         public override string ToString()
         {

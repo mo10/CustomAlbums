@@ -1,6 +1,8 @@
 ﻿using ModHelper;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -47,5 +49,17 @@ namespace MuseDashCustomAlbumMod
             }
         }
 
+        public static T StreamToJson<T>(Stream steamReader)
+        {
+            var buffer = new byte[steamReader.Length];
+            steamReader.Read(buffer, 0, buffer.Length);
+            return JsonConvert.DeserializeObject<T>(Encoding.Default.GetString(buffer));
+        }
+        public static byte[] StreamToBytes(Stream steamReader)
+        {
+            var buffer = new byte[steamReader.Length];
+            steamReader.Read(buffer, 0, buffer.Length);
+            return buffer;
+        }
     }
 }

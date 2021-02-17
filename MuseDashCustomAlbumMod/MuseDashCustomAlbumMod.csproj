@@ -108,6 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <EmbeddedResource Include="Resources\EmptyAssetBundle" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\AlbumIcon.png" />
