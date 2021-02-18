@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.IO.Compression;
 using Ionic.Zip;
+using UnityEngine;
 
 namespace MuseDashCustomAlbumMod
 {
@@ -68,9 +69,11 @@ namespace MuseDashCustomAlbumMod
 
         [JsonIgnore]
         public string Uid;
-
         [JsonIgnore]
         public string filePath;
+        [JsonIgnore]
+        private Sprite coverSprite;
+
         public static CustomAlbumInfo LoadFromFile(string filePath)
         {
             using (ZipFile zip = ZipFile.Read(filePath))
@@ -106,15 +109,24 @@ namespace MuseDashCustomAlbumMod
                 return Utils.StreamToBytes(zip["music.wav"].OpenReader());
             }
         }
-        public byte[] GetCover()
+        public Sprite GetCover()
         {
+            if (coverSprite != null)
+            {
+                return coverSprite;
+            }
+            // Load only once
             using (ZipFile zip = ZipFile.Read(filePath))
             {
                 if (zip["cover.png"] == null)
                 {
                     return null;
                 }
-                return Utils.StreamToBytes(zip["cover.png"].OpenReader());
+                Texture2D texture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+                ImageConversion.LoadImage(texture, Utils.StreamToBytes(zip["cover.png"].OpenReader()));
+                coverSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(texture.width / 2, texture.height / 2));
+                
+                return coverSprite;
             }
         }
         public byte[] GetMap1()

@@ -277,22 +277,16 @@ namespace MuseDashCustomAlbumMod
             // && name.StartsWith($"Assets/Static Resources/{CustomAlbum.AlbumPackPath}/")
             if (__result == null)
             {
-                if (customAssets.TryGetValue(name,out CustomAlbumInfo albumInfo))
+                if (customAssets.TryGetValue(name, out CustomAlbumInfo albumInfo))
                 {
                     if (type == typeof(UnityEngine.Sprite))
                     {
                         // Load cover 
-                        Texture2D texture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
-                        ImageConversion.LoadImage(texture, albumInfo.GetCover());
-                        Sprite sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(texture.width / 2, texture.height / 2));
-                        __result = sprite;
+                        __result = albumInfo.GetCover();
                         return;
                     }
                 }
                 ModLogger.Debug($"Asset not found: {name} type: {type}");
-
-                //string file = name.Replace($"Assets/Static Resources/{CustomAlbum.AlbumPackPath}/", "");
-                //ModLogger.Debug($"Asset not found: {name} type: {type} target: {file}");
             }
         }
 
