@@ -65,14 +65,12 @@ namespace MuseDashCustomAlbumMod
 
             foreach (var file in Directory.GetFiles(AlbumPackPath, $"*.{AlbumPackExt}"))
             {
-                using (ZipFile zip = ZipFile.Read(file))
+                string fileName = Path.GetFileNameWithoutExtension(file);
+                var albumInfo = CustomAlbumInfo.LoadFromFile(file);
+                if (albumInfo != null)
                 {
-                    if (zip["info.json"] != null)
-                    {
-                        var albumInfo = CustomAlbumInfo.Load(zip["info.json"]);
-                        ModLogger.Debug($"{file} {albumInfo}");
-                        Albums.Add(file, albumInfo);
-                    }
+                    ModLogger.Debug($"Loaded {albumInfo}");
+                    Albums.Add(fileName, albumInfo);
                 }
             }
 

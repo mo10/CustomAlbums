@@ -9,6 +9,7 @@ using Assets.Scripts.GameCore;
 using Assets.Scripts.GameCore.Managers;
 using GameLogic;
 using Assets.Scripts.PeroTools.Commons;
+using UnityEngine;
 
 namespace MuseDashCustomAlbumMod
 {
@@ -70,7 +71,11 @@ namespace MuseDashCustomAlbumMod
 
         [JsonIgnore]
         public string Uid;
-
+        [JsonIgnore]
+        public string filePath;
+        [JsonIgnore]
+        private Sprite coverSprite;
+      
         private static byte[] ReadBuffer(ZipEntry zipEntry)
         {
             var stream = zipEntry.OpenReader();
@@ -79,37 +84,73 @@ namespace MuseDashCustomAlbumMod
             return buffer;
         }
 
-        public static CustomAlbumInfo Load(ZipEntry zipEntry)
+        public static CustomAlbumInfo LoadFromFile(string filePath)
         {
-            var buffer = ReadBuffer(zipEntry);
-            var albumInfo = Load(Encoding.Default.GetString(buffer));
-
-            return albumInfo;
+            using (ZipFile zip = ZipFile.Read(filePath))
+            {
+                if (zip["info.json"] == null)
+                {
+                    return null;
+                }
+                var albumInfo = Utils.StreamToJson<CustomAlbumInfo>(zip["info.json"].OpenReader());
+                albumInfo.filePath = filePath;
+                return albumInfo;
+            }
         }
-
-        public static UnityEngine.AudioClip LoadAsAudioClip(ZipEntry zipEntry)
+        public byte[] GetDemo()
         {
-            var buffer = ReadBuffer(zipEntry);
-            // TODO: mp3/more format support
-            return AudioUtility.WavUtility.ToAudioClip(buffer);
+            using (ZipFile zip = ZipFile.Read(filePath))
+            {
+                if (zip["demo.wav"] == null)
+                {
+                    return null;
+                }
+                return Utils.StreamToBytes(zip["demo.wav"].OpenReader());
+            }
         }
-
-        public static UnityEngine.Sprite LoadAsSprite(ZipEntry zipEntry)
+        public byte[] GetMusic()
         {
-            // TODO:
-            throw new NotImplementedException();
+            using (ZipFile zip = ZipFile.Read(filePath))
+            {
+                if (zip["music.wav"] == null)
+                {
+                    return null;
+                }
+                return Utils.StreamToBytes(zip["music.wav"].OpenReader());
+            }
         }
-
-        public static UnityEngine.Sprite LoadAsSprite(ZipEntry zipEntry, int width, int height)
+        public Sprite GetCover()
         {
-            var tex = new UnityEngine.Texture2D(width, height);
-
-            byte[] binary = ReadBuffer(zipEntry);
-
-            UnityEngine.ImageConversion.LoadImage(tex, binary);
-            return UnityEngine.Sprite.Create(tex, new UnityEngine.Rect(0, 0, tex.width, tex.height), new UnityEngine.Vector2(0.0f, 0.0f));
+            if (coverSprite != null)
+            {
+                return coverSprite;
+            }
+            // Load only once
+            using (ZipFile zip = ZipFile.Read(filePath))
+            {
+                if (zip["cover.png"] == null)
+                {
+                    return null;
+                }
+                Texture2D texture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+                ImageConversion.LoadImage(texture, Utils.StreamToBytes(zip["cover.png"].OpenReader()));
+                coverSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(texture.width / 2, texture.height / 2));
+                
+                return coverSprite;
+            }
         }
-
+        public byte[] GetMap1()
+        {
+            return null;
+        }
+        public byte[] GetMap2()
+        {
+            return null;
+        }
+        public byte[] GetMap3()
+        {
+            return null;
+        }
         public static StageInfo LoadAsStageInfo(ZipEntry zipEntry, string name)
         {
             /* 1.加载bms
@@ -149,11 +190,9 @@ namespace MuseDashCustomAlbumMod
 
             return stgInfo;
         }
-
-        public static CustomAlbumInfo Load(string rawJson)
+        public byte[] GetMap4()
         {
-            var albumInfo = JsonConvert.DeserializeObject<CustomAlbumInfo>(rawJson);
-            return albumInfo;
+            return null;
         }
 
         public override string ToString()

@@ -98,11 +98,12 @@ namespace MuseDashCustomAlbumMod
                     if (iconGameObject != null)
                     {
                         Sprite newSprite = new Sprite();
-                        Texture2D newTex = new Texture2D(512, 512);
+                        Texture2D newTex = new Texture2D(1, 1, TextureFormat.RGBA32, false); ;
 
                         iconGameObject.name = "ImgCustom";
                         // Load default image from embedded resources.
                         ImageConversion.LoadImage(newTex, Utils.ReadEmbeddedFile("Resources.AlbumIcon.png"));
+                        newTex.filterMode = FilterMode.Point;
                         newSprite = Sprite.Create(newTex, new Rect(0, 0, newTex.width, newTex.height), new Vector2(0, 0), 100);
                         newSprite.name = "ImgCustom";
 
