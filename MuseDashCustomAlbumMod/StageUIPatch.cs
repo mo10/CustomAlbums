@@ -87,7 +87,7 @@ namespace MuseDashCustomAlbumMod
                     foreach (var opt in l10n.optionPairs)
                     {
                         ((TextOption)opt.option).value = CustomAlbum.Languages[opt.optionEntry.name];
-                        ModLogger.Debug($" opt:{opt.optionEntry.name}  val:{((TextOption)opt.option).value}");
+                        //ModLogger.Debug($" opt:{opt.optionEntry.name}  val:{((TextOption)opt.option).value}");
                     }
                 }
                 // Icon GameObject
