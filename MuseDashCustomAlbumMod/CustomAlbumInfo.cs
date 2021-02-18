@@ -2,10 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.IO.Compression;
 using Ionic.Zip;
+using Assets.Scripts.GameCore;
+using Assets.Scripts.GameCore.Managers;
+using GameLogic;
+using Assets.Scripts.PeroTools.Commons;
 using UnityEngine;
 
 namespace MuseDashCustomAlbumMod
@@ -66,13 +69,20 @@ namespace MuseDashCustomAlbumMod
         [JsonProperty]
         public string unlockLevel;
 
-
         [JsonIgnore]
         public string Uid;
         [JsonIgnore]
         public string filePath;
         [JsonIgnore]
         private Sprite coverSprite;
+      
+        private static byte[] ReadBuffer(ZipEntry zipEntry)
+        {
+            var stream = zipEntry.OpenReader();
+            var buffer = new byte[stream.Length];
+            stream.Read(buffer, 0, buffer.Length);
+            return buffer;
+        }
 
         public static CustomAlbumInfo LoadFromFile(string filePath)
         {
@@ -141,10 +151,50 @@ namespace MuseDashCustomAlbumMod
         {
             return null;
         }
+        public static StageInfo LoadAsStageInfo(ZipEntry zipEntry, string name)
+        {
+            /* 1.加载bms
+             * 2.转换为MusicData
+             * 3.创建StageInfo
+             * */
+
+            var bms = MyBMSCManager.instance.Load(ReadBuffer(zipEntry), name);
+
+            if (bms == null)
+            {
+                return null;
+            }
+
+            MusicConfigReader musicConfigReader = GameLogic.MusicConfigReader.Instance;
+            musicConfigReader.ClearData();
+            musicConfigReader.bms = bms;
+            musicConfigReader.Init("");
+
+
+            var info = musicConfigReader.GetData().Cast<MusicData>();
+            //var info = (from m in musicConfigReader.GetData().ToArray() select (MusicData)m).ToList();
+
+            StageInfo stgInfo = new StageInfo
+            {
+                musicDatas = info,
+                delay = musicConfigReader.delay,
+                mapName = (string)musicConfigReader.bms.info["TITLE"],
+                music = ((string)musicConfigReader.bms.info["WAV10"]).BeginBefore('.'),
+                scene = (string)musicConfigReader.bms.info["GENRE"],
+                difficulty = int.Parse((string)musicConfigReader.bms.info["RANK"]),
+                bpm = musicConfigReader.bms.GetBpm(),
+                md5 = musicConfigReader.bms.md5,
+                sceneEvents = musicConfigReader.sceneEvents
+            };
+
+
+            return stgInfo;
+        }
         public byte[] GetMap4()
         {
             return null;
         }
+
         public override string ToString()
         {
             return

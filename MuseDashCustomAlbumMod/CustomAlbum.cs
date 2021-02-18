@@ -49,6 +49,7 @@ namespace MuseDashCustomAlbumMod
 
             StageUIPatch.DoPatching(harmony);
             DataPatch.DoPathcing(harmony);
+            ExtraPatch.DoPatching(harmony);
 
             LoadCustomAlbums();
         }
