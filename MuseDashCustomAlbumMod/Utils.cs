@@ -1,4 +1,5 @@
 ﻿using ModHelper;
+using NAudio.Wave;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -60,6 +61,19 @@ namespace MuseDashCustomAlbumMod
             var buffer = new byte[steamReader.Length];
             steamReader.Read(buffer, 0, buffer.Length);
             return buffer;
+        }
+        public static MemoryStream AudioMemStream(WaveStream waveStream)
+        {
+            MemoryStream outputStream = new MemoryStream();
+            using (WaveFileWriter waveFileWriter = new WaveFileWriter(outputStream, waveStream.WaveFormat))
+            {
+                byte[] bytes = new byte[waveStream.Length];
+                waveStream.Position = 0;
+                waveStream.Read(bytes, 0, Convert.ToInt32(waveStream.Length));
+                waveFileWriter.Write(bytes, 0, bytes.Length);
+                waveFileWriter.Flush();
+            }
+            return outputStream;
         }
     }
 }

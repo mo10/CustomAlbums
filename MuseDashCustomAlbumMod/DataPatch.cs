@@ -1,4 +1,5 @@
-﻿using Assets.Scripts.PeroTools.AssetBundles;
+﻿using Assets.Scripts.GameCore;
+using Assets.Scripts.PeroTools.AssetBundles;
 using Assets.Scripts.PeroTools.Commons;
 using Assets.Scripts.PeroTools.GeneralLocalization;
 using Assets.Scripts.PeroTools.Managers;
@@ -26,8 +27,8 @@ namespace MuseDashCustomAlbumMod
             harmony.Patch(getJson, new HarmonyMethod(getJsonPrefix), new HarmonyMethod(getJsonPostfix));
             // AssetBundleConfigManager.Get
             var getAssetBundle = AccessTools.Method(typeof(AssetBundleConfigManager), "Get", new Type[] { typeof(string), typeof(Type) });
-            var getAssetBundlePostfix = AccessTools.Method(typeof(DataPatch), "GetAssetBundlePostfix");
-            harmony.Patch(getAssetBundle, null, new HarmonyMethod(getAssetBundlePostfix));
+            var getAssetBundlePrefix = AccessTools.Method(typeof(DataPatch), "GetAssetBundlePrefix");
+            harmony.Patch(getAssetBundle, new HarmonyMethod(getAssetBundlePrefix));
             // AssetBundle.LoadAsset
             var loadAsset = AccessTools.Method(typeof(AssetBundle), "LoadAsset", new Type[] { typeof(string), typeof(Type) });
             var loadAssetPostfix = AccessTools.Method(typeof(DataPatch), "LoadAssetPostfix");
@@ -59,7 +60,7 @@ namespace MuseDashCustomAlbumMod
                     foreach (var album in CustomAlbum.Albums)
                     {
                         var uid = $"{CustomAlbum.MusicPackgeUid}-{idx}";
-                        
+
                         albumArray.Add(AddNewCustomMetadata(album, uid));
                         album.Value.Uid = uid;
                         idx++;
@@ -113,7 +114,7 @@ namespace MuseDashCustomAlbumMod
                         lang.Add("author", albumAuthor);
                         albumArray.Add(lang);
                     }
-                    
+
                     ___m_Dictionary.Add(name, albumArray);
                     return;
                 }
@@ -191,100 +192,111 @@ namespace MuseDashCustomAlbumMod
         {
             //ModLogger.Debug($"Load Asset Bundle found:{assetBundleName}");
 
-            if (!___m_LoadedAssetBundles.ContainsKey(assetBundleName))
-            {
-                //ModLogger.Debug($"Asset Not found:{assetBundleName}");
-            }
-            else
+            if (___m_LoadedAssetBundles.ContainsKey(assetBundleName))
             {
                 if (assetBundleName.StartsWith("Custom"))
                     if (___m_LoadedAssetBundles[assetBundleName].assetBundle == null)
                     {
-                        ModLogger.Debug($"Add empty asset bundle: {assetBundleName}");
+                        ModLogger.Debug($"Load empty asset bundle");
                         ___m_LoadedAssetBundles[assetBundleName].assetBundle = AssetBundle.LoadFromMemory(Utils.ReadEmbeddedFile("Resources.EmptyAssetBundle"));
                     }
             }
         }
-        public static void GetAssetBundlePostfix(string assetPath, Type type, ref AssetBundleConfigManager.ABConfig __result)
+        public static void GetAssetBundlePrefix(string assetPath, Type type)
         {
-            var dict = SingletonScriptableObject<AssetBundleConfigManager>.instance.dict;
-            string dictKey = Path.GetFileNameWithoutExtension(assetPath);
-            if (__result == null)
+            if (assetPath != null && assetPath.StartsWith(CustomAlbum.AlbumPackPath))
             {
-                ModLogger.Debug($"Create abConfig: {assetPath} type: {type}");
-                if (assetPath.StartsWith(CustomAlbum.AlbumPackPath))
+                var dict = SingletonScriptableObject<AssetBundleConfigManager>.instance.dict;
+                string dictKey = Path.GetFileNameWithoutExtension(assetPath);
+
+                // Create new ABConfig
+                AssetBundleConfigManager.ABConfig newABConfig = new AssetBundleConfigManager.ABConfig();
+                newABConfig.directory = CustomAlbum.AlbumPackPath;
+                newABConfig.abName = CustomAlbum.AlbumPackPath;
+                newABConfig.directory = "";
+                newABConfig.fileName = assetPath;
+
+                newABConfig.type = type;
+                
+                newABConfig.extension = ".json";
+                if (assetPath.EndsWith("_cover"))
                 {
-                    AssetBundleConfigManager.ABConfig newABConfig = new AssetBundleConfigManager.ABConfig();
-                    newABConfig.directory = CustomAlbum.AlbumPackPath;
-                    newABConfig.abName = CustomAlbum.AlbumPackPath;
-                    newABConfig.directory = "";
-                    newABConfig.fileName = assetPath;
-
-                    newABConfig.type = type;
-                    
-                    if (assetPath.EndsWith("_cover"))
-                    {
-                        newABConfig.extension = ".png";
-                    }
-                    if (assetPath.EndsWith("_music"))
-                    {
-                        newABConfig.extension = ".wav";
-                    }
-                    if (assetPath.EndsWith("_demo"))
-                    {
-                        newABConfig.extension = ".wav";
-                    }
-                    if (assetPath.EndsWith("_map"))
-                    {
-                        newABConfig.extension = ".json";
-                    }
-
-                    AssetBundleConfigManager.ABConfig existABConfig = null;
-                    if (dict.TryGetValue(dictKey, out List<AssetBundleConfigManager.ABConfig> abConfigs))
-                    {
-                        // Find exist dict key
-                        foreach (var config in abConfigs)
-                        {
-                            if(config.type == type)
-                            {
-                                existABConfig = config;
-                                ModLogger.Debug($"Found item {dictKey} type:{type}");
-                                break;
-                            }
-                        }
-                        // Exist key, add other value
-                        if (existABConfig == null)
-                        {
-                            abConfigs.Add(newABConfig);
-                            existABConfig = newABConfig;
-                            ModLogger.Debug($"Add item {dictKey} type:{type}");
-                        }
-                    }
-                    else
-                    {
-                        // Add new dict item
-                        dict.Add(dictKey, new List<AssetBundleConfigManager.ABConfig>() { newABConfig });
-                        ModLogger.Debug($"Add dict {dictKey} type: {type}");
-                    }
-                    __result = existABConfig;
-                    ModLogger.Debug($"Return custom asset: {dictKey} type: {type}");
-                    return;
+                    newABConfig.extension = ".png";
                 }
-                ModLogger.Debug($"Not found asset: {assetPath} type: {type}");
+                if (assetPath.EndsWith("_music"))
+                {
+                    newABConfig.extension = ".mp3";
+                }
+                if (assetPath.EndsWith("_demo"))
+                {
+                    newABConfig.extension = ".mp3";
+                }
+                if (dict.TryGetValue(dictKey, out List<AssetBundleConfigManager.ABConfig> abConfigs))
+                {
+                    foreach (var config in abConfigs)
+                    {
+                        if (config.type == type)
+                        {
+                            // Exist ABConfig, Do nothing.
+                            return;
+                        }
+                    }
+                    // Add other type of value
+                    abConfigs.Add(newABConfig);
+                    ModLogger.Debug($"Append asset key: {dictKey} type: {type}");
+                }
+                else
+                {
+                    // Not exist dictKey, Create new
+                    dict.Add(dictKey, new List<AssetBundleConfigManager.ABConfig>() { newABConfig });
+                    ModLogger.Debug($"Add asset dict key: {dictKey} type: {type}");
+                }
+                // ModLogger.Debug($"Not found asset: {assetPath} type: {type}");
             }
         }
         public static void LoadAssetPostfix(string name, Type type, ref UnityEngine.Object __result)
         {
-            // && name.StartsWith($"Assets/Static Resources/{CustomAlbum.AlbumPackPath}/")
             if (__result == null)
             {
                 if (customAssets.TryGetValue(name, out CustomAlbumInfo albumInfo))
                 {
+                    // Load cover image
                     if (type == typeof(UnityEngine.Sprite))
                     {
-                        // Load cover 
-                        __result = albumInfo.GetCover();
+                        __result = albumInfo.GetCoverSprite();
                         return;
+                    }
+                    // Load demo audio
+                    if (type == typeof(UnityEngine.AudioClip) && name.EndsWith("_demo.mp3"))
+                    {
+                        __result = albumInfo.GetDemoAudioClip();
+                        return;
+                    }
+                    // Load full music audio
+                    if (type == typeof(UnityEngine.AudioClip) && name.EndsWith("_music.mp3"))
+                    {
+                        __result = albumInfo.GetMusicAudioClip();
+                        return;
+                    }
+                    // Load map
+                    if (type == typeof(StageInfo))
+                    {
+                        if (name.EndsWith("_map1.json"))
+                        {
+
+                        }
+                        if (name.EndsWith("_map2.json"))
+                        {
+
+                        }
+                        if (name.EndsWith("_map3.json"))
+                        {
+
+                        }
+                        if (name.EndsWith("_map4.json"))
+                        {
+
+                        }
                     }
                 }
                 ModLogger.Debug($"Asset not found: {name} type: {type}");
@@ -295,7 +307,7 @@ namespace MuseDashCustomAlbumMod
         {
 
         }
-        public static JObject AddNewCustomMetadata(KeyValuePair<string,CustomAlbumInfo> valuePair,string uid)
+        public static JObject AddNewCustomMetadata(KeyValuePair<string, CustomAlbumInfo> valuePair, string uid)
         {
             var metadata = new JObject();
 
@@ -323,10 +335,18 @@ namespace MuseDashCustomAlbumMod
             metadata.Add("noteJson", $"{path}_map");
             metadata.Add("scene", valuePair.Value.scene);
 
-            customAssets.Add($"Assets/Static Resources/{path}_music.wav", valuePair.Value);
-            customAssets.Add($"Assets/Static Resources/{path}_demo.wav", valuePair.Value);
+            // Regist asset path
+            customAssets.Add($"Assets/Static Resources/{path}_music.mp3", valuePair.Value);
+            customAssets.Add($"Assets/Static Resources/{path}_demo.mp3", valuePair.Value);
             customAssets.Add($"Assets/Static Resources/{path}_cover.png", valuePair.Value);
-            customAssets.Add($"Assets/Static Resources/{path}_map.json", valuePair.Value);
+            if(valuePair.Value.difficulty1 != null)
+                customAssets.Add($"Assets/Static Resources/{path}_map1.json", valuePair.Value);
+            if (valuePair.Value.difficulty2 != null)
+                customAssets.Add($"Assets/Static Resources/{path}_map2.json", valuePair.Value);
+            if (valuePair.Value.difficulty3 != null)
+                customAssets.Add($"Assets/Static Resources/{path}_map3.json", valuePair.Value);
+            if (valuePair.Value.difficulty4 != null)
+                customAssets.Add($"Assets/Static Resources/{path}_map4.json", valuePair.Value);
 
             if (valuePair.Value.levelDesigner1 != null || valuePair.Value.levelDesigner1 != "")
             {

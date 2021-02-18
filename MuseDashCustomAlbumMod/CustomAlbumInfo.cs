@@ -10,7 +10,7 @@ using Assets.Scripts.GameCore.Managers;
 using GameLogic;
 using Assets.Scripts.PeroTools.Commons;
 using UnityEngine;
-
+using NAudio.Wave;
 namespace MuseDashCustomAlbumMod
 {
     public class CustomAlbumInfo
@@ -72,17 +72,13 @@ namespace MuseDashCustomAlbumMod
         [JsonIgnore]
         public string Uid;
         [JsonIgnore]
-        public string filePath;
+        public string filePath { get; private set; }
         [JsonIgnore]
         private Sprite coverSprite;
-      
-        private static byte[] ReadBuffer(ZipEntry zipEntry)
-        {
-            var stream = zipEntry.OpenReader();
-            var buffer = new byte[stream.Length];
-            stream.Read(buffer, 0, buffer.Length);
-            return buffer;
-        }
+        [JsonIgnore]
+        private AudioClip demoAudio;
+        [JsonIgnore]
+        private AudioClip musicAudio;
 
         public static CustomAlbumInfo LoadFromFile(string filePath)
         {
@@ -97,29 +93,45 @@ namespace MuseDashCustomAlbumMod
                 return albumInfo;
             }
         }
-        public byte[] GetDemo()
+        public AudioClip GetDemoAudioClip()
         {
+            if (demoAudio != null)
+            {
+                return demoAudio;
+            }
             using (ZipFile zip = ZipFile.Read(filePath))
             {
-                if (zip["demo.wav"] == null)
+                if (zip["demo.mp3"] == null)
                 {
                     return null;
                 }
-                return Utils.StreamToBytes(zip["demo.wav"].OpenReader());
+                byte[] data = Utils.StreamToBytes(zip["demo.mp3"].OpenReader());
+                Stream stream = new MemoryStream(data);
+                demoAudio = RuntimeAudioClipLoader.Manager.Load(stream, RuntimeAudioClipLoader.AudioFormat.mp3, "demo", true, false);
+
+                return demoAudio;
             }
         }
-        public byte[] GetMusic()
+        public AudioClip GetMusicAudioClip()
         {
+            if (musicAudio != null)
+            {
+                return musicAudio;
+            }
             using (ZipFile zip = ZipFile.Read(filePath))
             {
-                if (zip["music.wav"] == null)
+                if (zip["music.mp3"] == null)
                 {
                     return null;
                 }
-                return Utils.StreamToBytes(zip["music.wav"].OpenReader());
+                byte[] data = Utils.StreamToBytes(zip["music.mp3"].OpenReader());
+                Stream stream = new MemoryStream(data);
+                musicAudio = RuntimeAudioClipLoader.Manager.Load(stream, RuntimeAudioClipLoader.AudioFormat.mp3, "demo", true, false);
+
+                return musicAudio;
             }
         }
-        public Sprite GetCover()
+        public Sprite GetCoverSprite()
         {
             if (coverSprite != null)
             {
@@ -151,6 +163,10 @@ namespace MuseDashCustomAlbumMod
         {
             return null;
         }
+        public byte[] GetMap4()
+        {
+            return null;
+        }
         public static StageInfo LoadAsStageInfo(ZipEntry zipEntry, string name)
         {
             /* 1.加载bms
@@ -158,7 +174,7 @@ namespace MuseDashCustomAlbumMod
              * 3.创建StageInfo
              * */
 
-            var bms = MyBMSCManager.instance.Load(ReadBuffer(zipEntry), name);
+            var bms = MyBMSCManager.instance.Load(Utils.StreamToBytes(zipEntry.OpenReader()), name);
 
             if (bms == null)
             {
@@ -190,10 +206,7 @@ namespace MuseDashCustomAlbumMod
 
             return stgInfo;
         }
-        public byte[] GetMap4()
-        {
-            return null;
-        }
+
 
         public override string ToString()
         {
