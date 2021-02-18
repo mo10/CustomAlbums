@@ -20,9 +20,9 @@ namespace MuseDashCustomAlbumMod
             MethodInfo methodICPOPrefix = AccessTools.Method(typeof(ExtraPatch), "IsCanPreparationOutPrefix");
             harmony.Patch(methodIsCanPreparationOut, new HarmonyMethod(methodICPOPrefix), null, null);
 
-            MethodInfo methodSetBgLockAction = AccessTools.Method(typeof(Assets.Scripts.UI.Panels.PnlStage), "SetBgLockAction");
-            MethodInfo methodSBLAPrefix = AccessTools.Method(typeof(ExtraPatch), "SetBgLockActionPrefix");
-            harmony.Patch(methodSetBgLockAction, new HarmonyMethod(methodSBLAPrefix), null, null);
+            //MethodInfo methodSetBgLockAction = AccessTools.Method(typeof(Assets.Scripts.UI.Panels.PnlStage), "SetBgLockAction");
+            //MethodInfo methodSBLAPrefix = AccessTools.Method(typeof(ExtraPatch), "SetBgLockActionPrefix");
+            //harmony.Patch(methodSetBgLockAction, new HarmonyMethod(methodSBLAPrefix), null, null);
 
             MethodInfo methodOnBattleEnd = AccessTools.Method(typeof(Assets.Scripts.GameCore.Managers.StatisticsManager), "OnBattleEnd");
             MethodInfo methodOBEPrefix = AccessTools.Method(typeof(ExtraPatch), "OnBattleEndPrefix");
@@ -84,7 +84,7 @@ namespace MuseDashCustomAlbumMod
                 //__instance.difficulty3Master.SetActive(__instance.difficulty3.text != "0");
 
                 __instance.tglLike.gameObject.SetActive(false);
-                SetBgLockActionPrefix(__instance);
+                //SetBgLockActionPrefix(__instance);
                 return;
             }
 
