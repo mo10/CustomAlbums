@@ -25,50 +25,54 @@ namespace MuseDashCustomAlbumMod
 		{
 			bpmTones.Clear();
 
-			JObject jobject = new JObject();
+			JObject jInfo = new JObject();
 			JArray jarray = new JArray();
 
 			JArray jarray2 = new JArray();
 			List<JObject> list = new List<JObject>();
+
 			StreamReader streamReader = new StreamReader(new MemoryStream(bytes), AssetsUtils.GetBytesEncodeType(bytes));
-			byte[] array = MD5.Create().ComputeHash(bytes);
-			StringBuilder stringBuilder = new StringBuilder();
-			for (int i = 0; i < array.Length; i++)
+			// Calculate MD5 of bms bytes
+			byte[] md5Array = MD5.Create().ComputeHash(bytes);
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < md5Array.Length; i++)
 			{
-				stringBuilder.Append(array[i].ToString("x2"));
+				sb.Append(md5Array[i].ToString("x2"));
 			}
-			string md = stringBuilder.ToString();
-			string text;
-			while ((text = streamReader.ReadLine()) != null)
+			string md5 = sb.ToString();
+
+			string bmsLine;
+			// Parse bms command
+			while ((bmsLine = streamReader.ReadLine()) != null)
 			{
-				if (!string.IsNullOrEmpty(text) && text.Contains("#"))
+				bmsLine = bmsLine.Trim();
+				if (!string.IsNullOrEmpty(bmsLine) && bmsLine.StartsWith("#"))
 				{
-					text = text.Substring(1, text.Length - 1);
-					if (text.Contains(" "))
+					bmsLine = bmsLine.Remove(0, 1); // Remove left right space and start '#'
+					
+					if (bmsLine.Contains(" "))
 					{
-						string[] array2 = text.Split(new char[]
+						// Parse info
+						string infoKey = bmsLine.Split(' ')[0];
+						string infoValue = bmsLine.Remove(0, infoKey.Length + 1);
+
+						jInfo[infoKey] = infoValue;
+						if (infoKey == "BPM")
 						{
-					' '
-						});
-						string text2 = array2[0];
-						string text3 = text.Replace(text2 + " ", string.Empty);
-						jobject[text2] = text3;
-						if (text2 == "BPM")
-						{
-							float value = 60f / float.Parse(text3) * 4f;
+							float freq = 60f / float.Parse(infoValue) * 4f;
 							JObject jobject2 = new JObject();
 							jobject2["tick"] = 0f;
-							jobject2["freq"] = value;
+							jobject2["freq"] = freq;
 							list.Add(jobject2);
 						}
-						else if (text2.Contains("BPM"))
+						else if (infoKey.Contains("BPM"))
 						{
-							this.bpmTones.Add(text2.Replace("BPM", string.Empty), float.Parse(text3));
+							this.bpmTones.Add(infoKey.Replace("BPM", string.Empty), float.Parse(infoValue));
 						}
 					}
-					else if (text.Contains(":"))
+					else if (bmsLine.Contains(":"))
 					{
-						string[] array3 = text.Split(new char[]
+						string[] array3 = bmsLine.Split(new char[]
 						{
 					':'
 						});
@@ -182,10 +186,10 @@ namespace MuseDashCustomAlbumMod
 			});
 			iBMSCManager.BMS bms = new iBMSCManager.BMS
 			{
-				info = jobject,
+				info = jInfo,
 				notes = jarray,
 				notesPercent = jarray2,
-				md5 = md
+				md5 = md5
 			};
 			bms.info["NAME"] = bmsName;
 			bms.info["NEW"] = true;

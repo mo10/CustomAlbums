@@ -11,6 +11,8 @@ using GameLogic;
 using Assets.Scripts.PeroTools.Commons;
 using UnityEngine;
 using NAudio.Wave;
+using ModHelper;
+
 namespace MuseDashCustomAlbumMod
 {
     public class CustomAlbumInfo
@@ -79,6 +81,8 @@ namespace MuseDashCustomAlbumMod
         private AudioClip demoAudio;
         [JsonIgnore]
         private AudioClip musicAudio;
+        [JsonIgnore]
+        private StageInfo[] maps = new StageInfo[4];
 
         public static CustomAlbumInfo LoadFromFile(string filePath)
         {
@@ -151,30 +155,31 @@ namespace MuseDashCustomAlbumMod
                 return coverSprite;
             }
         }
-        public byte[] GetMap1()
+        public StageInfo GetMap(int index)
         {
-            return null;
+            string target = $"map{index}.bms";
+            if (maps[index] != null)
+            {
+                return maps[index];
+            }
+            using (ZipFile zip = ZipFile.Read(filePath))
+            {
+                if (zip[target] == null)
+                {
+                    return null;
+                }
+                maps[index] = GetStageInfo(Utils.StreamToBytes(zip[target].OpenReader()), target);
+                return maps[index];
+            }
         }
-        public byte[] GetMap2()
-        {
-            return null;
-        }
-        public byte[] GetMap3()
-        {
-            return null;
-        }
-        public byte[] GetMap4()
-        {
-            return null;
-        }
-        public static StageInfo LoadAsStageInfo(ZipEntry zipEntry, string name)
+        public static StageInfo GetStageInfo(byte[] bytes, string name)
         {
             /* 1.加载bms
              * 2.转换为MusicData
              * 3.创建StageInfo
              * */
 
-            var bms = MyBMSCManager.instance.Load(Utils.StreamToBytes(zipEntry.OpenReader()), name);
+            var bms = MyBMSCManager.instance.Load(bytes, name);
 
             if (bms == null)
             {
@@ -189,11 +194,11 @@ namespace MuseDashCustomAlbumMod
 
             var info = musicConfigReader.GetData().Cast<MusicData>();
             //var info = (from m in musicConfigReader.GetData().ToArray() select (MusicData)m).ToList();
-
-            StageInfo stgInfo = new StageInfo
+            
+            StageInfo stageInfo = new StageInfo
             {
                 musicDatas = info,
-                delay = musicConfigReader.delay,
+                delay = 0.45M,
                 mapName = (string)musicConfigReader.bms.info["TITLE"],
                 music = ((string)musicConfigReader.bms.info["WAV10"]).BeginBefore('.'),
                 scene = (string)musicConfigReader.bms.info["GENRE"],
@@ -202,9 +207,8 @@ namespace MuseDashCustomAlbumMod
                 md5 = musicConfigReader.bms.md5,
                 sceneEvents = musicConfigReader.sceneEvents
             };
-
-
-            return stgInfo;
+            ModLogger.Debug($"Delay: {musicConfigReader.delay}");
+            return stageInfo;
         }
 
 

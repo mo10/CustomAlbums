@@ -218,7 +218,7 @@ namespace MuseDashCustomAlbumMod
 
                 newABConfig.type = type;
                 
-                newABConfig.extension = ".json";
+                newABConfig.extension = ".bms";
                 if (assetPath.EndsWith("_cover"))
                 {
                     newABConfig.extension = ".png";
@@ -281,21 +281,25 @@ namespace MuseDashCustomAlbumMod
                     // Load map
                     if (type == typeof(StageInfo))
                     {
-                        if (name.EndsWith("_map1.json"))
+                        if (name.EndsWith("_map1.bms"))
                         {
-
+                            __result = albumInfo.GetMap(1);
+                            return;
                         }
-                        if (name.EndsWith("_map2.json"))
+                        if (name.EndsWith("_map2.bms"))
                         {
-
+                            __result = albumInfo.GetMap(2);
+                            return;
                         }
-                        if (name.EndsWith("_map3.json"))
+                        if (name.EndsWith("_map3.bms"))
                         {
-
+                            __result = albumInfo.GetMap(3);
+                            return;
                         }
-                        if (name.EndsWith("_map4.json"))
+                        if (name.EndsWith("_map4.bms"))
                         {
-
+                            __result = albumInfo.GetMap(4);
+                            return;
                         }
                     }
                 }
@@ -340,13 +344,13 @@ namespace MuseDashCustomAlbumMod
             customAssets.Add($"Assets/Static Resources/{path}_demo.mp3", valuePair.Value);
             customAssets.Add($"Assets/Static Resources/{path}_cover.png", valuePair.Value);
             if(valuePair.Value.difficulty1 != null)
-                customAssets.Add($"Assets/Static Resources/{path}_map1.json", valuePair.Value);
+                customAssets.Add($"Assets/Static Resources/{path}_map1.bms", valuePair.Value);
             if (valuePair.Value.difficulty2 != null)
-                customAssets.Add($"Assets/Static Resources/{path}_map2.json", valuePair.Value);
+                customAssets.Add($"Assets/Static Resources/{path}_map2.bms", valuePair.Value);
             if (valuePair.Value.difficulty3 != null)
-                customAssets.Add($"Assets/Static Resources/{path}_map3.json", valuePair.Value);
+                customAssets.Add($"Assets/Static Resources/{path}_map3.bms", valuePair.Value);
             if (valuePair.Value.difficulty4 != null)
-                customAssets.Add($"Assets/Static Resources/{path}_map4.json", valuePair.Value);
+                customAssets.Add($"Assets/Static Resources/{path}_map4.bms", valuePair.Value);
 
             if (valuePair.Value.levelDesigner1 != null || valuePair.Value.levelDesigner1 != "")
             {
