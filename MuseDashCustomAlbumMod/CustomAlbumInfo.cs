@@ -130,7 +130,7 @@ namespace MuseDashCustomAlbumMod
                 }
                 byte[] data = Utils.StreamToBytes(zip["music.mp3"].OpenReader());
                 Stream stream = new MemoryStream(data);
-                musicAudio = RuntimeAudioClipLoader.Manager.Load(stream, RuntimeAudioClipLoader.AudioFormat.mp3, "demo", true, false);
+                musicAudio = RuntimeAudioClipLoader.Manager.Load(stream, RuntimeAudioClipLoader.AudioFormat.mp3, "demo", true, true);
 
                 return musicAudio;
             }
@@ -198,7 +198,6 @@ namespace MuseDashCustomAlbumMod
             StageInfo stageInfo = new StageInfo
             {
                 musicDatas = info,
-                delay = 0.45M,
                 mapName = (string)musicConfigReader.bms.info["TITLE"],
                 music = ((string)musicConfigReader.bms.info["WAV10"]).BeginBefore('.'),
                 scene = (string)musicConfigReader.bms.info["GENRE"],
