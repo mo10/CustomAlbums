@@ -130,7 +130,7 @@ namespace MuseDashCustomAlbumMod
                 }
                 byte[] data = Utils.StreamToBytes(zip["music.mp3"].OpenReader());
                 Stream stream = new MemoryStream(data);
-                musicAudio = RuntimeAudioClipLoader.Manager.Load(stream, RuntimeAudioClipLoader.AudioFormat.mp3, "demo", true, true);
+                musicAudio = RuntimeAudioClipLoader.Manager.Load(stream, RuntimeAudioClipLoader.AudioFormat.mp3, "demo", false, true);
 
                 return musicAudio;
             }
