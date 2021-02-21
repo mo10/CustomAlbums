@@ -12,6 +12,7 @@ using Assets.Scripts.PeroTools.Commons;
 using UnityEngine;
 using NAudio.Wave;
 using ModHelper;
+using RuntimeAudioClipLoader;
 
 namespace MuseDashCustomAlbumMod
 {
@@ -72,18 +73,22 @@ namespace MuseDashCustomAlbumMod
         public string unlockLevel;
 
         [JsonIgnore]
-        public string Uid;
+        public string uid;
         [JsonIgnore]
-        public string filePath { get; private set; }
+        public string path { get; private set; }
+        [JsonIgnore]
+        public bool loadFromFolder { get; private set; }
         [JsonIgnore]
         private Sprite coverSprite;
         [JsonIgnore]
-        private AudioClip demoAudio;
-        [JsonIgnore]
-        private AudioClip musicAudio;
+        private static UnityEngine.Object objectCache;
         [JsonIgnore]
         private StageInfo[] maps = new StageInfo[4];
-
+        /// <summary>
+        /// Load from zip file
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public static CustomAlbumInfo LoadFromFile(string filePath)
         {
             using (ZipFile zip = ZipFile.Read(filePath))
@@ -93,84 +98,165 @@ namespace MuseDashCustomAlbumMod
                     return null;
                 }
                 var albumInfo = Utils.StreamToJson<CustomAlbumInfo>(zip["info.json"].OpenReader());
-                albumInfo.filePath = filePath;
+                albumInfo.path = filePath;
+                albumInfo.loadFromFolder = false;
                 return albumInfo;
             }
         }
-        public AudioClip GetDemoAudioClip()
+        /// <summary>
+        /// Load from folder
+        /// </summary>
+        /// <param name="folderPath"></param>
+        /// <returns></returns>
+        public static CustomAlbumInfo LoadFromFolder(string folderPath)
         {
-            if (demoAudio != null)
+            if (!File.Exists($"{folderPath}/info.json"))
             {
-                return demoAudio;
+                return null;
             }
-            using (ZipFile zip = ZipFile.Read(filePath))
-            {
-                if (zip["demo.mp3"] == null)
-                {
-                    return null;
-                }
-                byte[] data = Utils.StreamToBytes(zip["demo.mp3"].OpenReader());
-                Stream stream = new MemoryStream(data);
-                demoAudio = RuntimeAudioClipLoader.Manager.Load(stream, RuntimeAudioClipLoader.AudioFormat.mp3, "demo", true, false);
-
-                return demoAudio;
-            }
+            var albumInfo = Utils.StreamToJson<CustomAlbumInfo>(File.OpenRead($"{folderPath}/info.json"));
+            albumInfo.path = folderPath;
+            albumInfo.loadFromFolder = true;
+            return albumInfo;
         }
-        public AudioClip GetMusicAudioClip()
+        public AudioClip GetAudioClip(string name)
         {
-            if (musicAudio != null)
-            {
-                return musicAudio;
-            }
-            using (ZipFile zip = ZipFile.Read(filePath))
-            {
-                if (zip["music.mp3"] == null)
-                {
-                    return null;
-                }
-                byte[] data = Utils.StreamToBytes(zip["music.mp3"].OpenReader());
-                Stream stream = new MemoryStream(data);
-                musicAudio = RuntimeAudioClipLoader.Manager.Load(stream, RuntimeAudioClipLoader.AudioFormat.mp3, "demo", false, true);
+            string[] targetFiles = { $"{name}.aiff", $"{name}.mp3", $"{name}.ogg", $"{name}.wav" };
 
-                return musicAudio;
+            Stream stream = null;
+            AudioFormat format = AudioFormat.unknown;
+            string fileExtension = null;
+
+            AudioClip audio = null;
+            //if (demoAudio != null)
+            //{
+            //    return demoAudio;
+            //}
+
+            if (loadFromFolder)
+            {
+                // Load from folder
+                if (TryGetContainFile(path, targetFiles, out string filePath))
+                {
+                    fileExtension = Path.GetExtension(filePath);
+                    stream = File.OpenRead(filePath);
+                }
             }
+            else
+            {
+                // load from .mdm
+                using (ZipFile zip = ZipFile.Read(path))
+                {
+                    if (TryGetContainFile(zip, targetFiles, out string fileName))
+                    {
+                        fileExtension = Path.GetExtension(fileName);
+                        // CrcCalculatorStream not support set_position, Read all bytes then convert to MemoryStream
+                        byte[] data = Utils.StreamToBytes(zip[fileName].OpenReader());
+                        stream = new MemoryStream(data);
+                    }
+                }
+            }
+            // Check audio format 
+            switch (fileExtension)
+            {
+                case ".aiff":
+                    format = AudioFormat.aiff;
+                    break;
+                case ".mp3":
+                    format = AudioFormat.mp3;
+                    break;
+                case ".ogg":
+                    format = AudioFormat.ogg;
+                    break;
+                case ".wav":
+                    format = AudioFormat.wav;
+                    break;
+                default:
+                    format = AudioFormat.unknown;
+                    break;
+            }
+            if(stream != null)
+            {
+                audio = RuntimeAudioClipLoader.Manager.Load(stream, format, name, false, true);
+                Cache(audio);
+            }
+            return audio;
         }
+        //public AudioClip GetMusicAudioClip()
+        //{
+        //    if (musicAudio != null)
+        //    {
+        //        return musicAudio;
+        //    }
+        //    using (ZipFile zip = ZipFile.Read(path))
+        //    {
+        //        if (zip["music.mp3"] == null)
+        //        {
+        //            return null;
+        //        }
+        //        byte[] data = Utils.StreamToBytes(zip["music.mp3"].OpenReader());
+        //        Stream stream = new MemoryStream(data);
+        //        musicAudio = RuntimeAudioClipLoader.Manager.Load(stream, RuntimeAudioClipLoader.AudioFormat.mp3, "demo", false, true);
+
+        //        return musicAudio;
+        //    }
+        //}
         public Sprite GetCoverSprite()
         {
+            string[] targetFiles = { "cover.png" };
+            // Load only once
             if (coverSprite != null)
             {
                 return coverSprite;
             }
-            // Load only once
-            using (ZipFile zip = ZipFile.Read(filePath))
+
+            Texture2D texture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+            if (loadFromFolder)
             {
-                if (zip["cover.png"] == null)
+                // Load from folder
+                if(TryGetContainFile(path, targetFiles, out string filePath))
                 {
-                    return null;
+                    ImageConversion.LoadImage(texture, File.ReadAllBytes(filePath));
                 }
-                Texture2D texture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
-                ImageConversion.LoadImage(texture, Utils.StreamToBytes(zip["cover.png"].OpenReader()));
-                coverSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(texture.width / 2, texture.height / 2));
-                
-                return coverSprite;
             }
+            else
+            {
+                // Load from zip
+                using (ZipFile zip = ZipFile.Read(path))
+                {
+                    if(TryGetContainFile(zip,targetFiles,out string file))
+                    {
+                        ImageConversion.LoadImage(texture, Utils.StreamToBytes(zip[file].OpenReader()));
+                    }
+                }
+            }
+            coverSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(texture.width / 2, texture.height / 2));
+            return coverSprite;
         }
         public StageInfo GetMap(int index)
         {
-            string target = $"map{index}.bms";
-            if (maps[index] != null)
+            string[] targetFiles = { $"map{index}.bms" };
+
+            if (loadFromFolder)
             {
-                return maps[index];
-            }
-            using (ZipFile zip = ZipFile.Read(filePath))
-            {
-                if (zip[target] == null)
+                // Load from folder
+                if (TryGetContainFile(path, targetFiles, out string filePath))
                 {
-                    return null;
+                    return GetStageInfo(File.ReadAllBytes(filePath), $"map{index}");
                 }
-                maps[index] = GetStageInfo(Utils.StreamToBytes(zip[target].OpenReader()), target);
-                return maps[index];
             }
+            else
+            {
+                // Load from zip
+                using (ZipFile zip = ZipFile.Read(path))
+                {
+                    if (TryGetContainFile(zip, targetFiles, out string file))
+                    {
+                        return GetStageInfo(Utils.StreamToBytes(zip[file].OpenReader()), $"map{index}");
+                    }
+                }
+            }
+            return null;
         }
         public static StageInfo GetStageInfo(byte[] bytes, string name)
         {
@@ -209,8 +295,42 @@ namespace MuseDashCustomAlbumMod
             ModLogger.Debug($"Delay: {musicConfigReader.delay}");
             return stageInfo;
         }
+        public static bool TryGetContainFile(string path, string[] fileNames, out string filePath)
+        {
+            foreach (var fileName in fileNames)
+            {
+                if (File.Exists($"{path}/{fileName}"))
+                {
+                    filePath = $"{path}/{fileName}";
+                    return true;
+                }
+            }
+            filePath = null;
+            return false;
+        }
+        public static bool TryGetContainFile(ZipFile zipEntries, string[] fileNames, out string file )
+        {
+            foreach (var fileName in fileNames)
+            {
+                if (zipEntries[fileName] != null)
+                {
+                    file = fileName;
+                    return true;
+                }
+            }
+            file = null;
+            return false;
+        }
+        public static void Cache(UnityEngine.Object obj)
+        {
+            if (objectCache != null)
+            {
+                UnityEngine.Object.DestroyImmediate(objectCache, true);
+                UnityEngine.Resources.UnloadUnusedAssets();
 
-
+            }
+            objectCache = obj;
+        }
         public override string ToString()
         {
             return

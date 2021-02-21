@@ -62,7 +62,7 @@ namespace MuseDashCustomAlbumMod
                         var uid = $"{CustomAlbum.MusicPackgeUid}-{idx}";
 
                         albumArray.Add(AddNewCustomMetadata(album, uid));
-                        album.Value.Uid = uid;
+                        album.Value.uid = uid;
                         idx++;
                     }
                     ___m_Dictionary.Add(name, albumArray);
@@ -269,13 +269,13 @@ namespace MuseDashCustomAlbumMod
                     // Load demo audio
                     if (type == typeof(UnityEngine.AudioClip) && name.EndsWith("_demo.mp3"))
                     {
-                        __result = albumInfo.GetDemoAudioClip();
+                        __result = albumInfo.GetAudioClip("demo");
                         return;
                     }
                     // Load full music audio
                     if (type == typeof(UnityEngine.AudioClip) && name.EndsWith("_music.mp3"))
                     {
-                        __result = albumInfo.GetMusicAudioClip();
+                        __result = albumInfo.GetAudioClip("music");
                         return;
                     }
                     // Load map

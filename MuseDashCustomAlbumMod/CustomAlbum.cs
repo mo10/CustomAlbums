@@ -62,18 +62,28 @@ namespace MuseDashCustomAlbumMod
                 // Create custom album path
                 Directory.CreateDirectory(AlbumPackPath);
             }
-
+            // Load *.mbm
             foreach (var file in Directory.GetFiles(AlbumPackPath, $"*.{AlbumPackExt}"))
             {
                 string fileName = Path.GetFileNameWithoutExtension(file);
                 var albumInfo = CustomAlbumInfo.LoadFromFile(file);
                 if (albumInfo != null)
                 {
-                    ModLogger.Debug($"Loaded {albumInfo}");
-                    Albums.Add(fileName, albumInfo);
+                    ModLogger.Debug($"Loaded archive:{albumInfo}");
+                    Albums.Add($"archive_{fileName}", albumInfo);
                 }
             }
-
+            // Load from folder
+            foreach (var folder  in Directory.GetDirectories(AlbumPackPath))
+            {
+                
+                var albumInfo = CustomAlbumInfo.LoadFromFolder(folder);
+                if (albumInfo != null)
+                {
+                    ModLogger.Debug($"Loaded folder:{albumInfo} {folder}");
+                    Albums.Add($"folder_{folder}", albumInfo);
+                }
+            }
         }
     }
 }
