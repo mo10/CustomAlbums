@@ -16,9 +16,9 @@ namespace MuseDashCustomAlbumMod
     {
         public static void DoPatching(Harmony harmony)
         {
-            MethodInfo methodIsCanPreparationOut = AccessTools.Method(typeof(Assets.Scripts.UI.Panels.PnlStage), "IsCanPreparationOut");
-            MethodInfo methodICPOPrefix = AccessTools.Method(typeof(ExtraPatch), "IsCanPreparationOutPrefix");
-            harmony.Patch(methodIsCanPreparationOut, new HarmonyMethod(methodICPOPrefix), null, null);
+            //MethodInfo methodIsCanPreparationOut = AccessTools.Method(typeof(Assets.Scripts.UI.Panels.PnlStage), "IsCanPreparationOut");
+            //MethodInfo methodICPOPrefix = AccessTools.Method(typeof(ExtraPatch), "IsCanPreparationOutPrefix");
+            //harmony.Patch(methodIsCanPreparationOut, new HarmonyMethod(methodICPOPrefix), null, null);
 
             //MethodInfo methodSetBgLockAction = AccessTools.Method(typeof(Assets.Scripts.UI.Panels.PnlStage), "SetBgLockAction");
             //MethodInfo methodSBLAPrefix = AccessTools.Method(typeof(ExtraPatch), "SetBgLockActionPrefix");
