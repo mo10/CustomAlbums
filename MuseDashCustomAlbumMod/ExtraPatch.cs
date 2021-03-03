@@ -69,6 +69,7 @@ namespace MuseDashCustomAlbumMod
         public static bool OnBattleEndPrefix()
         {
             // 禁用自定义谱面的成绩上传
+            ModHelper.ModLogger.Debug("Trying to disable score upload");
             if (Singleton<DataManager>.instance["Account"]["SelectedMusicUid"].GetResult<string>()
                 .StartsWith($"{CustomAlbum.MusicPackgeUid}-")) return false;
 
