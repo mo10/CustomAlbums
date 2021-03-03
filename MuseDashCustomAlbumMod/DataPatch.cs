@@ -62,6 +62,7 @@ namespace MuseDashCustomAlbumMod
                         var uid = $"{CustomAlbum.MusicPackgeUid}-{idx}";
 
                         albumArray.Add(AddNewCustomMetadata(album, uid));
+                        RegistCustomAlbumAssert(album);
                         album.Value.uid = uid;
                         idx++;
                     }
@@ -260,7 +261,7 @@ namespace MuseDashCustomAlbumMod
             {
                 if (customAssets.TryGetValue(name, out CustomAlbumInfo albumInfo))
                 {
-                    // Load cover image
+                    // Load cover image 
                     if (type == typeof(UnityEngine.Sprite))
                     {
                         __result = albumInfo.GetCoverSprite();
@@ -317,20 +318,6 @@ namespace MuseDashCustomAlbumMod
 
             metadata.Add("uid", uid);
 
-            // If set "name", ingore l10n options
-            if (valuePair.Value.name != null)
-                metadata.Add("name", valuePair.Value.name);
-            else
-                metadata.Add("name", valuePair.Value.name_zh_hans);
-
-            // If set "author", ingore l10n options
-            if (valuePair.Value.author != null)
-                metadata.Add("author", valuePair.Value.author);
-            else
-                metadata.Add("author", valuePair.Value.author_zh_hans);
-
-            metadata.Add("bpm", valuePair.Value.bpm);
-
             // Custom_Albums_package_music
             string path = $"{CustomAlbum.AlbumPackPath}_{valuePair.Key}".Replace('\\', '_').Replace('/', '_').Replace('.', '_');
             metadata.Add("music", $"{path}_music");
@@ -338,42 +325,99 @@ namespace MuseDashCustomAlbumMod
             metadata.Add("cover", $"{path}_cover");
             metadata.Add("noteJson", $"{path}_map");
             metadata.Add("scene", valuePair.Value.scene);
+            metadata.Add("bpm", valuePair.Value.bpm);
+
+            // If set "name", ingore l10n options
+            if (!string.IsNullOrEmpty(valuePair.Value.name))
+            {
+                metadata.Add("name", valuePair.Value.name);
+            }
+            else
+            {
+                metadata.Add("name", valuePair.Value.name_zh_hans);
+            }
+            // If set "author", ingore l10n options
+            if (!string.IsNullOrEmpty(valuePair.Value.author))
+            {
+                metadata.Add("author", valuePair.Value.author);
+            }
+            else
+            {
+                metadata.Add("author", valuePair.Value.author_zh_hans);
+            }
+
+            if(!string.IsNullOrEmpty(valuePair.Value.levelDesigner))
+            {
+                metadata.Add("levelDesigner", valuePair.Value.levelDesigner);
+            }
+            else
+            {
+                if (!string.IsNullOrEmpty(valuePair.Value.levelDesigner1))
+                {
+                    metadata.Add("levelDesigner1", valuePair.Value.levelDesigner1);
+                }
+                if (!string.IsNullOrEmpty(valuePair.Value.levelDesigner2))
+                {
+                    metadata.Add("levelDesigner2", valuePair.Value.levelDesigner2);
+                }
+                if (!string.IsNullOrEmpty(valuePair.Value.levelDesigner3))
+                {
+                    metadata.Add("levelDesigner3", valuePair.Value.levelDesigner3);
+                }
+                if (!string.IsNullOrEmpty(valuePair.Value.levelDesigner4))
+                {
+                    metadata.Add("levelDesigner4", valuePair.Value.levelDesigner4);
+                }
+            }
+            if (!string.IsNullOrEmpty(valuePair.Value.difficulty1))
+            {
+                metadata.Add("difficulty1", valuePair.Value.difficulty1);
+            }
+            if (!string.IsNullOrEmpty(valuePair.Value.difficulty2))
+            {
+                metadata.Add("difficulty2", valuePair.Value.difficulty2);
+            }
+            if (!string.IsNullOrEmpty(valuePair.Value.difficulty3))
+            {
+                metadata.Add("difficulty3", valuePair.Value.difficulty3);
+            }
+            if (!string.IsNullOrEmpty(valuePair.Value.difficulty4))
+            {
+                metadata.Add("difficulty4", valuePair.Value.difficulty4);
+            }
+
+            metadata.Add("unlockLevel", valuePair.Value.unlockLevel);
+
+
+
+            ModLogger.Debug(metadata);
+            return metadata;
+        }
+
+        public static void RegistCustomAlbumAssert(KeyValuePair<string, CustomAlbumInfo> valuePair)
+        {
+            string path = $"{CustomAlbum.AlbumPackPath}_{valuePair.Key}".Replace('\\', '_').Replace('/', '_').Replace('.', '_');
 
             // Regist asset path
             customAssets.Add($"Assets/Static Resources/{path}_music.mp3", valuePair.Value);
             customAssets.Add($"Assets/Static Resources/{path}_demo.mp3", valuePair.Value);
             customAssets.Add($"Assets/Static Resources/{path}_cover.png", valuePair.Value);
-            if(valuePair.Value.difficulty1 != null)
+            if (!string.IsNullOrEmpty(valuePair.Value.difficulty1))
+            {
                 customAssets.Add($"Assets/Static Resources/{path}_map1.bms", valuePair.Value);
-            if (valuePair.Value.difficulty2 != null)
+            }
+            if (!string.IsNullOrEmpty(valuePair.Value.difficulty2))
+            {
                 customAssets.Add($"Assets/Static Resources/{path}_map2.bms", valuePair.Value);
-            if (valuePair.Value.difficulty3 != null)
+            }
+            if (!string.IsNullOrEmpty(valuePair.Value.difficulty3))
+            {
                 customAssets.Add($"Assets/Static Resources/{path}_map3.bms", valuePair.Value);
-            if (valuePair.Value.difficulty4 != null)
+            }
+            if (!string.IsNullOrEmpty(valuePair.Value.difficulty4))
+            {
                 customAssets.Add($"Assets/Static Resources/{path}_map4.bms", valuePair.Value);
-
-            if (valuePair.Value.levelDesigner1 != null || valuePair.Value.levelDesigner1 != "")
-            {
-                // level designer of difficulty 1 to 4 
-                metadata.Add("levelDesigner1", valuePair.Value.levelDesigner1);
-                metadata.Add("levelDesigner2", valuePair.Value.levelDesigner2);
-                metadata.Add("levelDesigner3", valuePair.Value.levelDesigner3);
-                metadata.Add("levelDesigner4", valuePair.Value.levelDesigner4);
             }
-            else
-            {
-                // level designer of all difficulties
-                metadata.Add("levelDesigner", valuePair.Value.levelDesigner);
-            }
-
-            metadata.Add("difficulty1", valuePair.Value.difficulty1);
-            metadata.Add("difficulty2", valuePair.Value.difficulty2);
-            metadata.Add("difficulty3", valuePair.Value.difficulty3);
-            metadata.Add("difficulty4", valuePair.Value.difficulty4);
-
-            metadata.Add("unlockLevel", valuePair.Value.unlockLevel);
-
-            return metadata;
         }
     }
 }
