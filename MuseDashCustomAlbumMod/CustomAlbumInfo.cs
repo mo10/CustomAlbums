@@ -242,7 +242,7 @@ namespace MuseDashCustomAlbumMod
                 // Load from folder
                 if (TryGetContainFile(path, targetFiles, out string filePath))
                 {
-                    return GetStageInfo(File.ReadAllBytes(filePath), $"map{index}");
+                    return GetStageInfo(File.ReadAllBytes(filePath), index);
                 }
             }
             else
@@ -252,20 +252,20 @@ namespace MuseDashCustomAlbumMod
                 {
                     if (TryGetContainFile(zip, targetFiles, out string file))
                     {
-                        return GetStageInfo(Utils.StreamToBytes(zip[file].OpenReader()), $"map{index}");
+                        return GetStageInfo(Utils.StreamToBytes(zip[file].OpenReader()), index);
                     }
                 }
             }
             return null;
         }
-        public static StageInfo GetStageInfo(byte[] bytes, string name)
+        public static StageInfo GetStageInfo(byte[] bytes, int map_index)
         {
             /* 1.加载bms
              * 2.转换为MusicData
              * 3.创建StageInfo
              * */
 
-            var bms = MyBMSCManager.instance.Load(bytes, name);
+            var bms = MyBMSCManager.instance.Load(bytes, $"map_{map_index}");
 
             if (bms == null)
             {
@@ -287,7 +287,7 @@ namespace MuseDashCustomAlbumMod
                 mapName = (string)musicConfigReader.bms.info["TITLE"],
                 music = ((string)musicConfigReader.bms.info["WAV10"]).BeginBefore('.'),
                 scene = (string)musicConfigReader.bms.info["GENRE"],
-                difficulty = int.Parse((string)musicConfigReader.bms.info["RANK"]),
+                difficulty = map_index,
                 bpm = musicConfigReader.bms.GetBpm(),
                 md5 = musicConfigReader.bms.md5,
                 sceneEvents = musicConfigReader.sceneEvents
@@ -326,8 +326,6 @@ namespace MuseDashCustomAlbumMod
             if (objectCache != null)
             {
                 UnityEngine.Object.DestroyImmediate(objectCache, true);
-                UnityEngine.Resources.UnloadUnusedAssets();
-
             }
             objectCache = obj;
         }
