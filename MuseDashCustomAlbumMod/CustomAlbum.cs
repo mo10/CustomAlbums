@@ -66,23 +66,36 @@ namespace MuseDashCustomAlbumMod
             // Load *.mbm
             foreach (var file in Directory.GetFiles(AlbumPackPath, $"*.{AlbumPackExt}"))
             {
-                string fileName = Path.GetFileNameWithoutExtension(file);
-                var albumInfo = CustomAlbumInfo.LoadFromFile(file);
-                if (albumInfo != null)
+                try
                 {
-                    ModLogger.Debug($"Loaded archive:{albumInfo}");
-                    Albums.Add($"archive_{fileName}", albumInfo);
+                    string fileName = Path.GetFileNameWithoutExtension(file);
+                    var albumInfo = CustomAlbumInfo.LoadFromFile(file);
+                    if (albumInfo != null)
+                    {
+                        ModLogger.Debug($"Loaded archive:{albumInfo}");
+                        Albums.Add($"archive_{fileName}", albumInfo);
+                    }
+                }catch(Exception ex)
+                {
+                    ModLogger.Debug($"Load archive failed:{file},reason:{ex}");
                 }
+
             }
             // Load from folder
-            foreach (var folder  in Directory.GetDirectories(AlbumPackPath))
+            foreach (var folder in Directory.GetDirectories(AlbumPackPath))
             {
-                
-                var albumInfo = CustomAlbumInfo.LoadFromFolder(folder);
-                if (albumInfo != null)
+                try
                 {
-                    ModLogger.Debug($"Loaded folder:{albumInfo} {folder}");
-                    Albums.Add($"folder_{folder}", albumInfo);
+                    var albumInfo = CustomAlbumInfo.LoadFromFolder(folder);
+                    if (albumInfo != null)
+                    {
+                        ModLogger.Debug($"Loaded folder:{albumInfo} {folder}");
+                        Albums.Add($"folder_{folder.Remove(0, AlbumPackPath.Length+1)}", albumInfo);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    ModLogger.Debug($"Load folder failed:{folder},reason:{ex}");
                 }
             }
         }
