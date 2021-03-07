@@ -32,28 +32,29 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="0Harmony, Version=2.0.0.8, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="0Harmony">
       <HintPath>..\packages\Lib.Harmony.2.0.0.8\lib\net35\0Harmony.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp">
-      <HintPath>D:\SteamLibrary\steamapps\common\Muse Dash\MuseDash_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <HintPath>E:\Game\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\Assembly-CSharp.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
-      <HintPath>D:\SteamLibrary\steamapps\common\Muse Dash\MuseDash_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <HintPath>E:\Game\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="DotNetZip, Version=1.12.0.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
       <HintPath>..\packages\DotNetZip.1.12.0\lib\net20\DotNetZip.dll</HintPath>
-      <Private>False</Private>
     </Reference>
     <Reference Include="ModHelper">
-      <HintPath>D:\SteamLibrary\steamapps\common\Muse Dash\ModHelper.dll</HintPath>
+      <HintPath>E:\Game\Steam\steamapps\common\Muse Dash\ModHelper.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="ModLoader">
+      <HintPath>E:\Game\Steam\steamapps\common\Muse Dash\ModLoader.dll</HintPath>
+    </Reference>
     <Reference Include="NAudio">
-      <HintPath>D:\SteamLibrary\steamapps\common\Muse Dash\MuseDash_Data\Managed\NAudio.dll</HintPath>
+      <HintPath>E:\Game\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\NAudio.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -61,15 +62,15 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="Sirenix.Serialization">
-      <HintPath>D:\SteamLibrary\steamapps\common\Muse Dash\MuseDash_Data\Managed\Sirenix.Serialization.dll</HintPath>
+      <HintPath>E:\Game\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\Sirenix.Serialization.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sirenix.Serialization.Config">
-      <HintPath>D:\SteamLibrary\steamapps\common\Muse Dash\MuseDash_Data\Managed\Sirenix.Serialization.Config.dll</HintPath>
+      <HintPath>E:\Game\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\Sirenix.Serialization.Config.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sirenix.Utilities">
-      <HintPath>D:\SteamLibrary\steamapps\common\Muse Dash\MuseDash_Data\Managed\Sirenix.Utilities.dll</HintPath>
+      <HintPath>E:\Game\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\Sirenix.Utilities.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -79,27 +80,27 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
     <Reference Include="UnityEngine">
-      <HintPath>D:\SteamLibrary\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.dll</HintPath>
+      <HintPath>E:\Game\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.AudioModule">
-      <HintPath>D:\SteamLibrary\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
+      <HintPath>E:\Game\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
-      <HintPath>D:\SteamLibrary\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <HintPath>E:\Game\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.ImageConversionModule">
-      <HintPath>D:\SteamLibrary\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+      <HintPath>E:\Game\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UI">
-      <HintPath>D:\SteamLibrary\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <HintPath>E:\Game\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.UnityWebRequestWWWModule">
-      <HintPath>D:\SteamLibrary\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+      <HintPath>E:\Game\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>
@@ -116,7 +117,9 @@
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
     <EmbeddedResource Include="Resources\EmptyAssetBundle" />
   </ItemGroup>
   <ItemGroup>
