@@ -2,22 +2,22 @@
 using Assets.Scripts.PeroTools.GeneralLocalization;
 using Assets.Scripts.PeroTools.GeneralLocalization.Modles;
 using Assets.Scripts.PeroTools.Nice.Variables;
-using Assets.Scripts.UI.Controls;
 using Assets.Scripts.UI.Panels;
+using HarmonyLib;
 using ModHelper;
+using MuseDashCustomAlbumMod.Managers;
+using MuseDashCustomAlbumMod.Utils;
 using System;
 using System.Collections.Generic;
-using UnityEngine.UI;
-
 using UnityEngine;
-using HarmonyLib;
+using UnityEngine.UI;
 
 namespace MuseDashCustomAlbumMod
 {
     public static class StageUIPatch
     {
-        public static readonly string AlbumTagUid = "custom";
-        public static readonly string AlbumTagGameObjectName = "AlbumTagCell_Custom";
+        public const string AlbumTagUid = "custom";
+        public const string AlbumTagGameObjectName = "AlbumTagCell_Custom";
 
         public static void DoPatching(Harmony harmony)
         {
@@ -47,10 +47,10 @@ namespace MuseDashCustomAlbumMod
         public static void RangeStageListPostfix(ref List<string> ___m_AllOtherAlbumUid, ref List<string> ___m_AllOtherAlbumName_Re, ref List<string> ___m_AllOtherAlbumUid_Re, ref List<string> ___m_AllOtherAlbumName, ref List<PnlStage.albumInfo> ___m_AllAlbumTagData)
         {
             // Rebind data
-            ___m_AllOtherAlbumUid.Remove(CustomAlbum.JsonName);
-            ___m_AllOtherAlbumName.Remove(CustomAlbum.MusicPackge);
-            ___m_AllOtherAlbumUid_Re.Remove(CustomAlbum.JsonName);
-            ___m_AllOtherAlbumName_Re.Remove(CustomAlbum.MusicPackge);
+            ___m_AllOtherAlbumUid.Remove(CustomInfoManager.JsonName);
+            ___m_AllOtherAlbumName.Remove(CustomInfoManager.MusicPackge);
+            ___m_AllOtherAlbumUid_Re.Remove(CustomInfoManager.JsonName);
+            ___m_AllOtherAlbumName_Re.Remove(CustomInfoManager.MusicPackge);
 
             ___m_AllAlbumTagData[7].list = ___m_AllOtherAlbumUid;
             ___m_AllAlbumTagData[7].nameList = ___m_AllOtherAlbumName;
@@ -61,7 +61,7 @@ namespace MuseDashCustomAlbumMod
             string activeOption = SingletonScriptableObject<LocalizationSettings>.instance.GetActiveOption("Language");
             if (albumUid == AlbumTagUid)
             {
-                __result = CustomAlbum.Languages[activeOption];
+                __result = CustomInfoManager.GetTitltTextFromLanguages(activeOption);
             }
         }
 
@@ -82,11 +82,11 @@ namespace MuseDashCustomAlbumMod
                 var txtTagGameObject = cloneGameObject.transform.Find("TxtTagName");
                 if (txtTagGameObject != null)
                 {
-                    txtTagGameObject.GetComponent<UnityEngine.UI.Text>().text = CustomAlbum.Languages[activeOption];
+                    txtTagGameObject.GetComponent<UnityEngine.UI.Text>().text = CustomInfoManager.GetTitltTextFromLanguages(activeOption);
                     var l10n = txtTagGameObject.GetComponent<Localization>();
                     foreach (var opt in l10n.optionPairs)
                     {
-                        ((TextOption)opt.option).value = CustomAlbum.Languages[opt.optionEntry.name];
+                        ((TextOption)opt.option).value = CustomInfoManager.GetTitltTextFromLanguages(opt.optionEntry.name);
                         //ModLogger.Debug($" opt:{opt.optionEntry.name}  val:{((TextOption)opt.option).value}");
                     }
                 }
@@ -102,7 +102,7 @@ namespace MuseDashCustomAlbumMod
 
                         iconGameObject.name = "ImgCustom";
                         // Load default image from embedded resources.
-                        ImageConversion.LoadImage(newTex, Utils.ReadEmbeddedFile("Resources.AlbumIcon.png"));
+                        ImageConversion.LoadImage(newTex, OtherUtils.ReadEmbeddedFile("Resources.AlbumIcon.png"));
                         newTex.filterMode = FilterMode.Point;
                         newSprite = Sprite.Create(newTex, new Rect(0, 0, newTex.width, newTex.height), new Vector2(0, 0), 100);
                         newSprite.name = "ImgCustom";
@@ -125,9 +125,9 @@ namespace MuseDashCustomAlbumMod
             m_AllAlbumTagData.Add(new PnlStage.albumInfo
             {
                 uid = AlbumTagUid,
-                name = CustomAlbum.Languages["ChineseS"],
-                list = new List<string>() { CustomAlbum.JsonName },
-                nameList = new List<string>() { CustomAlbum.MusicPackge },
+                name = CustomInfoManager.GetTitltTextFromLanguages("ChineseS"),
+                list = new List<string>() { CustomInfoManager.JsonName },
+                nameList = new List<string>() { CustomInfoManager.MusicPackge },
                 isWeekFree = false,
                 isNew = false
             });

@@ -9,9 +9,9 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-namespace MuseDashCustomAlbumMod
+namespace MuseDashCustomAlbumMod.Utils
 {
-    public static class Utils
+    public static class OtherUtils
     {
         /// <summary>
         /// Read embedded file from this dll
@@ -50,12 +50,7 @@ namespace MuseDashCustomAlbumMod
             }
         }
 
-        public static T StreamToJson<T>(Stream steamReader)
-        {
-            var buffer = new byte[steamReader.Length];
-            steamReader.Read(buffer, 0, buffer.Length);
-            return JsonConvert.DeserializeObject<T>(Encoding.Default.GetString(buffer));
-        }
+        
         public static byte[] StreamToBytes(Stream steamReader)
         {
             var buffer = new byte[steamReader.Length];

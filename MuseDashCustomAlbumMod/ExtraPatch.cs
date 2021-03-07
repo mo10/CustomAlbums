@@ -9,6 +9,7 @@ using Assets.Scripts.PeroTools.Nice.Interface;
 using Assets.Scripts.PeroTools.Nice.Variables;
 using Assets.Scripts.UI.Panels;
 using HarmonyLib;
+using MuseDashCustomAlbumMod.Managers;
 
 namespace MuseDashCustomAlbumMod
 {
@@ -16,14 +17,6 @@ namespace MuseDashCustomAlbumMod
     {
         public static void DoPatching(Harmony harmony)
         {
-            //MethodInfo methodIsCanPreparationOut = AccessTools.Method(typeof(Assets.Scripts.UI.Panels.PnlStage), "IsCanPreparationOut");
-            //MethodInfo methodICPOPrefix = AccessTools.Method(typeof(ExtraPatch), "IsCanPreparationOutPrefix");
-            //harmony.Patch(methodIsCanPreparationOut, new HarmonyMethod(methodICPOPrefix), null, null);
-
-            //MethodInfo methodSetBgLockAction = AccessTools.Method(typeof(Assets.Scripts.UI.Panels.PnlStage), "SetBgLockAction");
-            //MethodInfo methodSBLAPrefix = AccessTools.Method(typeof(ExtraPatch), "SetBgLockActionPrefix");
-            //harmony.Patch(methodSetBgLockAction, new HarmonyMethod(methodSBLAPrefix), null, null);
-
             MethodInfo methodOnBattleEnd = AccessTools.Method(typeof(Assets.Scripts.GameCore.Managers.StatisticsManager), "OnBattleEnd");
             MethodInfo methodOBEPrefix = AccessTools.Method(typeof(ExtraPatch), "OnBattleEndPrefix");
             harmony.Patch(methodOnBattleEnd, new HarmonyMethod(methodOBEPrefix), null, null);
@@ -36,7 +29,7 @@ namespace MuseDashCustomAlbumMod
         public static bool IsCanPreparationOutPrefix(PnlStage __instance, ref bool __result)
         {
             // 解除自定义谱面的上锁状态
-            if (__instance.GetSelectedMusicAlbumJsonName() == CustomAlbum.JsonName)
+            if (__instance.GetSelectedMusicAlbumJsonName() == CustomInfoManager.JsonName)
             {
                 __result = true;
                 return false;
@@ -50,7 +43,7 @@ namespace MuseDashCustomAlbumMod
             // 解除自定义谱面的上锁背景
             ModHelper.ModLogger.Debug("Try Set BGLockAction");
             ModHelper.ModLogger.Debug(__instance.GetSelectedMusicAlbumJsonName());
-            if (__instance.GetSelectedMusicAlbumJsonName() == CustomAlbum.JsonName)
+            if (__instance.GetSelectedMusicAlbumJsonName() == CustomInfoManager.JsonName)
             {
                 ModHelper.ModLogger.Debug("Set BGLockAction");
                 __instance.bgAlbumLock.SetActive(false);
@@ -70,7 +63,7 @@ namespace MuseDashCustomAlbumMod
         {
             // 禁用自定义谱面的成绩上传
             if (Singleton<DataManager>.instance["Account"]["SelectedMusicUid"].GetResult<string>()
-                .StartsWith($"{CustomAlbum.MusicPackgeUid}-")) return false;
+                .StartsWith($"{CustomInfoManager.MUSIC_PACKGE_UID}-")) return false;
 
             return true;
         }
@@ -78,7 +71,7 @@ namespace MuseDashCustomAlbumMod
         public static void ChangeMusicPostfix(PnlStage __instance)
         {
             // 禁用掉收藏按钮
-            if (__instance.GetSelectedMusicAlbumJsonName() == CustomAlbum.JsonName)
+            if (__instance.GetSelectedMusicAlbumJsonName() == CustomInfoManager.JsonName)
             {
                 //__instance.difficulty3Lock.SetActive(false);
                 //__instance.difficulty3Master.SetActive(__instance.difficulty3.text != "0");

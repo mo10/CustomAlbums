@@ -5,12 +5,15 @@ using Assets.Scripts.PeroTools.GeneralLocalization;
 using Assets.Scripts.PeroTools.Managers;
 using HarmonyLib;
 using ModHelper;
+using MuseDashCustomAlbumMod.Managers;
 using Newtonsoft.Json.Linq;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using MuseDashCustomAlbumMod.Utils;
 using UnityEngine;
 
 namespace MuseDashCustomAlbumMod
@@ -46,10 +49,10 @@ namespace MuseDashCustomAlbumMod
             try
             {
                 // Load <CustomAlbum.JsonName>.json
-                if (!localization && name == CustomAlbum.JsonName)
+                if (!localization && name == CustomInfoManager.JsonName)
                 {
                     // Already loaded?
-                    if (___m_Dictionary.ContainsKey(CustomAlbum.JsonName))
+                    if (___m_Dictionary.ContainsKey(CustomInfoManager.JsonName))
                     {
                         return;
                     }
@@ -57,9 +60,9 @@ namespace MuseDashCustomAlbumMod
                     ModLogger.Debug($"Inject Json: {name}");
                     var albumArray = new JArray();
                     int idx = 0;
-                    foreach (var album in CustomAlbum.Albums)
+                    foreach (var album in CustomInfoManager.GetAlbumInfoDic())
                     {
-                        var uid = $"{CustomAlbum.MusicPackgeUid}-{idx}";
+                        var uid = $"{CustomInfoManager.MUSIC_PACKGE_UID}-{idx}";
 
                         albumArray.Add(AddNewCustomMetadata(album, uid));
                         RegistCustomAlbumAssert(album);
@@ -71,7 +74,7 @@ namespace MuseDashCustomAlbumMod
                 }
                 // Load custom album localization
                 // Inject <CustomAlbum.JsonName>_<lang>.json
-                string jsonLanguage = $"{CustomAlbum.JsonName}_{activeOption}";
+                string jsonLanguage = $"{CustomInfoManager.JsonName}_{activeOption}";
                 if (localization && name == jsonLanguage)
                 {
                     // Check if already loaded
@@ -80,37 +83,38 @@ namespace MuseDashCustomAlbumMod
                         return;
                     }
                     var albumArray = new JArray();
-                    foreach (var album in CustomAlbum.Albums)
+                    foreach (var albumKvp in CustomInfoManager.GetAlbumInfoDic())
                     {
+                        var album = albumKvp.Value;
                         var lang = new JObject();
                         string albumName = null, albumAuthor = null;
                         switch (activeOption)
                         {
                             case "ChineseT":
-                                albumName = album.Value.name_zh_hant;
-                                albumAuthor = album.Value.author_zh_hant;
+                                albumName = album.name_zh_hant;
+                                albumAuthor = album.author_zh_hant;
                                 break;
                             case "ChineseS":
-                                albumName = album.Value.name_zh_hans;
-                                albumAuthor = album.Value.author_zh_hans;
+                                albumName = album.name_zh_hans;
+                                albumAuthor = album.author_zh_hans;
                                 break;
                             case "English":
-                                albumName = album.Value.name_en;
-                                albumAuthor = album.Value.author_en;
+                                albumName = album.name_en;
+                                albumAuthor = album.author_en;
                                 break;
                             case "Korean":
-                                albumName = album.Value.name_ko;
-                                albumAuthor = album.Value.author_ko;
+                                albumName = album.name_ko;
+                                albumAuthor = album.author_ko;
                                 break;
                             case "Japanese":
-                                albumName = album.Value.name_ja;
-                                albumAuthor = album.Value.author_ja;
+                                albumName = album.name_ja;
+                                albumAuthor = album.author_ja;
                                 break;
                         }
-                        if (album.Value.name != null)
-                            albumName = album.Value.name;
-                        if (album.Value.author != null)
-                            albumAuthor = album.Value.author;
+                        if (album.name != null)
+                            albumName = album.name;
+                        if (album.author != null)
+                            albumAuthor = album.author;
                         lang.Add("name", albumName);
                         lang.Add("author", albumAuthor);
                         albumArray.Add(lang);
@@ -139,15 +143,15 @@ namespace MuseDashCustomAlbumMod
                     // Check if already loaded
                     foreach (var obj in ___m_Dictionary[albums_lang])
                     {
-                        if (obj.Value<string>("title") == CustomAlbum.Languages[activeOption])
+                        if (obj.Value<string>("title") == CustomInfoManager.GetTitltTextFromLanguages(activeOption))
                         {
                             return;
                         }
                     }
                     // Add custom l10n title
-                    ModLogger.Debug($"Add custom l10n title: {CustomAlbum.Languages[activeOption]}");
+                    ModLogger.Debug($"Add custom l10n title: {CustomInfoManager.GetTitltTextFromLanguages(activeOption)}");
                     var album_lang = new JObject();
-                    album_lang.Add("title", CustomAlbum.Languages[activeOption]);
+                    album_lang.Add("title", CustomInfoManager.GetTitltTextFromLanguages(activeOption));
 
                     ___m_Dictionary[albums_lang].Add(album_lang);
                     // return new result
@@ -161,7 +165,7 @@ namespace MuseDashCustomAlbumMod
                     // Check if already loaded
                     foreach (var obj in ___m_Dictionary[name])
                     {
-                        if (obj.Value<string>("uid") == CustomAlbum.MusicPackge)
+                        if (obj.Value<string>("uid") == CustomInfoManager.MusicPackge)
                         {
                             return;
                         }
@@ -169,11 +173,11 @@ namespace MuseDashCustomAlbumMod
                     // Add custom title
                     ModLogger.Debug($"Add custom album json");
                     var album = new JObject();
-                    album.Add("uid", CustomAlbum.MusicPackge);
+                    album.Add("uid", CustomInfoManager.MusicPackge);
                     album.Add("title", "Custom Albums");
                     album.Add("prefabsName", "AlbumDiscoNew");
                     album.Add("price", "¥25.00");
-                    album.Add("jsonName", CustomAlbum.JsonName);
+                    album.Add("jsonName", CustomInfoManager.JsonName);
                     album.Add("needPurchase", false);
                     album.Add("free", true);
 
@@ -199,21 +203,21 @@ namespace MuseDashCustomAlbumMod
                     if (___m_LoadedAssetBundles[assetBundleName].assetBundle == null)
                     {
                         ModLogger.Debug($"Load empty asset bundle");
-                        ___m_LoadedAssetBundles[assetBundleName].assetBundle = AssetBundle.LoadFromMemory(Utils.ReadEmbeddedFile("Resources.EmptyAssetBundle"));
+                        ___m_LoadedAssetBundles[assetBundleName].assetBundle = AssetBundle.LoadFromMemory(OtherUtils.ReadEmbeddedFile("Resources.EmptyAssetBundle"));
                     }
             }
         }
         public static void GetAssetBundlePrefix(string assetPath, Type type)
         {
-            if (assetPath != null && assetPath.StartsWith(CustomAlbum.AlbumPackPath))
+            if (assetPath != null && assetPath.StartsWith(CustomInfoManager.ALBUM_PACK_PATH))
             {
                 var dict = SingletonScriptableObject<AssetBundleConfigManager>.instance.dict;
                 string dictKey = Path.GetFileNameWithoutExtension(assetPath);
 
                 // Create new ABConfig
                 AssetBundleConfigManager.ABConfig newABConfig = new AssetBundleConfigManager.ABConfig();
-                newABConfig.directory = CustomAlbum.AlbumPackPath;
-                newABConfig.abName = CustomAlbum.AlbumPackPath;
+                newABConfig.directory = CustomInfoManager.ALBUM_PACK_PATH;
+                newABConfig.abName = CustomInfoManager.ALBUM_PACK_PATH;
                 newABConfig.directory = "";
                 newABConfig.fileName = assetPath;
 
@@ -262,49 +266,46 @@ namespace MuseDashCustomAlbumMod
                 if (customAssets.TryGetValue(name, out CustomAlbumInfo albumInfo))
                 {
                     // Load cover image 
-                    if (type == typeof(UnityEngine.Sprite))
+                    if (type == typeof(Sprite))
                     {
                         __result = albumInfo.GetCoverSprite();
-                        return;
                     }
-                    // Load demo audio
-                    if (type == typeof(UnityEngine.AudioClip) && name.EndsWith("_demo.mp3"))
+                    // Load audio
+                    else if (type == typeof(AudioClip))
                     {
-                        __result = albumInfo.GetAudioClip("demo");
-                        return;
-                    }
-                    // Load full music audio
-                    if (type == typeof(UnityEngine.AudioClip) && name.EndsWith("_music.mp3"))
-                    {
-                        __result = albumInfo.GetAudioClip("music");
-                        return;
+                        if (name.EndsWith("_demo.mp3"))
+                        {
+                            __result = albumInfo.GetAudioClip("demo");
+                        }
+                        else if (name.EndsWith("_music.mp3"))
+                        {
+                            __result = albumInfo.GetAudioClip("music");
+                        }
                     }
                     // Load map
-                    if (type == typeof(StageInfo))
+                    else if (type == typeof(StageInfo))
                     {
                         if (name.EndsWith("_map1.bms"))
                         {
                             __result = albumInfo.GetMap(1);
-                            return;
                         }
-                        if (name.EndsWith("_map2.bms"))
+                        else if (name.EndsWith("_map2.bms"))
                         {
                             __result = albumInfo.GetMap(2);
-                            return;
                         }
-                        if (name.EndsWith("_map3.bms"))
+                        else if (name.EndsWith("_map3.bms"))
                         {
                             __result = albumInfo.GetMap(3);
-                            return;
                         }
-                        if (name.EndsWith("_map4.bms"))
+                        else if (name.EndsWith("_map4.bms"))
                         {
                             __result = albumInfo.GetMap(4);
-                            return;
                         }
                     }
                 }
-                ModLogger.Debug($"Asset not found: {name} type: {type}");
+
+                if(__result == null)
+                    ModLogger.Debug($"Asset not found: {name} type: {type}");
             }
         }
 
@@ -319,7 +320,7 @@ namespace MuseDashCustomAlbumMod
             metadata.Add("uid", uid);
 
             // Custom_Albums_package_music
-            string path = $"{CustomAlbum.AlbumPackPath}_{valuePair.Key}".Replace('\\', '_').Replace('/', '_').Replace('.', '_');
+            string path = $"{CustomInfoManager.ALBUM_PACK_PATH}_{valuePair.Key}".Replace('\\', '_').Replace('/', '_').Replace('.', '_');
             metadata.Add("music", $"{path}_music");
             metadata.Add("demo", $"{path}_demo");
             metadata.Add("cover", $"{path}_cover");
@@ -396,7 +397,7 @@ namespace MuseDashCustomAlbumMod
 
         public static void RegistCustomAlbumAssert(KeyValuePair<string, CustomAlbumInfo> valuePair)
         {
-            string path = $"{CustomAlbum.AlbumPackPath}_{valuePair.Key}".Replace('\\', '_').Replace('/', '_').Replace('.', '_');
+            string path = $"{CustomInfoManager.ALBUM_PACK_PATH}_{valuePair.Key}".Replace('\\', '_').Replace('/', '_').Replace('.', '_');
 
             // Regist asset path
             customAssets.Add($"Assets/Static Resources/{path}_music.mp3", valuePair.Value);

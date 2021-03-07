@@ -5,6 +5,7 @@ using Assets.Scripts.PeroTools.Nice.Interface;
 using Assets.Scripts.UI.Panels;
 using HarmonyLib;
 using ModHelper;
+using MuseDashCustomAlbumMod.Managers;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,7 @@ namespace MuseDashCustomAlbumMod
 
             var refresh = AccessTools.Method(typeof(PnlRank), "Refresh");
             var refreshTranspiler = AccessTools.Method(typeof(ScorePatch), "RefreshTranspiler");
-            harmony.Patch(refresh,transpiler: new HarmonyMethod(refreshTranspiler));
+            harmony.Patch(refresh, transpiler: new HarmonyMethod(refreshTranspiler));
         }
         public static bool GetRanksPrefix(string musicUid, int difficulty, Action<JToken, JToken, int> callback, Action<string> failCallback)
         {
@@ -34,7 +35,7 @@ namespace MuseDashCustomAlbumMod
 			//string url = text2;
 			//string method = "GET";
 
-            if (musicUid.StartsWith(CustomAlbum.MusicPackgeUid.ToString()))
+            if (musicUid.StartsWith(CustomInfoManager.MUSIC_PACKGE_UID.ToString()))
             {
                 ModLogger.Debug($"Disable rank, MusicUid:{musicUid} difficulty:{difficulty}");
                 failCallback("Custom");
