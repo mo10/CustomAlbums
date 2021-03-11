@@ -284,6 +284,7 @@ namespace MuseDashCustomAlbumMod
             StageInfo stageInfo = new StageInfo
             {
                 musicDatas = info,
+                delay = musicConfigReader.delay,
                 mapName = (string)musicConfigReader.bms.info["TITLE"],
                 music = ((string)musicConfigReader.bms.info["WAV10"]).BeginBefore('.'),
                 scene = (string)musicConfigReader.bms.info["GENRE"],
