@@ -6,3 +6,5 @@ packages
 MonoLibs/*.dll
 MonoLibs/*.xml
 output
+Il2CppLibs/*.dll
+Il2CppLibs/*.xml

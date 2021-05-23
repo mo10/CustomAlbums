@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using MelonLoader;
 
 namespace MuseDashCustomAlbumMod
@@ -72,6 +73,23 @@ namespace MuseDashCustomAlbumMod
                 {
                     MelonLogger.Msg($"Load folder failed:{folder},reason:{ex}");
                 }
+        }
+
+        public static void LoadDependencies()
+        {
+            try
+            {
+                Assembly.Load(Utils.ReadEmbeddedFile("Depends.I18N.dll"));
+                Assembly.Load(Utils.ReadEmbeddedFile("Depends.I18N.West.dll"));
+                Assembly.Load(Utils.ReadEmbeddedFile("Depends.I18N.CJK.dll"));
+                Assembly.Load(Utils.ReadEmbeddedFile("Depends.I18N.MidEast.dll"));
+                Assembly.Load(Utils.ReadEmbeddedFile("Depends.I18N.Other.dll"));
+                Assembly.Load(Utils.ReadEmbeddedFile("Depends.I18N.Rare.dll"));
+            }
+            catch(Exception e)
+            {
+                MelonLogger.Warning($"Couldn't load Dependencies. Already Loaded by another mod? {e.Message}");
+            }
         }
     }
 }

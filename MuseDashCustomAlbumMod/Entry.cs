@@ -6,10 +6,11 @@ using MuseDashCustomAlbumMod;
 
 namespace MuseDashCustomAlbumMod
 {
-    internal class Entry : MelonMod
+    public class Entry : MelonMod
     {
         public override void OnApplicationStart()
         {
+            CustomAlbum.LoadDependencies();
             CustomAlbum.DoPatching(HarmonyInstance);
         }
     }

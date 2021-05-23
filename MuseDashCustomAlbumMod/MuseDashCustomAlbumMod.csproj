@@ -9,10 +9,14 @@
     <PackageReference Include="DotNetZip" Version="1.12.0" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Resources\AlbumIcon.png" />
     <EmbeddedResource Include="Resources\AlbumIcon.png" />
-    <None Remove="Resources\EmptyAssetBundle" />
     <EmbeddedResource Include="Resources\EmptyAssetBundle" />
+    <EmbeddedResource Include="Depends\I18N.West.dll" />
+    <EmbeddedResource Include="Depends\I18N.Rare.dll" />
+    <EmbeddedResource Include="Depends\I18N.Other.dll" />
+    <EmbeddedResource Include="Depends\I18N.MidEast.dll" />
+    <EmbeddedResource Include="Depends\I18N.CJK.dll" />
+    <EmbeddedResource Include="Depends\I18N.dll" />
   </ItemGroup>
   <Import Project="$(MsBuildThisFileDirectory)/../ILRepack/ILRepack.Lib.MSBuild.Task.targets" />
   <Target Name="ILRepack" AfterTargets="Build">
@@ -23,11 +27,11 @@
     <ItemGroup>
       <InputAssemblies Include="$(OutputPath)/$(AssemblyName).dll" />
       <InputAssemblies Include="$(OutputPath)/DotNetZip.dll" />
-
       <IlRepackLibs Include="$(OutputPath)" />
       <IlRepackLibs Include="$(MsBuildThisFileDirectory)/../MonoLibs" />
     </ItemGroup>
     <Message Text="MERGING: @(InputAssemblies->'%(Filename)') into $(OutputAssembly)" Importance="High" />
     <ILRepack Internalize="true" LibraryPath="@(IlRepackLibs)" OutputFile="$(OutputPath)/$(AssemblyName).dll" InputAssemblies="@(InputAssemblies)" />
   </Target>
+  
 </Project>
