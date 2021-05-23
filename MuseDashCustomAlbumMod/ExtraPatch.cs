@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
+﻿using Assets.Scripts.GameCore.Managers;
 using Assets.Scripts.PeroTools.Commons;
 using Assets.Scripts.PeroTools.Nice.Datas;
 using Assets.Scripts.PeroTools.Nice.Interface;
-using Assets.Scripts.PeroTools.Nice.Variables;
 using Assets.Scripts.UI.Panels;
 using HarmonyLib;
+using MelonLoader;
 
 namespace MuseDashCustomAlbumMod
 {
-    class ExtraPatch
+    internal class ExtraPatch
     {
-        public static void DoPatching(Harmony harmony)
+        public static void DoPatching(HarmonyLib.Harmony harmony)
         {
             //MethodInfo methodIsCanPreparationOut = AccessTools.Method(typeof(Assets.Scripts.UI.Panels.PnlStage), "IsCanPreparationOut");
             //MethodInfo methodICPOPrefix = AccessTools.Method(typeof(ExtraPatch), "IsCanPreparationOutPrefix");
@@ -24,13 +20,13 @@ namespace MuseDashCustomAlbumMod
             //MethodInfo methodSBLAPrefix = AccessTools.Method(typeof(ExtraPatch), "SetBgLockActionPrefix");
             //harmony.Patch(methodSetBgLockAction, new HarmonyMethod(methodSBLAPrefix), null, null);
 
-            MethodInfo methodOnBattleEnd = AccessTools.Method(typeof(Assets.Scripts.GameCore.Managers.StatisticsManager), "OnBattleEnd");
-            MethodInfo methodOBEPrefix = AccessTools.Method(typeof(ExtraPatch), "OnBattleEndPrefix");
-            harmony.Patch(methodOnBattleEnd, new HarmonyMethod(methodOBEPrefix), null, null);
+            var methodOnBattleEnd = AccessTools.Method(typeof(StatisticsManager), "OnBattleEnd");
+            var methodOBEPrefix = AccessTools.Method(typeof(ExtraPatch), "OnBattleEndPrefix");
+            harmony.Patch(methodOnBattleEnd, new HarmonyMethod(methodOBEPrefix));
 
-            MethodInfo methodChangeMusic = AccessTools.Method(typeof(Assets.Scripts.UI.Panels.PnlStage), "ChangeMusic");
-            MethodInfo methodCMPostfix = AccessTools.Method(typeof(ExtraPatch), "ChangeMusicPostfix");
-            harmony.Patch(methodChangeMusic, null, new HarmonyMethod(methodCMPostfix), null);
+            var methodChangeMusic = AccessTools.Method(typeof(PnlStage), "ChangeMusic");
+            var methodCMPostfix = AccessTools.Method(typeof(ExtraPatch), "ChangeMusicPostfix");
+            harmony.Patch(methodChangeMusic, null, new HarmonyMethod(methodCMPostfix));
         }
 
         public static bool IsCanPreparationOutPrefix(PnlStage __instance, ref bool __result)
@@ -48,11 +44,11 @@ namespace MuseDashCustomAlbumMod
         public static bool SetBgLockActionPrefix(PnlStage __instance)
         {
             // 解除自定义谱面的上锁背景
-            ModHelper.ModLogger.Debug("Try Set BGLockAction");
-            ModHelper.ModLogger.Debug(__instance.GetSelectedMusicAlbumJsonName());
+            MelonLogger.Msg("Try Set BGLockAction");
+            MelonLogger.Msg(__instance.GetSelectedMusicAlbumJsonName());
             if (__instance.GetSelectedMusicAlbumJsonName() == CustomAlbum.JsonName)
             {
-                ModHelper.ModLogger.Debug("Set BGLockAction");
+                MelonLogger.Msg("Set BGLockAction");
                 __instance.bgAlbumLock.SetActive(false);
                 __instance.bgAlbumFree.SetActive(false);
 
@@ -69,7 +65,7 @@ namespace MuseDashCustomAlbumMod
         public static bool OnBattleEndPrefix()
         {
             // 禁用自定义谱面的成绩上传
-            ModHelper.ModLogger.Debug("Trying to disable score upload");
+            MelonLogger.Msg("Trying to disable score upload");
             if (Singleton<DataManager>.instance["Account"]["SelectedMusicUid"].GetResult<string>()
                 .StartsWith($"{CustomAlbum.MusicPackgeUid}-")) return false;
 

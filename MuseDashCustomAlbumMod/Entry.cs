@@ -1,20 +1,16 @@
-﻿using ModHelper;
+﻿using MelonLoader;
+using MuseDashCustomAlbumMod;
+
+[assembly: MelonInfo(typeof(Entry), "CustomAlbum", "1.0.0", "Mo10")]
+[assembly: MelonGame("PeroPeroGames", "Muse Dash")]
 
 namespace MuseDashCustomAlbumMod
 {
-    class Entry : IMod
+    internal class Entry : MelonMod
     {
-        public string Name => "CustomAlbum";
-
-        public string Description => "Custom Album";
-
-        public string Author => "Mo10";
-
-        public string HomePage => "https://github.com/mo10/MuseDashCustomAlbumMod";
-
-        public void DoPatching()
+        public override void OnApplicationStart()
         {
-            CustomAlbum.DoPatching();
+            CustomAlbum.DoPatching(HarmonyInstance);
         }
     }
 }

@@ -1,130 +1,114 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.IO.Compression;
-using Ionic.Zip;
+﻿using System.IO;
 using Assets.Scripts.GameCore;
-using Assets.Scripts.GameCore.Managers;
-using GameLogic;
 using Assets.Scripts.PeroTools.Commons;
-using UnityEngine;
-using NAudio.Wave;
-using ModHelper;
+using GameLogic;
+using Ionic.Zip;
+using MelonLoader;
+using Newtonsoft.Json;
 using RuntimeAudioClipLoader;
+using UnityEngine;
 
 namespace MuseDashCustomAlbumMod
 {
     public class CustomAlbumInfo
     {
-        [JsonProperty]
-        public string name;
-        [JsonProperty]
-        public string name_en;
-        [JsonProperty]
-        public string name_ko;
-        [JsonProperty]
-        public string name_ja;
-        [JsonProperty]
-        public string name_zh_hans;
-        [JsonProperty]
-        public string name_zh_hant;
+        [JsonIgnore] private static Object objectCache;
 
-        [JsonProperty]
-        public string author;
-        [JsonProperty]
-        public string author_en;
-        [JsonProperty]
-        public string author_ko;
-        [JsonProperty]
-        public string author_ja;
-        [JsonProperty]
-        public string author_zh_hans;
-        [JsonProperty]
-        public string author_zh_hant;
+        [JsonProperty] public string author;
 
-        [JsonProperty]
-        public string bpm;
-        [JsonProperty]
-        public string scene;
+        [JsonProperty] public string author_en;
 
-        [JsonProperty]
-        public string levelDesigner;
-        [JsonProperty]
-        public string levelDesigner1;
-        [JsonProperty]
-        public string levelDesigner2;
-        [JsonProperty]
-        public string levelDesigner3;
-        [JsonProperty]
-        public string levelDesigner4;
+        [JsonProperty] public string author_ja;
 
-        [JsonProperty]
-        public string difficulty1;
-        [JsonProperty]
-        public string difficulty2;
-        [JsonProperty]
-        public string difficulty3;
-        [JsonProperty]
-        public string difficulty4;
+        [JsonProperty] public string author_ko;
 
-        [JsonProperty]
-        public string unlockLevel;
+        [JsonProperty] public string author_zh_hans;
 
-        [JsonIgnore]
-        public string uid;
-        [JsonIgnore]
-        public string path { get; private set; }
-        [JsonIgnore]
-        public bool loadFromFolder { get; private set; }
-        [JsonIgnore]
-        private Sprite coverSprite;
-        [JsonIgnore]
-        private static UnityEngine.Object objectCache;
-        [JsonIgnore]
-        private StageInfo[] maps = new StageInfo[4];
+        [JsonProperty] public string author_zh_hant;
+
+        [JsonProperty] public string bpm;
+
+        [JsonIgnore] private Sprite coverSprite;
+
+        [JsonProperty] public string difficulty1;
+
+        [JsonProperty] public string difficulty2;
+
+        [JsonProperty] public string difficulty3;
+
+        [JsonProperty] public string difficulty4;
+
+        [JsonProperty] public string levelDesigner;
+
+        [JsonProperty] public string levelDesigner1;
+
+        [JsonProperty] public string levelDesigner2;
+
+        [JsonProperty] public string levelDesigner3;
+
+        [JsonProperty] public string levelDesigner4;
+
+        [JsonIgnore] private StageInfo[] maps = new StageInfo[4];
+
+        [JsonProperty] public string name;
+
+        [JsonProperty] public string name_en;
+
+        [JsonProperty] public string name_ja;
+
+        [JsonProperty] public string name_ko;
+
+        [JsonProperty] public string name_zh_hans;
+
+        [JsonProperty] public string name_zh_hant;
+
+        [JsonProperty] public string scene;
+
+        [JsonIgnore] public string uid;
+
+        [JsonProperty] public string unlockLevel;
+
+        [JsonIgnore] public string path { get; private set; }
+
+        [JsonIgnore] public bool loadFromFolder { get; private set; }
+
         /// <summary>
-        /// Load from zip file
+        ///     Load from zip file
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
         public static CustomAlbumInfo LoadFromFile(string filePath)
         {
-            using (ZipFile zip = ZipFile.Read(filePath))
+            using (var zip = ZipFile.Read(filePath))
             {
-                if (zip["info.json"] == null)
-                {
-                    return null;
-                }
+                if (zip["info.json"] == null) return null;
                 var albumInfo = Utils.StreamToJson<CustomAlbumInfo>(zip["info.json"].OpenReader());
                 albumInfo.path = filePath;
                 albumInfo.loadFromFolder = false;
                 return albumInfo;
             }
         }
+
         /// <summary>
-        /// Load from folder
+        ///     Load from folder
         /// </summary>
         /// <param name="folderPath"></param>
         /// <returns></returns>
         public static CustomAlbumInfo LoadFromFolder(string folderPath)
         {
-            if (!File.Exists($"{folderPath}/info.json"))
-            {
-                return null;
-            }
+            if (!File.Exists($"{folderPath}/info.json")) return null;
             var albumInfo = Utils.StreamToJson<CustomAlbumInfo>(File.OpenRead($"{folderPath}/info.json"));
             albumInfo.path = folderPath;
             albumInfo.loadFromFolder = true;
             return albumInfo;
         }
+
         public AudioClip GetAudioClip(string name)
         {
-            string[] targetFiles = { $"{name}.aiff", $"{name}.mp3", $"{name}.ogg", $"{name}.wav" };
+            string[] targetFiles = {$"{name}.aiff", $"{name}.mp3", $"{name}.ogg", $"{name}.wav"};
 
             Stream stream = null;
-            AudioFormat format = AudioFormat.unknown;
+            var format = AudioFormat.unknown;
             string fileExtension = null;
 
             AudioClip audio = null;
@@ -136,7 +120,7 @@ namespace MuseDashCustomAlbumMod
             if (loadFromFolder)
             {
                 // Load from folder
-                if (TryGetContainFile(path, targetFiles, out string filePath))
+                if (TryGetContainFile(path, targetFiles, out var filePath))
                 {
                     fileExtension = Path.GetExtension(filePath);
                     stream = File.OpenRead(filePath);
@@ -145,17 +129,18 @@ namespace MuseDashCustomAlbumMod
             else
             {
                 // load from .mdm
-                using (ZipFile zip = ZipFile.Read(path))
+                using (var zip = ZipFile.Read(path))
                 {
-                    if (TryGetContainFile(zip, targetFiles, out string fileName))
+                    if (TryGetContainFile(zip, targetFiles, out var fileName))
                     {
                         fileExtension = Path.GetExtension(fileName);
                         // CrcCalculatorStream not support set_position, Read all bytes then convert to MemoryStream
-                        byte[] data = Utils.StreamToBytes(zip[fileName].OpenReader());
+                        var data = Utils.StreamToBytes(zip[fileName].OpenReader());
                         stream = new MemoryStream(data);
                     }
                 }
             }
+
             // Check audio format 
             switch (fileExtension)
             {
@@ -175,11 +160,13 @@ namespace MuseDashCustomAlbumMod
                     format = AudioFormat.unknown;
                     break;
             }
-            if(stream != null)
+
+            if (stream != null)
             {
-                audio = RuntimeAudioClipLoader.Manager.Load(stream, format, name, false, true);
+                audio = Manager.Load(stream, format, name);
                 Cache(audio);
             }
+
             return audio;
         }
         //public AudioClip GetMusicAudioClip()
@@ -203,61 +190,55 @@ namespace MuseDashCustomAlbumMod
         //}
         public Sprite GetCoverSprite()
         {
-            string[] targetFiles = { "cover.png" };
+            string[] targetFiles = {"cover.png"};
             // Load only once
-            if (coverSprite != null)
-            {
-                return coverSprite;
-            }
+            if (coverSprite != null) return coverSprite;
 
-            Texture2D texture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+            var texture = new Texture2D(1, 1, TextureFormat.RGBA32, false);
             if (loadFromFolder)
             {
                 // Load from folder
-                if(TryGetContainFile(path, targetFiles, out string filePath))
-                {
-                    ImageConversion.LoadImage(texture, File.ReadAllBytes(filePath));
-                }
+                if (TryGetContainFile(path, targetFiles, out var filePath))
+                    texture.LoadImage(File.ReadAllBytes(filePath));
             }
             else
             {
                 // Load from zip
-                using (ZipFile zip = ZipFile.Read(path))
+                using (var zip = ZipFile.Read(path))
                 {
-                    if(TryGetContainFile(zip,targetFiles,out string file))
-                    {
-                        ImageConversion.LoadImage(texture, Utils.StreamToBytes(zip[file].OpenReader()));
-                    }
+                    if (TryGetContainFile(zip, targetFiles, out var file))
+                        texture.LoadImage(Utils.StreamToBytes(zip[file].OpenReader()));
                 }
             }
-            coverSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(texture.width / 2, texture.height / 2));
+
+            coverSprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height),
+                new Vector2(texture.width / 2, texture.height / 2));
             return coverSprite;
         }
+
         public StageInfo GetMap(int index)
         {
-            string[] targetFiles = { $"map{index}.bms" };
+            string[] targetFiles = {$"map{index}.bms"};
 
             if (loadFromFolder)
             {
                 // Load from folder
-                if (TryGetContainFile(path, targetFiles, out string filePath))
-                {
+                if (TryGetContainFile(path, targetFiles, out var filePath))
                     return GetStageInfo(File.ReadAllBytes(filePath), index);
-                }
             }
             else
             {
                 // Load from zip
-                using (ZipFile zip = ZipFile.Read(path))
+                using (var zip = ZipFile.Read(path))
                 {
-                    if (TryGetContainFile(zip, targetFiles, out string file))
-                    {
+                    if (TryGetContainFile(zip, targetFiles, out var file))
                         return GetStageInfo(Utils.StreamToBytes(zip[file].OpenReader()), index);
-                    }
                 }
             }
+
             return null;
         }
+
         public static StageInfo GetStageInfo(byte[] bytes, int map_index)
         {
             /* 1.加载bms
@@ -267,12 +248,9 @@ namespace MuseDashCustomAlbumMod
 
             var bms = MyBMSCManager.instance.Load(bytes, $"map_{map_index}");
 
-            if (bms == null)
-            {
-                return null;
-            }
+            if (bms == null) return null;
 
-            MusicConfigReader musicConfigReader = GameLogic.MusicConfigReader.Instance;
+            var musicConfigReader = MusicConfigReader.Instance;
             musicConfigReader.ClearData();
             musicConfigReader.bms = bms;
             musicConfigReader.Init("");
@@ -280,56 +258,55 @@ namespace MuseDashCustomAlbumMod
 
             var info = musicConfigReader.GetData().Cast<MusicData>();
             //var info = (from m in musicConfigReader.GetData().ToArray() select (MusicData)m).ToList();
-            
-            StageInfo stageInfo = new StageInfo
+
+            var stageInfo = new StageInfo
             {
                 musicDatas = info,
                 delay = musicConfigReader.delay,
-                mapName = (string)musicConfigReader.bms.info["TITLE"],
-                music = ((string)musicConfigReader.bms.info["WAV10"]).BeginBefore('.'),
-                scene = (string)musicConfigReader.bms.info["GENRE"],
+                mapName = (string) musicConfigReader.bms.info["TITLE"],
+                music = ((string) musicConfigReader.bms.info["WAV10"]).BeginBefore('.'),
+                scene = (string) musicConfigReader.bms.info["GENRE"],
                 difficulty = map_index,
                 bpm = musicConfigReader.bms.GetBpm(),
                 md5 = musicConfigReader.bms.md5,
                 sceneEvents = musicConfigReader.sceneEvents
             };
-            ModLogger.Debug($"Delay: {musicConfigReader.delay}");
+            MelonLogger.Msg($"Delay: {musicConfigReader.delay}");
             return stageInfo;
         }
+
         public static bool TryGetContainFile(string path, string[] fileNames, out string filePath)
         {
             foreach (var fileName in fileNames)
-            {
                 if (File.Exists($"{path}/{fileName}"))
                 {
                     filePath = $"{path}/{fileName}";
                     return true;
                 }
-            }
+
             filePath = null;
             return false;
         }
-        public static bool TryGetContainFile(ZipFile zipEntries, string[] fileNames, out string file )
+
+        public static bool TryGetContainFile(ZipFile zipEntries, string[] fileNames, out string file)
         {
             foreach (var fileName in fileNames)
-            {
                 if (zipEntries[fileName] != null)
                 {
                     file = fileName;
                     return true;
                 }
-            }
+
             file = null;
             return false;
         }
-        public static void Cache(UnityEngine.Object obj)
+
+        public static void Cache(Object obj)
         {
-            if (objectCache != null)
-            {
-                UnityEngine.Object.DestroyImmediate(objectCache, true);
-            }
+            if (objectCache != null) Object.DestroyImmediate(objectCache, true);
             objectCache = obj;
         }
+
         public override string ToString()
         {
             return
