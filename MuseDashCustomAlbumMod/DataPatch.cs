@@ -21,7 +21,7 @@ namespace MuseDashCustomAlbumMod
         public static void DoPathcing(Harmony harmony)
         {
             // ConfigManager.Json
-            var getJson = AccessTools.Method(typeof(ConfigManager), "GetJson");
+            var getJson = typeof(ConfigManager).GetMethods().Where(x => (x.Name == "GetJson" && !x.IsGenericMethod)).First();
             var getJsonPrefix = AccessTools.Method(typeof(DataPatch), "GetJsonPrefix");
             var getJsonPostfix = AccessTools.Method(typeof(DataPatch), "GetJsonPostfix");
             harmony.Patch(getJson, new HarmonyMethod(getJsonPrefix), new HarmonyMethod(getJsonPostfix));
@@ -259,6 +259,7 @@ namespace MuseDashCustomAlbumMod
         {
             if (__result == null)
             {
+
                 if (customAssets.TryGetValue(name, out CustomAlbumInfo albumInfo))
                 {
                     // Load cover image 
@@ -308,10 +309,7 @@ namespace MuseDashCustomAlbumMod
             }
         }
 
-        public static void AddABConfig()
-        {
 
-        }
         public static JObject AddNewCustomMetadata(KeyValuePair<string, CustomAlbumInfo> valuePair, string uid)
         {
             var metadata = new JObject();
