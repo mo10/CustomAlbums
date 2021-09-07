@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace MuseDashCustomAlbumMod
@@ -40,6 +39,7 @@ namespace MuseDashCustomAlbumMod
         }
         // Inject <CustomAlbum.JsonName>.json
         // Inject <CustomAlbum.JsonName>_<lang>.json
+
         public static void GetJsonPrefix(string name, bool localization, ref Dictionary<string, JArray> ___m_Dictionary)
         {
             string activeOption = SingletonScriptableObject<LocalizationSettings>.instance.GetActiveOption("Language");
@@ -126,6 +126,7 @@ namespace MuseDashCustomAlbumMod
             }
 
         }
+
         public static void GetJsonPostfix(string name, bool localization, ref Dictionary<string, JArray> ___m_Dictionary, ref JArray __result)
         {
             string activeOption = SingletonScriptableObject<LocalizationSettings>.instance.GetActiveOption("Language");

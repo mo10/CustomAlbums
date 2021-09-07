@@ -24,10 +24,6 @@ namespace MuseDashCustomAlbumMod
             //MethodInfo methodSBLAPrefix = AccessTools.Method(typeof(ExtraPatch), "SetBgLockActionPrefix");
             //harmony.Patch(methodSetBgLockAction, new HarmonyMethod(methodSBLAPrefix), null, null);
 
-            MethodInfo methodOnBattleEnd = AccessTools.Method(typeof(Assets.Scripts.GameCore.Managers.StatisticsManager), "OnBattleEnd");
-            MethodInfo methodOBEPrefix = AccessTools.Method(typeof(ExtraPatch), "OnBattleEndPrefix");
-            harmony.Patch(methodOnBattleEnd, new HarmonyMethod(methodOBEPrefix), null, null);
-
             MethodInfo methodChangeMusic = AccessTools.Method(typeof(Assets.Scripts.UI.Panels.PnlStage), "ChangeMusic");
             MethodInfo methodCMPostfix = AccessTools.Method(typeof(ExtraPatch), "ChangeMusicPostfix");
             harmony.Patch(methodChangeMusic, null, new HarmonyMethod(methodCMPostfix), null);
@@ -62,16 +58,6 @@ namespace MuseDashCustomAlbumMod
 
                 return false;
             }
-
-            return true;
-        }
-
-        public static bool OnBattleEndPrefix()
-        {
-            // 禁用自定义谱面的成绩上传
-            ModHelper.ModLogger.Debug("Trying to disable score upload");
-            if (Singleton<DataManager>.instance["Account"]["SelectedMusicUid"].GetResult<string>()
-                .StartsWith($"{CustomAlbum.MusicPackgeUid}-")) return false;
 
             return true;
         }
