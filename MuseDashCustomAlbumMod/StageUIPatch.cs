@@ -41,19 +41,41 @@ namespace MuseDashCustomAlbumMod
             }
         }
 
-        public static bool SendToUrlPrefix(string url, Dictionary<string, object> datas, Action<JObject> callback, Action<string> faillCallback, ref Dictionary<string, string> headers)
+        public static bool SendToUrlPrefix(
+            string url,
+            string method,
+            Dictionary<string, object> datas,
+            Action<JObject> callback,
+            Action<string> faillCallback,
+            ref Dictionary<string, string> headers,
+            int failTime,
+            bool isAutoSend,
+            string appkey)
         {
             if (url == "/musedash/v1/music_tag")
             {
-                headers.Add("count", (new DirectoryInfo("Custom_Albums").GetFiles().Length + new DirectoryInfo("Custom_Albums").GetDirectories().Length).ToString());
-                UnityWebRequest url1 = WebUtils.SendToUrl("https://mdmc.moe/api/tags", "GET", datas, (handler =>
+                headers = new Dictionary<string, string>()
+                {
+                    {
+                        "count",
+                        (new DirectoryInfo("Custom_Albums").GetFiles().Length + new DirectoryInfo("Custom_Albums").GetDirectories().Length).ToString()
+                    }
+                };
+
+                UnityWebRequest url1 = WebUtils.SendToUrl("https://mdmc.moe/api/tags", method, datas, (handler =>
                 {
                     JObject jobject = JsonUtils.Deserialize<JObject>(handler.text);
                     JToken token = jobject["code"];
                     if (callback == null)
                         return;
                     callback(jobject);
-                }), faillCallback, headers, 0, true);
+                }), faillCallback, headers, failTime, true);
+                if (isAutoSend)
+                    return false;
+                string str1 = string.Format("{0}&appkey={1}", url1.url, appkey);
+                string str2 = ServerManager.MD5Compute(str1.Remove(0, str1.LastIndexOf("?") + 1));
+                url1.url += string.Format("&signature={0}", str2);
+                url1.SendWebRequest();
                 return false;
             }
             else
