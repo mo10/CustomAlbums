@@ -388,8 +388,8 @@ namespace MuseDashCustomAlbumMod
             metadata.Add("unlockLevel", valuePair.Value.unlockLevel);
 
 
-
-            ModLogger.Debug(metadata);
+            ModLogger.Debug($"New metadata: {metadata["uid"]} {metadata["name"]}");
+            //ModLogger.Debug(metadata);
             return metadata;
         }
 
