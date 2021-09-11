@@ -50,7 +50,7 @@ namespace MuseDashCustomAlbumMod
             StageUIPatch.DoPatching(harmony);
             DataPatch.DoPathcing(harmony);
             ExtraPatch.DoPatching(harmony);
-            //ScorePatch.DoPathcing(harmony);
+            RankPatch.DoPatching(harmony);
 
             LoadCustomAlbums();
         }
