@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 using UnityEngine;
 
 namespace MuseDashCustomAlbumMod
@@ -19,11 +20,6 @@ namespace MuseDashCustomAlbumMod
         public static Dictionary<string, CustomAlbumInfo> customAssets = new Dictionary<string, CustomAlbumInfo>();
         public static void DoPathcing(Harmony harmony)
         {
-            // ConfigManager.Json
-            var getJson = typeof(ConfigManager).GetMethods().Where(x => (x.Name == "GetJson" && !x.IsGenericMethod)).First();
-            var getJsonPrefix = AccessTools.Method(typeof(DataPatch), "GetJsonPrefix");
-            var getJsonPostfix = AccessTools.Method(typeof(DataPatch), "GetJsonPostfix");
-            harmony.Patch(getJson, new HarmonyMethod(getJsonPrefix), new HarmonyMethod(getJsonPostfix));
             // AssetBundleConfigManager.Get
             var getAssetBundle = AccessTools.Method(typeof(AssetBundleConfigManager), "Get", new Type[] { typeof(string), typeof(Type) });
             var getAssetBundlePrefix = AccessTools.Method(typeof(DataPatch), "GetAssetBundlePrefix");
@@ -36,25 +32,63 @@ namespace MuseDashCustomAlbumMod
             var loadAssetBundle = AccessTools.Method(typeof(AssetBundleManager), "LoadAssetBundle");
             var loadAssetBundlePostfix = AccessTools.Method(typeof(DataPatch), "LoadAssetBundlePostfix");
             harmony.Patch(loadAssetBundle, null, new HarmonyMethod(loadAssetBundlePostfix));
+            // ConfigManager.GetConfigToken
+            var getConfigToken = AccessTools.Method(typeof(ConfigManager), "GetConfigToken", new Type[] { typeof(string), typeof(string), typeof(string), typeof(object) });
+            var getConfigTokenPrefix = AccessTools.Method(typeof(DataPatch), "GetConfigTokenPrefix");
+            harmony.Patch(getConfigToken, prefix: new HarmonyMethod(getConfigTokenPrefix));
         }
-        // Inject <CustomAlbum.JsonName>.json
-        // Inject <CustomAlbum.JsonName>_<lang>.json
-
-        public static void GetJsonPrefix(string name, bool localization, ref Dictionary<string, JArray> ___m_Dictionary)
+        private static JArray GetCustomAlbuml18n(string language)
+        {
+            var albumArray = new JArray();
+            foreach (var album in CustomAlbum.Albums)
+            {
+                var l18n = new JObject();
+                string albumName = null, albumAuthor = null;
+                switch (language)
+                {
+                    case "ChineseT":
+                        albumName = album.Value.name_zh_hant;
+                        albumAuthor = album.Value.author_zh_hant;
+                        break;
+                    case "ChineseS":
+                        albumName = album.Value.name_zh_hans;
+                        albumAuthor = album.Value.author_zh_hans;
+                        break;
+                    case "English":
+                        albumName = album.Value.name_en;
+                        albumAuthor = album.Value.author_en;
+                        break;
+                    case "Korean":
+                        albumName = album.Value.name_ko;
+                        albumAuthor = album.Value.author_ko;
+                        break;
+                    case "Japanese":
+                        albumName = album.Value.name_ja;
+                        albumAuthor = album.Value.author_ja;
+                        break;
+                }
+                if (album.Value.name != null)
+                    albumName = album.Value.name;
+                if (album.Value.author != null)
+                    albumAuthor = album.Value.author;
+                l18n.Add("name", albumName);
+                l18n.Add("author", albumAuthor);
+                albumArray.Add(l18n);
+            }
+            return albumArray;
+        }
+        public static void GetConfigTokenPrefix(string fileName, string cmpKey, string targetKey, object cmpValue, ref Dictionary<string, JArray> ___m_Dictionary)
         {
             string activeOption = SingletonScriptableObject<LocalizationSettings>.instance.GetActiveOption("Language");
-            try
+            string langJson = $"{fileName}_{activeOption}";
+            // Load <CustomAlbum.JsonName>.json
+            if (fileName == CustomAlbum.JsonName)
             {
-                // Load <CustomAlbum.JsonName>.json
-                if (!localization && name == CustomAlbum.JsonName)
+                // <CustomAlbum.JsonName>.json
+                if (!___m_Dictionary.ContainsKey(CustomAlbum.JsonName))
                 {
-                    // Already loaded?
-                    if (___m_Dictionary.ContainsKey(CustomAlbum.JsonName))
-                    {
-                        return;
-                    }
                     // Load all custom albums
-                    ModLogger.Debug($"Inject Json: {name}");
+                    ModLogger.Debug($"Inject Json: {fileName}");
                     var albumArray = new JArray();
                     int idx = 0;
                     foreach (var album in CustomAlbum.Albums)
@@ -66,109 +100,25 @@ namespace MuseDashCustomAlbumMod
                         album.Value.uid = uid;
                         idx++;
                     }
-                    ___m_Dictionary.Add(name, albumArray);
-                    return;
+                    ___m_Dictionary.Add(fileName, albumArray);
                 }
-                // Load custom album localization
-                // Inject <CustomAlbum.JsonName>_<lang>.json
-                string jsonLanguage = $"{CustomAlbum.JsonName}_{activeOption}";
-                if (localization && name == jsonLanguage)
+                // <CustomAlbum.JsonName>_<Language>.json
+                if (!___m_Dictionary.ContainsKey(langJson))
                 {
-                    // Check if already loaded
-                    if (___m_Dictionary.ContainsKey(jsonLanguage))
-                    {
-                        return;
-                    }
-                    var albumArray = new JArray();
-                    foreach (var album in CustomAlbum.Albums)
-                    {
-                        var lang = new JObject();
-                        string albumName = null, albumAuthor = null;
-                        switch (activeOption)
-                        {
-                            case "ChineseT":
-                                albumName = album.Value.name_zh_hant;
-                                albumAuthor = album.Value.author_zh_hant;
-                                break;
-                            case "ChineseS":
-                                albumName = album.Value.name_zh_hans;
-                                albumAuthor = album.Value.author_zh_hans;
-                                break;
-                            case "English":
-                                albumName = album.Value.name_en;
-                                albumAuthor = album.Value.author_en;
-                                break;
-                            case "Korean":
-                                albumName = album.Value.name_ko;
-                                albumAuthor = album.Value.author_ko;
-                                break;
-                            case "Japanese":
-                                albumName = album.Value.name_ja;
-                                albumAuthor = album.Value.author_ja;
-                                break;
-                        }
-                        if (album.Value.name != null)
-                            albumName = album.Value.name;
-                        if (album.Value.author != null)
-                            albumAuthor = album.Value.author;
-                        lang.Add("name", albumName);
-                        lang.Add("author", albumAuthor);
-                        albumArray.Add(lang);
-                    }
-
-                    ___m_Dictionary.Add(name, albumArray);
-                    return;
+                    ModLogger.Debug($"Inject {langJson}");
+                    ___m_Dictionary.Add(langJson, GetCustomAlbuml18n(activeOption));
                 }
             }
-            catch (Exception ex)
+            if (fileName == "albums")
             {
-                ModLogger.Debug(ex);
-            }
-
-        }
-
-        public static void GetJsonPostfix(string name, bool localization, ref Dictionary<string, JArray> ___m_Dictionary, ref JArray __result)
-        {
-            string activeOption = SingletonScriptableObject<LocalizationSettings>.instance.GetActiveOption("Language");
-            try
-            {
-                // Load album localization title
-                // Inject albums_<lang>.json
-                if (localization && name.StartsWith("albums_"))
+                // albums.json
+                if (!___m_Dictionary.ContainsKey(fileName))
                 {
-                    string albums_lang = $"albums_{activeOption}";
-                    // Check if already loaded
-                    foreach (var obj in ___m_Dictionary[albums_lang])
-                    {
-                        if (obj.Value<string>("title") == CustomAlbum.Languages[activeOption])
-                        {
-                            return;
-                        }
-                    }
-                    // Add custom l10n title
-                    ModLogger.Debug($"Add custom l10n title: {CustomAlbum.Languages[activeOption]}");
-                    var album_lang = new JObject();
-                    album_lang.Add("title", CustomAlbum.Languages[activeOption]);
-
-                    ___m_Dictionary[albums_lang].Add(album_lang);
-                    // return new result
-                    __result = ___m_Dictionary[albums_lang];
-                    return;
-                }
-                // Load album
-                // Inject albums.json
-                if (!localization && name == "albums")
-                {
-                    // Check if already loaded
-                    foreach (var obj in ___m_Dictionary[name])
-                    {
-                        if (obj.Value<string>("uid") == CustomAlbum.MusicPackge)
-                        {
-                            return;
-                        }
-                    }
-                    // Add custom title
-                    ModLogger.Debug($"Add custom album json");
+                    // Pre-load
+                    ModLogger.Debug($"Preload Json: {fileName}");
+                    Singleton<ConfigManager>.instance.GetJson(fileName, false);
+                    ModLogger.Debug($"Inject Json: {fileName}");
+                    // Inject custom to albums.json
                     var album = new JObject();
                     album.Add("uid", CustomAlbum.MusicPackge);
                     album.Add("title", "Custom Albums");
@@ -177,16 +127,20 @@ namespace MuseDashCustomAlbumMod
                     album.Add("jsonName", CustomAlbum.JsonName);
                     album.Add("needPurchase", false);
                     album.Add("free", true);
-
-                    ___m_Dictionary[name].Add(album);
-                    // Return new result
-                    __result = ___m_Dictionary[name];
-                    return;
+                    ___m_Dictionary[fileName].Add(album);
                 }
-            }
-            catch (Exception ex)
-            {
-                ModLogger.Debug(ex);
+                // albums_<Language>.json
+                if (!___m_Dictionary.ContainsKey(langJson))
+                {
+                    // Pre-load
+                    ModLogger.Debug($"Preload Json: {langJson}");
+                    Singleton<ConfigManager>.instance.GetJson(fileName, true);
+                    ModLogger.Debug($"Inject Json: {langJson}");
+                    // Add custom l10n title
+                    var album_lang = new JObject();
+                    album_lang.Add("title", CustomAlbum.Languages[activeOption]);
+                    ___m_Dictionary[langJson].Add(album_lang);
+                }
             }
         }
 
@@ -219,7 +173,7 @@ namespace MuseDashCustomAlbumMod
                 newABConfig.fileName = assetPath;
 
                 newABConfig.type = type;
-                
+
                 newABConfig.extension = ".bms";
                 if (assetPath.EndsWith("_cover"))
                 {
@@ -310,7 +264,6 @@ namespace MuseDashCustomAlbumMod
             }
         }
 
-
         public static JObject AddNewCustomMetadata(KeyValuePair<string, CustomAlbumInfo> valuePair, string uid)
         {
             var metadata = new JObject();
@@ -345,7 +298,7 @@ namespace MuseDashCustomAlbumMod
                 metadata.Add("author", valuePair.Value.author_zh_hans);
             }
 
-            if(!string.IsNullOrEmpty(valuePair.Value.levelDesigner))
+            if (!string.IsNullOrEmpty(valuePair.Value.levelDesigner))
             {
                 metadata.Add("levelDesigner", valuePair.Value.levelDesigner);
             }
