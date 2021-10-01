@@ -1,0 +1,200 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{BC37F97A-B56F-4879-8867-D54C29AD93B6}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>CustomAlbums</RootNamespace>
+    <AssemblyName>CustomAlbums</AssemblyName>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>D:\Program Files %28x86%29\Steam\steamapps\common\Muse Dash\Mods\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony, Version=2.0.0.8, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Lib.Harmony.2.0.0.8\lib\net35\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>D:\Program Files %28x86%29\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>D:\Program Files %28x86%29\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="AssetsTools.NET, Version=2.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\AssetsTools.NET.2.0.9\lib\net35\AssetsTools.NET.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DotNetZip, Version=1.12.0.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetZip.1.12.0\lib\net20\DotNetZip.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="ModHelper">
+      <HintPath>D:\Program Files %28x86%29\Steam\steamapps\common\Muse Dash\ModHelper.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil, Version=0.10.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.10.4\lib\net35\Mono.Cecil.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Mdb, Version=0.10.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.10.4\lib\net35\Mono.Cecil.Mdb.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Pdb, Version=0.10.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.10.4\lib\net35\Mono.Cecil.Pdb.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Mono.Cecil.Rocks, Version=0.10.4.0, Culture=neutral, PublicKeyToken=50cebf1cceb9d05e, processorArchitecture=MSIL">
+      <HintPath>..\packages\Mono.Cecil.0.10.4\lib\net35\Mono.Cecil.Rocks.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="NAudio">
+      <HintPath>D:\Program Files %28x86%29\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\NAudio.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>D:\Program Files %28x86%29\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Sirenix.Serialization">
+      <HintPath>D:\Program Files %28x86%29\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\Sirenix.Serialization.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Sirenix.Serialization.Config">
+      <HintPath>D:\Program Files %28x86%29\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\Sirenix.Serialization.Config.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Sirenix.Utilities">
+      <HintPath>D:\Program Files %28x86%29\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\Sirenix.Utilities.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Core">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Drawing">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Data.DataSetExtensions">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Data">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System.Xml">
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>D:\Program Files %28x86%29\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>D:\Program Files %28x86%29\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>D:\Program Files %28x86%29\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>D:\Program Files %28x86%29\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.ImageConversionModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>D:\Program Files %28x86%29\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestModule">
+      <HintPath>D:\Program Files (x86)\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.UnityWebRequestModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UnityWebRequestWWWModule">
+      <HintPath>D:\Program Files %28x86%29\Steam\steamapps\common\Muse Dash\MuseDash_Data\Managed\UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Album.cs" />
+    <Compile Include="AlbumManager.cs" />
+    <Compile Include="AssetBundleHelper.cs" />
+    <Compile Include="CustomAlbumInfo.cs" />
+    <Compile Include="CustomAlbum.cs" />
+    <Compile Include="DataPatch.cs" />
+    <Compile Include="Data\AlbumInfo.cs" />
+    <Compile Include="Entry.cs" />
+    <Compile Include="ExtraPatch.cs" />
+    <Compile Include="MyBMSCManager.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RankPatch.cs" />
+    <Compile Include="SavesPatch.cs" />
+    <Compile Include="StageUIPatch.cs" />
+    <Compile Include="Utils.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\DotNetZip.1.12.0\lib\net20\DotNetZip.dll">
+      <Link>Depends\DotNetZip.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Depends\I18N.CJK.dll" />
+    <EmbeddedResource Include="Depends\I18N.dll" />
+    <EmbeddedResource Include="Depends\I18N.MidEast.dll" />
+    <EmbeddedResource Include="Depends\I18N.Other.dll" />
+    <EmbeddedResource Include="Depends\I18N.Rare.dll" />
+    <EmbeddedResource Include="Depends\I18N.West.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\AssetsTools.NET.2.0.9\lib\net35\AssetsTools.NET.dll">
+      <Link>Depends\AssetsTools.NET.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\Mono.Cecil.0.10.4\lib\net35\Mono.Cecil.dll">
+      <Link>Depends\Mono.Cecil.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\Mono.Cecil.0.10.4\lib\net35\Mono.Cecil.Mdb.dll">
+      <Link>Depends\Mono.Cecil.Mdb.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\Mono.Cecil.0.10.4\lib\net35\Mono.Cecil.Pdb.dll">
+      <Link>Depends\Mono.Cecil.Pdb.dll</Link>
+    </EmbeddedResource>
+    <EmbeddedResource Include="..\packages\Mono.Cecil.0.10.4\lib\net35\Mono.Cecil.Rocks.dll">
+      <Link>Depends\Mono.Cecil.Rocks.dll</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

@@ -14,7 +14,7 @@ using NAudio.Wave;
 using ModHelper;
 using RuntimeAudioClipLoader;
 
-namespace MuseDashCustomAlbumMod
+namespace CustomAlbums
 {
     public class CustomAlbumInfo
     {
@@ -97,7 +97,7 @@ namespace MuseDashCustomAlbumMod
                 {
                     return null;
                 }
-                var albumInfo = Utils.StreamToJson<CustomAlbumInfo>(zip["info.json"].OpenReader());
+                var albumInfo = zip["info.json"].OpenReader().JsonDeserialize<CustomAlbumInfo>();
                 albumInfo.path = filePath;
                 albumInfo.loadFromFolder = false;
                 return albumInfo;
@@ -114,7 +114,7 @@ namespace MuseDashCustomAlbumMod
             {
                 return null;
             }
-            var albumInfo = Utils.StreamToJson<CustomAlbumInfo>(File.OpenRead($"{folderPath}/info.json"));
+            var albumInfo = File.OpenRead($"{folderPath}/info.json").JsonDeserialize<CustomAlbumInfo>();
             albumInfo.path = folderPath;
             albumInfo.loadFromFolder = true;
             return albumInfo;
@@ -151,7 +151,7 @@ namespace MuseDashCustomAlbumMod
                     {
                         fileExtension = Path.GetExtension(fileName);
                         // CrcCalculatorStream not support set_position, Read all bytes then convert to MemoryStream
-                        byte[] data = Utils.StreamToBytes(zip[fileName].OpenReader());
+                        byte[] data = zip[fileName].OpenReader().ToBytes();
                         stream = new MemoryStream(data);
                     }
                 }
@@ -226,7 +226,7 @@ namespace MuseDashCustomAlbumMod
                 {
                     if(TryGetContainFile(zip,targetFiles,out string file))
                     {
-                        ImageConversion.LoadImage(texture, Utils.StreamToBytes(zip[file].OpenReader()));
+                        ImageConversion.LoadImage(texture, zip[file].OpenReader().ToBytes());
                     }
                 }
             }
@@ -252,7 +252,7 @@ namespace MuseDashCustomAlbumMod
                 {
                     if (TryGetContainFile(zip, targetFiles, out string file))
                     {
-                        return GetStageInfo(Utils.StreamToBytes(zip[file].OpenReader()), index);
+                        return GetStageInfo(zip[file].OpenReader().ToBytes(), index);
                     }
                 }
             }

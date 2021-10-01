@@ -10,7 +10,7 @@ using UnityEngine;
 using Sirenix.Utilities;
 using Assets.Scripts.GameCore;
 
-namespace MuseDashCustomAlbumMod
+namespace CustomAlbums
 {
     class MyBMSCManager
     {

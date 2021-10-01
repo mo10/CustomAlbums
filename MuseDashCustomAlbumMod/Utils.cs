@@ -1,5 +1,4 @@
-﻿using ModHelper;
-using NAudio.Wave;
+﻿using NAudio.Wave;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -9,7 +8,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-namespace MuseDashCustomAlbumMod
+namespace CustomAlbums
 {
     public static class Utils
     {
@@ -18,51 +17,33 @@ namespace MuseDashCustomAlbumMod
         /// </summary>
         /// <param name="file"></param>
         /// <returns></returns>
-        public static byte[] ReadEmbeddedFile(string file)
+        public static Stream ReadEmbeddedFile(string file)
         {
             var assembly = Assembly.GetExecutingAssembly();
-            byte[] buffer;
-            using (var stream = assembly.GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name}.{file}"))
-            {
-                buffer = new byte[stream.Length];
-                stream.Read(buffer, 0, buffer.Length);
-            }
-            return buffer;
+            return assembly.GetManifestResourceStream($"{Assembly.GetExecutingAssembly().GetName().Name}.{file}");
         }
-        /// <summary>
-        /// Print all child GameObject and Component
-        /// </summary>
-        /// <param name="gameObject"></param>
-        /// <param name="layer"></param>
-        public static void GameObjectTracker(GameObject gameObject, int layer = 0)
-        {
-            foreach (var component in gameObject.GetComponents(typeof(object)))
-            {
-                ModLogger.Debug($"Layer:{layer} Name:{gameObject.name} Component:{component.GetType()}");
-            }
-            if (gameObject.transform.childCount > 0)
-            {
-                ++layer;
-                for (var i = 0; i < gameObject.transform.childCount; i++)
-                {
-                    GameObjectTracker(gameObject.transform.GetChild(i).gameObject, layer);
-                }
-            }
-        }
-
-        public static T StreamToJson<T>(Stream steamReader)
+        public static T JsonDeserialize<T>(this Stream steamReader)
         {
             var buffer = new byte[steamReader.Length];
             steamReader.Read(buffer, 0, buffer.Length);
             return JsonConvert.DeserializeObject<T>(Encoding.Default.GetString(buffer));
         }
-        public static byte[] StreamToBytes(Stream steamReader)
+        public static T JsonDeserialize<T>(this string text)
+        {
+            return JsonConvert.DeserializeObject<T>(text);
+        }
+        public static string JsonSerialize(this object obj)
+        {
+            return JsonConvert.SerializeObject(obj, Formatting.Indented);
+        }
+        public static byte[] ToBytes(this Stream steamReader)
         {
             var buffer = new byte[steamReader.Length];
             steamReader.Read(buffer, 0, buffer.Length);
+            steamReader.Close();
             return buffer;
         }
-        public static MemoryStream AudioMemStream(WaveStream waveStream)
+        public static MemoryStream ToStream(this WaveStream waveStream)
         {
             MemoryStream outputStream = new MemoryStream();
             using (WaveFileWriter waveFileWriter = new WaveFileWriter(outputStream, waveStream.WaveFormat))

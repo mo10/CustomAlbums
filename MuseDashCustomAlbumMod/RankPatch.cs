@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
 
-namespace MuseDashCustomAlbumMod
+namespace CustomAlbums
 {
     public static class RankPatch
     {
