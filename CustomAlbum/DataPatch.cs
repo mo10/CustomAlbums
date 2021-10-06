@@ -84,24 +84,6 @@ namespace CustomAlbum
             // Load <CustomAlbum.JsonName>.json
             if (fileName == CustomAlbum.JsonName)
             {
-                // <CustomAlbum.JsonName>.json
-                if (!___m_Dictionary.ContainsKey(CustomAlbum.JsonName))
-                {
-                    // Load all custom albums
-                    ModLogger.Debug($"Inject Json: {fileName}");
-                    var albumArray = new JArray();
-                    int idx = 0;
-                    foreach (var album in CustomAlbum.Albums)
-                    {
-                        var uid = $"{CustomAlbum.MusicPackgeUid}-{idx}";
-
-                        albumArray.Add(AddNewCustomMetadata(album, uid));
-                        RegistCustomAlbumAssert(album);
-                        album.Value.uid = uid;
-                        idx++;
-                    }
-                    ___m_Dictionary.Add(fileName, albumArray);
-                }
                 // <CustomAlbum.JsonName>_<Language>.json
                 if (!___m_Dictionary.ContainsKey(langJson))
                 {
@@ -140,6 +122,24 @@ namespace CustomAlbum
                     var album_lang = new JObject();
                     album_lang.Add("title", CustomAlbum.Languages[activeOption]);
                     ___m_Dictionary[langJson].Add(album_lang);
+                }
+                // <CustomAlbum.JsonName>.json
+                if (!___m_Dictionary.ContainsKey(CustomAlbum.JsonName))
+                {
+                    // Load all custom albums
+                    ModLogger.Debug($"Inject Json: {CustomAlbum.JsonName}");
+                    var albumArray = new JArray();
+                    int idx = 0;
+                    foreach (var album in CustomAlbum.Albums)
+                    {
+                        var uid = $"{CustomAlbum.MusicPackgeUid}-{idx}";
+
+                        albumArray.Add(AddNewCustomMetadata(album, uid));
+                        RegistCustomAlbumAssert(album);
+                        album.Value.uid = uid;
+                        idx++;
+                    }
+                    ___m_Dictionary.Add(CustomAlbum.JsonName, albumArray);
                 }
             }
         }
