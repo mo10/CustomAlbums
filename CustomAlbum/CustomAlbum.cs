@@ -50,7 +50,7 @@ namespace CustomAlbum
             StageUIPatch.DoPatching(harmony);
             DataPatch.DoPathcing(harmony);
             ExtraPatch.DoPatching(harmony);
-            // RankPatch.DoPatching(harmony);
+            RankPatch.DoPatching(harmony);
 
             LoadCustomAlbums();
         }
