@@ -19,7 +19,7 @@ namespace CustomAlbums
     {
         //    public static readonly string AlbumTagUid = "custom";
         //    public static readonly string AlbumTagGameObjectName = "AlbumTagCell_Custom";
-        private static bool ab_fixed = false;
+        private static bool abInjected = false;
         public static void DoPatching(Harmony harmony)
         {
             // PnlStage.PreWarm
@@ -46,29 +46,63 @@ namespace CustomAlbums
         // PnlStage.PreWarm
         public static bool loadFromFilePrefix(string path, uint crc,ref AssetBundle __result)
         {
-            ModLogger.Debug(path);
-            if(path == Path.Combine(Settings.currentSetting.firstLoadAssetPath, "datas/configs/others"))
+            var abName = path.Substring(Settings.currentSetting.firstLoadAssetPath.Length+1);
+            ModLogger.Debug($"abName: {abName}");
+
+            if(!abInjected && CustomAlbum.abCache.ContainsKey(abName))
             {
-                
-                ModLogger.Debug("!!!!!!!!!!!!!!!Inject!!!!!!!!!!!!!!!");
-                ABConfig config = new ABConfig();
-                config.extension = ".json";
-                config.fileName = null;
-                config.type = typeof(TextAsset);
-                config.abName = "datas/configs/others";
-                config.directory = "Data/Configs/others";
-                config.tag = Tag.JsonConfig;
-                SingletonScriptableObject<AssetBundleConfigManager>.instance.dict.Add("ALBUM1000", new List<ABConfig>() { config });
-
-                foreach (var a in SingletonScriptableObject<AssetBundleConfigManager>.instance.dict)
+                abInjected = true;
+                foreach(var name in CustomAlbum.abCache)
                 {
-                    ModLogger.Debug(a.Key);
-                }
+                    ABConfig config = new ABConfig();
+                    config.extension = ".json";
+                    config.fileName = null;
+                    config.type = typeof(TextAsset);
+                    config.tag = Tag.JsonConfig;
 
-                __result = AssetBundle.LoadFromMemory(CustomAlbum.newAssetBundle);
+                    config.abName = name.Key;
+                    config.directory = CustomAlbum.abDirectory[name.Key];
+
+                    var assetName = CustomAlbum.abName[name.Key];
+                    SingletonScriptableObject<AssetBundleConfigManager>.instance.dict.Add(assetName, new List<ABConfig>() { config });
+                }
+            }
+            byte[] abBuffer;
+            if (CustomAlbum.abCache.TryGetValue(abName, out abBuffer))
+            {
+                ModLogger.Debug($"!!!! Inject {abName} !!!!");
+                __result = AssetBundle.LoadFromMemory(abBuffer);
                 return false;
             }
             return true;
+
+            //if (path == Path.Combine(Settings.currentSetting.firstLoadAssetPath, "datas/configs/others"))
+            //{
+            //    foreach(var item in CustomAlbum.abCache)
+            //    {
+            //        ModLogger.Debug($"!!!!!!!!!!!!!!!Inject {item.Key}!!!!!!!!!!!!!!!");
+            //        ABConfig config = new ABConfig();
+            //        config.extension = ".json";
+            //        config.fileName = null;
+            //        config.type = typeof(TextAsset);
+            //        config.tag = Tag.JsonConfig;
+
+            //        config.abName = item.Key;
+            //        config.directory = CustomAlbum.abDirectory[item.Key];
+
+            //        SingletonScriptableObject<AssetBundleConfigManager>.instance.dict.Add(AlbumManager.JsonName, new List<ABConfig>() { config });
+            //    }
+
+
+            //    foreach (var a in SingletonScriptableObject<AssetBundleConfigManager>.instance.dict)
+            //    {
+            //        ModLogger.Debug(a.Key);
+            //    }
+
+            //    __result = AssetBundle.LoadFromMemory(CustomAlbum.newAssetBundle);
+            //    return false;
+            //}
+            //return true;
         }
         public static void PreWarmPrefix(int slice, ref List<PnlStage.albumInfo> ___m_AllAlbumTagData, ref Transform ___albumFancyScrollViewContent, ref List<GameObject> ___m_AlbumFSVCells)
         {

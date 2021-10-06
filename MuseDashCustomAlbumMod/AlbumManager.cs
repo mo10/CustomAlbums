@@ -77,22 +77,22 @@ namespace CustomAlbums
         public static void Init()
         {
             LoadAllAlbum();
-            // album.json
-            MusicPackage = new JObject();
-            MusicPackage.Add("uid", MusicPackge);
-            MusicPackage.Add("title", "Custom Albums");
-            MusicPackage.Add("prefabsName", $"AlbumDisco{MusicPackgeUid}");
-            MusicPackage.Add("price", "¥25.00");
-            MusicPackage.Add("jsonName", JsonName);
-            MusicPackage.Add("needPurchase", false);
-            MusicPackage.Add("free", true);
-            // album_<lang>.json
+            // albums.json
+            MusicPackage = JObject.FromObject(new
+            {
+                uid = MusicPackge,
+                title = "Custom Albums",
+                prefabsName = $"AlbumDisco{MusicPackgeUid}",
+                price = "¥25.00",
+                jsonName = JsonName,
+                needPurchase = false,
+                free = true,
+            });
+            // albums_<lang>.json
             MusicPackageLang = new Dictionary<string, JObject>();
             foreach(var lang in Langs)
             {
-                var obj = new JObject();
-                obj.Add("title", lang.Value);
-                MusicPackageLang.Add(lang.Key, obj);
+                MusicPackageLang.Add(lang.Key, JObject.FromObject(new { title = lang.Value }));
             }
             // ALBUM<index>.json  ALBUM<index>_<lang>.json
             AlbumsPackage = new JArray();

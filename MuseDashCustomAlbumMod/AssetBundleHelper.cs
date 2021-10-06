@@ -11,69 +11,145 @@ namespace CustomAlbums
         private AssetsManager assetsManager;
         private BundleFileInstance bundle;
         private AssetsFileInstance assets;
-        private long maxPathId;
-        private Dictionary<string, AssetsReplacer> replacers;
+
+        private long nextPathId;
+        private Dictionary<long, AssetTypeValueField> replaceFields;
+
         public AssetBundleHelper(string path, int index = 0)
         {
-            replacers = new Dictionary<string, AssetsReplacer>();
+            replaceFields = new Dictionary<long, AssetTypeValueField>();
             assetsManager = new AssetsManager();
             bundle = assetsManager.LoadBundleFile(path);
             assets = assetsManager.LoadAssetsFileFromBundle(bundle, index);
-            maxPathId = assets.table.assetFileInfo.Max(i => i.index);
+
+            nextPathId = assets.table.assetFileInfo.Max(i => i.index) + 1;
         }
-        public AssetTypeValueField GetAssetByPathId(long pathId)
+        public AssetTypeValueField GetReplaceAsset(long pathId)
         {
+            AssetTypeValueField field;
+
+            if (replaceFields.TryGetValue(pathId, out field))
+            {
+                return field;
+            }
+            return null;
+        }
+        public AssetTypeValueField GetReplaceAsset(string name)
+        {
+            foreach (var replField in replaceFields)
+            {
+                var replName = replField.Value.Get("m_Name").value.AsString();
+                if (replName == name)
+                {
+                    return replField.Value;
+                }
+            }
+            return null;
+        }
+        public long GetReplaceAssetPathId(string name)
+        {
+            foreach (var replField in replaceFields)
+            {
+                var replName = replField.Value.Get("m_Name").value.AsString();
+                if (replName == name)
+                {
+                    return replField.Key;
+                }
+            }
+            return -1;
+        }
+        public AssetTypeValueField GetAsset(long pathId)
+        {
+            var field = GetReplaceAsset(pathId);
+            if (field != null)
+                return field;
+
             foreach (var fileInfoEx in assets.table.assetFileInfo)
             {
                 if (fileInfoEx.index == pathId)
                 {
-                    var baseField = assetsManager.GetTypeInstance(assets, fileInfoEx).GetBaseField();
-                    return baseField;
+                    return assetsManager.GetTypeInstance(assets, fileInfoEx).GetBaseField();
                 }
             }
             return null;
         }
         public AssetTypeValueField GetAsset(string name)
         {
+            var field = GetReplaceAsset(name);
+            if (field != null)
+                return field;
+
+            foreach (var replField in replaceFields)
+            {
+                var replName = replField.Value.Get("m_Name").value.AsString();
+                if (replName == name)
+                {
+                    return replField.Value;
+                }
+            }
+
             var asset = assets.table.GetAssetInfo(name);
-            var baseField = assetsManager.GetTypeInstance(assets, asset).GetBaseField();
-            return baseField;
+            field = assetsManager.GetTypeInstance(assets, asset).GetBaseField();
+
+            return field;
         }
-        public long SaveAsset(AssetTypeValueField baseField, string type = null)
+        public long ReplaceAsset(AssetTypeValueField field)
         {
-            var name = baseField.Get("m_Name").value.AsString();
+            var name = field.Get("m_Name").value.AsString();
+            var type = field.GetFieldType();
+            var pathId = GetReplaceAssetPathId(name);
+
+
+            if (pathId != -1)
+            {
+                // Update replace asset
+                replaceFields[pathId] = field;
+                return pathId;
+            }
+
             var asset = assets.table.GetAssetInfo(name);
-
-            long pathId;
-            int classId;
-            byte[] buffer;
-
             if (asset == null)
             {
-                // New Asset
-                var ttType = AssetHelper.FindTypeTreeTypeByName(assets.file.typeTree, type);
-                classId = ttType.classId;
-                pathId = ++maxPathId;
+                // Add to replaceFields
+                pathId = nextPathId;
+                nextPathId++;
             }
             else
             {
-                // Exist Asset
-                classId = (int)asset.curFileType;
                 pathId = asset.index;
             }
-            buffer = baseField.WriteToByteArray();
 
-            var repl = new AssetsReplacerFromMemory(0, pathId, classId, 0xffff, buffer);
-            // Add to replacer list, use Apply() to apply
-            if (replacers.ContainsKey(name))
-            {
-                replacers[name] = repl;
-            }
-            else
-            {
-                replacers.Add(name, repl);
-            }
+            replaceFields.Add(pathId, field);
             return pathId;
+        }
+        public MemoryStream ApplyReplace()
+        {
+            var replacers = new List<AssetsReplacer>();
+            foreach (var replace in replaceFields)
+            {
+                long pathId = replace.Key;
+                int classId = AssetHelper.FindTypeTreeTypeByName(assets.file.typeTree, replace.Value.GetFieldType()).classId;
+                byte[] buffer = replace.Value.WriteToByteArray();
+
+                replacers.Add(new AssetsReplacerFromMemory(0, pathId, classId, 0xffff, buffer));
+            }
+
+            // Write changes to memory
+            byte[] newAssetData;
+            using (var stream = new MemoryStream())
+            using (var writer = new AssetsFileWriter(stream))
+            {
+                assets.file.Write(writer, 0, replacers, 0);
+                newAssetData = stream.ToArray();
+            }
+
+            var memoryStream = new MemoryStream();
+            using (var writer = new AssetsFileWriter(memoryStream))
+            {
+                bundle.file.Write(writer, new List<BundleReplacer>() { new BundleReplacerFromMemory(assets.name, assets.name, true, newAssetData, -1) });
+            }
+
+            return memoryStream;
         }
         public AssetTypeValueField CreateAsset(string type)
         {
@@ -83,36 +159,10 @@ namespace CustomAlbums
 
             return ValueBuilder.DefaultValueFieldFromTemplate(templateField);
         }
-        public MemoryStream Apply()
-        {
-            List<AssetsReplacer> repls = new List<AssetsReplacer>();
-            foreach (var item in replacers)
-            {
-                repls.Add(item.Value);
-            }
-            //write changes to memory
-            byte[] newAssetData;
-            using (var stream = new MemoryStream())
-            using (var writer = new AssetsFileWriter(stream))
-            {
-                assets.file.Write(writer, 0, repls, 0);
-                newAssetData = stream.ToArray();
-            }
-
-            //rename this asset name from boring to cool when saving
-            var bunRepl = new BundleReplacerFromMemory(assets.name, assets.name, true, newAssetData, -1);
-
-            var memoryStream = new MemoryStream();
-            using (var writer = new AssetsFileWriter(memoryStream))
-            {
-                bundle.file.Write(writer, new List<BundleReplacer>() { bunRepl });
-            }
-            return memoryStream;
-        }
         public void UpdateMetadata(long pathId, string path)
         {
             string fullyPath = $"Assets/Static Resources/{path}";
-            var assetBundleInfo = this.GetAssetByPathId(1);
+            var assetBundleInfo = GetAsset(1);
             var m_PreloadTable = assetBundleInfo["m_PreloadTable"]["Array"];
             var m_Container = assetBundleInfo["m_Container"]["Array"];
 
@@ -121,10 +171,10 @@ namespace CustomAlbums
             {
                 if (pairData["second"]["asset"]["m_PathID"].value.AsInt64() == pathId)
                 {
-                    if(pairData["first"].value.AsString() != fullyPath)
+                    if (pairData["first"].value.AsString() != fullyPath)
                     {
                         pairData["first"].value.Set(fullyPath);
-                        SaveAsset(assetBundleInfo);
+                        ReplaceAsset(assetBundleInfo);
                         return;
                     }
                 }
@@ -143,18 +193,10 @@ namespace CustomAlbums
             item["second"]["asset"]["m_PathID"].value.Set(pathId);
             m_Container.AddChlidren(item);
 
-            SaveAsset(assetBundleInfo);
+            ReplaceAsset(assetBundleInfo);
         }
-        public int WriteFile(string path, string name, object data)
-        {
-            var newAsset = this.CreateAsset("TextAsset");
-            newAsset["m_Name"].value.Set(name);
-            newAsset["m_Script"].value.Set(data);
-            var newAssetPathId = SaveAsset(newAsset, "TextAsset");
-            // Update metadata
-            UpdateMetadata(newAssetPathId,);
-        }
-        ~AssetBundleHelper()
+
+        public void Unload()
         {
             if (assetsManager != null)
             {

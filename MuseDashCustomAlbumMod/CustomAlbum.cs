@@ -28,10 +28,13 @@ namespace CustomAlbums
 {
     public static class CustomAlbum
     {
-        public static byte[] newAssetBundle;
+        public static Dictionary<string, byte[]> abCache = new Dictionary<string, byte[]>();
+        public static Dictionary<string, string> abDirectory = new Dictionary<string, string>();
+        public static Dictionary<string, string> abName = new Dictionary<string, string>();
+
         public static void DoPatching()
         {
-            
+
             var harmony = new Harmony("com.github.mo10.customalbum");
             AlbumManager.Init();
             //DataPatch.DoPathcing(harmony);
@@ -40,29 +43,60 @@ namespace CustomAlbums
 
             //LoadCustomAlbums();
 
+            abOthers();
+            abLanguage();
 
+
+            StageUIPatch.DoPatching(harmony);
+        }
+        public static void abOthers()
+        {
             AssetBundleHelper helper = new AssetBundleHelper("MuseDash_Data/StreamingAssets/AssetBundles/datas/configs/others");
             // albums.json
             var albums = helper.GetAsset("albums");
             var albumJson = albums["m_Script"].value.AsJson<JArray>();
             albumJson.Add(AlbumManager.MusicPackage);
             albums["m_Script"].value.Set(albumJson.JsonSerialize());
-            helper.SaveAsset(albums);
-            // new ALBUM.json
+            helper.ReplaceAsset(albums);
+            // add ALBUM.json 
             var newAsset = helper.CreateAsset("TextAsset");
             newAsset["m_Name"].value.Set(AlbumManager.JsonName);
             newAsset["m_Script"].value.Set(AlbumManager.AlbumsPackage.JsonSerialize());
-            var newAssetPathId = helper.SaveAsset(newAsset, "TextAsset");
-            // Update metadata
-            helper.AddMetadata(newAssetPathId,);
-            var stream = helper.Apply();
-            newAssetBundle = stream.ToArray();
-            stream.Close();
+            var pathId = helper.ReplaceAsset(newAsset);
+            helper.UpdateMetadata(pathId, $"data/configs/others/{AlbumManager.JsonName}.json".ToLower());
 
-            // For debug
-            File.WriteAllBytes("other.cache", newAssetBundle); 
-            StageUIPatch.DoPatching(harmony);
+            using (var stream = helper.ApplyReplace())
+            {
+                abCache.Add("datas/configs/others", stream.ToArray());
+                abDirectory.Add("datas/configs/others", "Data/Configs/others");
+                abName.Add("datas/configs/others",AlbumManager.JsonName);
+            }
         }
+        public static void abLanguage()
+        {
+            foreach (var lang in AlbumManager.Langs)
+            {
+                AssetBundleHelper helper = new AssetBundleHelper($"MuseDash_Data/StreamingAssets/AssetBundles/datas/configs/{lang.Key.ToLower()}");
+                // albums_<lang>.json
+                var albums = helper.GetAsset($"albums_{lang.Key}");
+                var albumJson = albums["m_Script"].value.AsJson<JArray>();
+                albumJson.Add(AlbumManager.MusicPackageLang[lang.Key]);
+                albums["m_Script"].value.Set(albumJson.JsonSerialize());
+                helper.ReplaceAsset(albums);
+                // ALBUMxx_<lang>.json
+                var newAsset = helper.CreateAsset("TextAsset");
+                newAsset["m_Name"].value.Set($"{AlbumManager.JsonName}_{lang}");
+                newAsset["m_Script"].value.Set(AlbumManager.AlbumsPackageLang[lang.Key].JsonSerialize());
+                var pathId = helper.ReplaceAsset(newAsset);
+                helper.UpdateMetadata(pathId, $"data/configs/{lang.Key.ToLower()}/{AlbumManager.JsonName}_{lang}.json".ToLower());
 
+                using (var stream = helper.ApplyReplace())
+                {
+                    abCache.Add($"datas/configs/{lang.Key.ToLower()}", stream.ToArray());
+                    abDirectory.Add($"datas/configs/{lang.Key.ToLower()}", $"Data/Configs/{lang.Key.ToLower()}");
+                    abName.Add($"datas/configs/{lang.Key.ToLower()}", $"{AlbumManager.JsonName}_{lang}");
+                }
+            }
+        }
     }
 }
