@@ -14,7 +14,7 @@ using NAudio.Wave;
 using ModHelper;
 using RuntimeAudioClipLoader;
 
-namespace MuseDashCustomAlbumMod
+namespace CustomAlbum
 {
     public class CustomAlbumInfo
     {

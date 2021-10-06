@@ -23,17 +23,17 @@ using System.Reflection.Emit;
 using System.IO;
 using Ionic.Zip;
 
-namespace MuseDashCustomAlbumMod
+namespace CustomAlbum
 {
     public static class CustomAlbum
     {
         public static readonly Dictionary<string, string> Languages = new Dictionary<string, string>()
         {
-            { "ChineseT", "自定義谱面" },
-            { "ChineseS", "自定义谱面" },
-            { "English", "Custom Albums" },
-            { "Korean", "Custom Albums" },
-            { "Japanese", "Custom Albums" },
+            { "ChineseT", "自定義" },
+            { "ChineseS", "自定义" },
+            { "English", "Custom" },
+            { "Korean", "Custom" },
+            { "Japanese", "Custom" },
         };
         public static readonly int MusicPackgeUid = 999;
         public static readonly string JsonName = $"ALBUM{MusicPackgeUid + 1}";
@@ -50,7 +50,7 @@ namespace MuseDashCustomAlbumMod
             StageUIPatch.DoPatching(harmony);
             DataPatch.DoPathcing(harmony);
             ExtraPatch.DoPatching(harmony);
-            RankPatch.DoPatching(harmony);
+            // RankPatch.DoPatching(harmony);
 
             LoadCustomAlbums();
         }

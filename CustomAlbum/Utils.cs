@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-namespace MuseDashCustomAlbumMod
+namespace CustomAlbum
 {
     public static class Utils
     {

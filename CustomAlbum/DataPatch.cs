@@ -13,7 +13,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using UnityEngine;
 
-namespace MuseDashCustomAlbumMod
+namespace CustomAlbum
 {
     public static class DataPatch
     {
