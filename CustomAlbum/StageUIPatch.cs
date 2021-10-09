@@ -57,8 +57,7 @@ namespace CustomAlbum
                 headers = new Dictionary<string, string>()
                 {
                     {
-                        "count",
-                        (new DirectoryInfo("Custom_Albums").GetFiles().Length + new DirectoryInfo("Custom_Albums").GetDirectories().Length).ToString()
+                        "count",CustomAlbum.Albums.Count.ToString()
                     }
                 };
 
