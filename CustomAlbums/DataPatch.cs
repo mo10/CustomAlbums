@@ -13,7 +13,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using UnityEngine;
 
-namespace CustomAlbum
+namespace CustomAlbums
 {
     public static class DataPatch
     {

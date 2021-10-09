@@ -1,6 +1,6 @@
 ﻿using ModHelper;
 
-namespace CustomAlbum
+namespace CustomAlbums
 {
     class Entry : IMod
     {

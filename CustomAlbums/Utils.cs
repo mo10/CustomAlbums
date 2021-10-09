@@ -9,7 +9,7 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 
-namespace CustomAlbum
+namespace CustomAlbums
 {
     public static class Utils
     {

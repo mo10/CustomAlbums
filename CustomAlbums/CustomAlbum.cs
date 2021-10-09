@@ -23,7 +23,7 @@ using System.Reflection.Emit;
 using System.IO;
 using Ionic.Zip;
 
-namespace CustomAlbum
+namespace CustomAlbums
 {
     public static class CustomAlbum
     {

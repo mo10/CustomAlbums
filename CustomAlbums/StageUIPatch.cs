@@ -9,7 +9,7 @@ using System.IO;
 using UnityEngine.Networking;
 using Assets.Scripts.PeroTools.Managers;
 
-namespace CustomAlbum
+namespace CustomAlbums
 {
     public static class StageUIPatch
     {

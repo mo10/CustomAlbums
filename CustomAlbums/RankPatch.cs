@@ -7,7 +7,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
 
-namespace CustomAlbum
+namespace CustomAlbums
 {
     public static class RankPatch
     {

@@ -10,7 +10,7 @@ using UnityEngine;
 using Sirenix.Utilities;
 using Assets.Scripts.GameCore;
 
-namespace CustomAlbum
+namespace CustomAlbums
 {
     class MyBMSCManager
     {

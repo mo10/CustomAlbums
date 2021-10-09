@@ -10,7 +10,7 @@ using Assets.Scripts.PeroTools.Nice.Variables;
 using Assets.Scripts.UI.Panels;
 using HarmonyLib;
 
-namespace CustomAlbum
+namespace CustomAlbums
 {
     class ExtraPatch
     {

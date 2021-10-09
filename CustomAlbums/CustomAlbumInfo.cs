@@ -14,7 +14,7 @@ using NAudio.Wave;
 using ModHelper;
 using RuntimeAudioClipLoader;
 
-namespace CustomAlbum
+namespace CustomAlbums
 {
     public class CustomAlbumInfo
     {
