@@ -1,27 +1,8 @@
-﻿using Assets.Scripts.GameCore;
-using Assets.Scripts.GameCore.Managers;
-using Assets.Scripts.PeroTools.AssetBundles;
-using Assets.Scripts.PeroTools.Commons;
-using Assets.Scripts.PeroTools.GeneralLocalization;
-using Assets.Scripts.PeroTools.GeneralLocalization.Modles;
-using Assets.Scripts.PeroTools.Managers;
-using Assets.Scripts.PeroTools.Nice.Components;
-using Assets.Scripts.PeroTools.Nice.Variables;
-using Assets.Scripts.UI.Controls;
-using Assets.Scripts.UI.Panels;
-using HarmonyLib;
+﻿using HarmonyLib;
 using ModHelper;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using UnityEngine;
-using System.Linq;
-using UnityEngine.UI;
-using Assets.Scripts.PeroTools.Nice.Datas;
-using System.Reflection.Emit;
 using System.IO;
-using Ionic.Zip;
 
 namespace CustomAlbums
 {

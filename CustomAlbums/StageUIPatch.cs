@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using HarmonyLib;
 using Newtonsoft.Json.Linq;
-using System.IO;
 using UnityEngine.Networking;
 using Assets.Scripts.PeroTools.Managers;
 
@@ -57,7 +56,8 @@ namespace CustomAlbums
                 headers = new Dictionary<string, string>()
                 {
                     {
-                        "count",CustomAlbum.Albums.Count.ToString()
+                        "count",
+                        CustomAlbum.Albums.Count.ToString()
                     }
                 };
 

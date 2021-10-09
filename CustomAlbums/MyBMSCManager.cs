@@ -8,7 +8,6 @@ using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 using Sirenix.Utilities;
-using Assets.Scripts.GameCore;
 
 namespace CustomAlbums
 {
