@@ -4,9 +4,9 @@ namespace CustomAlbums
 {
     class Entry : IMod
     {
-        public string Name => "CustomAlbum";
+        public string Name => "CustomAlbums";
 
-        public string Description => "Custom Album";
+        public string Description => "Adds custom charts to Muse Dash.";
 
         public string Author => "Mo10";
 
