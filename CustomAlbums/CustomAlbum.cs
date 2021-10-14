@@ -12,9 +12,9 @@ namespace CustomAlbums
         {
             { "ChineseT", "自定義" },
             { "ChineseS", "自定义" },
-            { "English", "Custom" },
-            { "Korean", "Custom" },
-            { "Japanese", "Custom" },
+            { "English", "Custom Albums" },
+            { "Korean", "Custom Albums" },
+            { "Japanese", "Custom Albums" },
         };
         public static readonly int MusicPackgeUid = 999;
         public static readonly string JsonName = $"ALBUM{MusicPackgeUid + 1}";
