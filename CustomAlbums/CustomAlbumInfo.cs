@@ -13,11 +13,13 @@ using UnityEngine;
 using NAudio.Wave;
 using ModHelper;
 using RuntimeAudioClipLoader;
+using System.ComponentModel;
 
 namespace CustomAlbums
 {
     public class CustomAlbumInfo
     {
+        #region info.json define
         [JsonProperty]
         public string name;
         [JsonProperty]
@@ -44,9 +46,11 @@ namespace CustomAlbums
         [JsonProperty]
         public string author_zh_hant;
 
-        [JsonProperty]
+        [DefaultValue("0")]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public string bpm;
-        [JsonProperty]
+        [DefaultValue("scene_01")]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public string scene;
 
         [JsonProperty]
@@ -69,8 +73,10 @@ namespace CustomAlbums
         [JsonProperty]
         public string difficulty4;
 
-        [JsonProperty]
+        [DefaultValue("0")]
+        [JsonProperty(DefaultValueHandling = DefaultValueHandling.Populate)]
         public string unlockLevel;
+        #endregion
 
         [JsonIgnore]
         public string uid;
@@ -84,6 +90,75 @@ namespace CustomAlbums
         private static UnityEngine.Object objectCache;
         [JsonIgnore]
         private StageInfo[] maps = new StageInfo[4];
+        public string GetName(string lang = null)
+        {
+            // If "name_<lang>" not avaliable will return "name"
+            // If "name" not avaliable will return "Unknown" 
+            string result;
+            switch (lang)
+            {
+                case "ChineseT":
+                    result = name_zh_hant;
+                    if (string.IsNullOrEmpty(result)) goto default;
+                    break;
+                case "ChineseS":
+                    result = name_zh_hans;
+                    if (string.IsNullOrEmpty(result)) goto default;
+                    break;
+                case "English":
+                    result = name_en;
+                    if (string.IsNullOrEmpty(result)) goto default;
+                    break;
+                case "Korean":
+                    result = name_ko;
+                    if (string.IsNullOrEmpty(result)) goto default;
+                    break;
+                case "Japanese":
+                    result = name_ja;
+                    if (string.IsNullOrEmpty(result)) goto default;
+                    break;
+                default:
+                    result = name;
+                    if (string.IsNullOrEmpty(result)) result = "Unknown";
+                    break;
+            }
+            return result;
+        }
+        public string GetAuthor(string lang = null)
+        {
+            // If "author_<lang>" not avaliable will return "author"
+            // If "author" not avaliable will return "Unknown" 
+            string result;
+            switch (lang)
+            {
+                case "ChineseT":
+                    result = author_zh_hant;
+                    if (string.IsNullOrEmpty(result)) goto default;
+                    break;
+                case "ChineseS":
+                    result = author_zh_hans;
+                    if (string.IsNullOrEmpty(result)) goto default;
+                    break;
+                case "English":
+                    result = author_en;
+                    if (string.IsNullOrEmpty(result)) goto default;
+                    break;
+                case "Korean":
+                    result = author_ko;
+                    if (string.IsNullOrEmpty(result)) goto default;
+                    break;
+                case "Japanese":
+                    result = author_ja;
+                    if (string.IsNullOrEmpty(result)) goto default;
+                    break;
+                default:
+                    result = author;
+                    if (string.IsNullOrEmpty(result)) result = "Unknown";
+                    break;
+            }
+            return result;
+        }
+
         /// <summary>
         /// Load from zip file
         /// </summary>
@@ -175,7 +250,7 @@ namespace CustomAlbums
                     format = AudioFormat.unknown;
                     break;
             }
-            if(stream != null)
+            if (stream != null)
             {
                 audio = RuntimeAudioClipLoader.Manager.Load(stream, format, name, false, true);
                 Cache(audio);
@@ -214,7 +289,7 @@ namespace CustomAlbums
             if (loadFromFolder)
             {
                 // Load from folder
-                if(TryGetContainFile(path, targetFiles, out string filePath))
+                if (TryGetContainFile(path, targetFiles, out string filePath))
                 {
                     ImageConversion.LoadImage(texture, File.ReadAllBytes(filePath));
                 }
@@ -224,7 +299,7 @@ namespace CustomAlbums
                 // Load from zip
                 using (ZipFile zip = ZipFile.Read(path))
                 {
-                    if(TryGetContainFile(zip,targetFiles,out string file))
+                    if (TryGetContainFile(zip, targetFiles, out string file))
                     {
                         ImageConversion.LoadImage(texture, zip[file].OpenReader().ToBytes());
                     }
@@ -280,7 +355,7 @@ namespace CustomAlbums
 
             var info = musicConfigReader.GetData().Cast<MusicData>();
             //var info = (from m in musicConfigReader.GetData().ToArray() select (MusicData)m).ToList();
-            
+
             StageInfo stageInfo = new StageInfo
             {
                 musicDatas = info,
@@ -309,7 +384,7 @@ namespace CustomAlbums
             filePath = null;
             return false;
         }
-        public static bool TryGetContainFile(ZipFile zipEntries, string[] fileNames, out string file )
+        public static bool TryGetContainFile(ZipFile zipEntries, string[] fileNames, out string file)
         {
             foreach (var fileName in fileNames)
             {
@@ -332,31 +407,7 @@ namespace CustomAlbums
         }
         public override string ToString()
         {
-            return
-                $"name:{name} " +
-                $"name_en:{name_en} " +
-                $"name_ko:{name_ko} " +
-                $"name_ja:{name_ja} " +
-                $"name_zh_hans:{name_zh_hans} " +
-                $"name_zh_hant:{name_zh_hant} " +
-                $"author:{author} " +
-                $"author_en:{author_en} " +
-                $"author_ko:{author_ko} " +
-                $"author_ja:{author_ja} " +
-                $"author_zh_hans:{author_zh_hans} " +
-                $"author_zh_hant:{author_zh_hant} " +
-                $"bpm:{bpm} " +
-                $"scene:{scene} " +
-                $"levelDesigner:{levelDesigner} " +
-                $"levelDesigner1:{levelDesigner1} " +
-                $"levelDesigner2:{levelDesigner2} " +
-                $"levelDesigner3:{levelDesigner3} " +
-                $"levelDesigner4:{levelDesigner4} " +
-                $"difficulty1:{difficulty1} " +
-                $"difficulty2:{difficulty2} " +
-                $"difficulty3:{difficulty3} " +
-                $"difficulty4:{difficulty4} " +
-                $"unlockLevel:{unlockLevel}";
+            return $"Name:{GetName()} Author:{GetAuthor()}";
         }
     }
 }
