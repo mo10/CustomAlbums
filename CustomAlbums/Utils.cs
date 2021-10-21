@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 
@@ -74,6 +75,15 @@ namespace CustomAlbums
                 waveFileWriter.Flush();
             }
             return outputStream;
+        }
+
+        public static string BytesToMD5(byte[] bytes)
+        {
+            byte[] hash = MD5.Create().ComputeHash(bytes);
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int index = 0; index < hash.Length; ++index)
+                stringBuilder.Append(hash[index].ToString("x2"));
+            return stringBuilder.ToString();
         }
     }
 }

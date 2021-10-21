@@ -1,16 +1,10 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using System.IO.Compression;
 using Ionic.Zip;
 using Assets.Scripts.GameCore;
-using Assets.Scripts.GameCore.Managers;
 using GameLogic;
 using Assets.Scripts.PeroTools.Commons;
 using UnityEngine;
-using NAudio.Wave;
 using ModHelper;
 using RuntimeAudioClipLoader;
 
@@ -79,6 +73,8 @@ namespace CustomAlbums
         [JsonIgnore]
         public bool loadFromFolder { get; private set; }
         [JsonIgnore]
+        public string[] md5 = new string[4];
+        [JsonIgnore]
         private Sprite coverSprite;
         [JsonIgnore]
         private static UnityEngine.Object objectCache;
@@ -93,11 +89,26 @@ namespace CustomAlbums
         {
             using (ZipFile zip = ZipFile.Read(filePath))
             {
-                if (zip["info.json"] == null)
-                {
-                    return null;
-                }
+                if (zip["info.json"] == null) return null;
                 var albumInfo = Utils.StreamToJson<CustomAlbumInfo>(zip["info.json"].OpenReader());
+
+                // Load MD5 values
+                for (int i = 0; i < 4; i++)
+                {
+                    string map = $"map{i + 1}.bms";
+
+                    if (zip[map] != null)
+                    {
+                        Stream s = zip[map].OpenReader();
+                        byte[] b = Utils.StreamToBytes(s);
+                        albumInfo.md5[i] = Utils.BytesToMD5(b);
+                    }
+                    else
+                    {
+                        albumInfo.md5[i] = null;
+                    }
+                }
+
                 albumInfo.path = filePath;
                 albumInfo.loadFromFolder = false;
                 return albumInfo;
