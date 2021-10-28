@@ -30,38 +30,71 @@ namespace CustomAlbums
             }
             return buffer;
         }
-        /// <summary>
-        /// Print all child GameObject and Component
-        /// </summary>
-        /// <param name="gameObject"></param>
-        /// <param name="layer"></param>
-        public static void GameObjectTracker(GameObject gameObject, int layer = 0)
-        {
-            foreach (var component in gameObject.GetComponents(typeof(object)))
-            {
-                ModLogger.Debug($"Layer:{layer} Name:{gameObject.name} Component:{component.GetType()}");
-            }
-            if (gameObject.transform.childCount > 0)
-            {
-                ++layer;
-                for (var i = 0; i < gameObject.transform.childCount; i++)
-                {
-                    GameObjectTracker(gameObject.transform.GetChild(i).gameObject, layer);
-                }
-            }
-        }
-
-        public static T StreamToJson<T>(Stream steamReader)
+        public static T JsonDeserialize<T>(this Stream steamReader)
         {
             var buffer = new byte[steamReader.Length];
             steamReader.Read(buffer, 0, buffer.Length);
             return JsonConvert.DeserializeObject<T>(Encoding.Default.GetString(buffer));
         }
-        public static byte[] StreamToBytes(Stream steamReader)
+        public static T JsonDeserialize<T>(this string text)
+        {
+            return JsonConvert.DeserializeObject<T>(text);
+        }
+        public static string JsonSerialize(this object obj)
+        {
+            return JsonConvert.SerializeObject(obj, Formatting.Indented);
+        }
+        public static Type GetNestedNonPublicType(this Type type, string name)
+        {
+            return type.GetNestedType(name, BindingFlags.NonPublic | BindingFlags.Instance);
+        }
+        public static string RemoveFromEnd(this string str, IEnumerable<string> suffixes)
+        {
+            foreach(var suffix in suffixes)
+            {
+                if (str.EndsWith(suffix))
+                {
+                    return str.Substring(0, str.Length - suffix.Length);
+                }
+            }
+            return str;
+        }
+        public static string RemoveFromEnd(this string str, string suffix)
+        {
+            if (str.EndsWith(suffix))
+            {
+                return str.Substring(0, str.Length - suffix.Length);
+            }
+            return str;
+        }
+        public static string RemoveFromStart(this string str, IEnumerable<string> suffixes)
+        {
+            foreach (var suffix in suffixes)
+            {
+                if (str.StartsWith(suffix))
+                {
+                    return str.Substring(suffix.Length);
+                }
+            }
+            return str;
+        }
+        public static string RemoveFromStart(this string str, string suffix)
+        {
+            if (str.StartsWith(suffix))
+            {
+                return str.Substring(suffix.Length);
+            }
+            return str;
+        }
+        public static byte[] ToArray(this Stream steamReader)
         {
             var buffer = new byte[steamReader.Length];
             steamReader.Read(buffer, 0, buffer.Length);
             return buffer;
+        }
+        public static MemoryStream ToStream(this byte[] bytes)
+        {
+            return new MemoryStream(bytes);
         }
         public static MemoryStream AudioMemStream(WaveStream waveStream)
         {
@@ -77,7 +110,7 @@ namespace CustomAlbums
             return outputStream;
         }
 
-        public static string BytesToMD5(byte[] bytes)
+        public static string GetMD5(this byte[] bytes)
         {
             byte[] hash = MD5.Create().ComputeHash(bytes);
             StringBuilder stringBuilder = new StringBuilder();
