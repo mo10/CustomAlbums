@@ -30,6 +30,7 @@ namespace CustomAlbums
             JsonPatch.DoPatching(harmony);
             AssetPatch.DoPatching(harmony);
             WebApiPatch.DoPatching(harmony);
+            StagePatch.DoPatching(harmony);
             //CustomAlbum.LoadCustomAlbums();
         }
     }

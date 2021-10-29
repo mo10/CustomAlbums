@@ -96,7 +96,7 @@ namespace CustomAlbums
         {
             return new MemoryStream(bytes);
         }
-        public static MemoryStream AudioMemStream(WaveStream waveStream)
+        public static MemoryStream ToStream(this WaveStream waveStream)
         {
             MemoryStream outputStream = new MemoryStream();
             using (WaveFileWriter waveFileWriter = new WaveFileWriter(outputStream, waveStream.WaveFormat))
@@ -109,14 +109,18 @@ namespace CustomAlbums
             }
             return outputStream;
         }
-
-        public static string GetMD5(this byte[] bytes)
+        public static string ToString(this IEnumerable<byte> bytes, string format)
         {
-            byte[] hash = MD5.Create().ComputeHash(bytes);
-            StringBuilder stringBuilder = new StringBuilder();
-            for (int index = 0; index < hash.Length; ++index)
-                stringBuilder.Append(hash[index].ToString("x2"));
-            return stringBuilder.ToString();
+            string result = string.Empty;
+            foreach(var _byte in bytes)
+            {
+                result += _byte.ToString(format);
+            }
+            return result;
+        }
+        public static byte[] GetMD5(this IEnumerable<byte> bytes)
+        {
+            return MD5.Create().ComputeHash(bytes.ToArray());
         }
     }
 }
