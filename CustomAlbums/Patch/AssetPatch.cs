@@ -38,7 +38,11 @@ namespace CustomAlbums.Patch
             string[] suffixes = new string[] {
                 "_demo.mp3",
                 "_music.mp3",
-                "_cover.png"
+                "_cover.png",
+                "_map1.bms",
+                "_map2.bms",
+                "_map3.bms",
+                "_map4.bms"
             };
             if (__result == null)
             {
@@ -60,7 +64,20 @@ namespace CustomAlbums.Patch
                             case "_cover.png":
                                 __result = album.GetCover();
                                 break;
+                            case "_map1.bms":
+                                __result = album.GetMap(1);
+                                break;
+                            case "_map2.bms":
+                                __result = album.GetMap(2);
+                                break;
+                            case "_map3.bms":
+                                __result = album.GetMap(3);
+                                break;
+                            case "_map4.bms":
+                                __result = album.GetMap(4);
+                                break;
                         }
+
                         //if(beforeAlbum != null)
                         //    beforeAlbum.DestoryAudio();
                         //beforeAlbum = album;
