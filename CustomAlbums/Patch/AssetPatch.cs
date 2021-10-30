@@ -119,7 +119,8 @@ namespace CustomAlbums.Patch
         /// <param name="___m_LoadedAssetBundles"></param>
         public static void LoadAssetBundlePrefix(string assetBundleName, bool async, ref Dictionary<string, LoadedAssetBundle> ___m_LoadedAssetBundles)
         {
-            if (!___m_LoadedAssetBundles.ContainsKey(assetBundleName) && JsonPatch.assetMapping.TryGetValue(assetBundleName, out string albumKey))
+            
+            if (!___m_LoadedAssetBundles.ContainsKey(assetBundleName) && JsonPatch.assetMapping.ContainsKey(assetBundleName))
             {
                 ModLogger.Debug($"Load Asset Bundle:{assetBundleName}");
                 ___m_LoadedAssetBundles.Add(assetBundleName, ABundle);
