@@ -2,12 +2,14 @@
 using Assets.Scripts.PeroTools.AssetBundles;
 using Assets.Scripts.PeroTools.Commons;
 using Assets.Scripts.PeroTools.Managers;
+using CustomAlbums.Data;
 using HarmonyLib;
 using ModHelper;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using UnityEngine;
 using static Assets.Scripts.PeroTools.Managers.AssetBundleConfigManager;
@@ -73,35 +75,26 @@ namespace CustomAlbums.Patch
                 var key = keyValue.Key;
                 var album = keyValue.Value;
                 var info = album.Info;
-                var jObject = new JObject();
-                jObject.Add("uid", $"{AlbumManager.Uid}-{album.Index}");
-                jObject.Add("name", info.GetName());
-                jObject.Add("author", info.GetAuthor());
-                jObject.Add("bpm", info.bpm);
-                jObject.Add("music", $"{key}_music");
-                jObject.Add("demo", $"{key}_demo");
-                jObject.Add("cover", $"{key}_cover");
-                jObject.Add("noteJson", $"{key}_map");
-                jObject.Add("scene", info.scene);
-                jObject.Add("unlockLevel", info.unlockLevel);
-                if (!string.IsNullOrEmpty(info.levelDesigner))
-                    jObject.Add("levelDesigner", info.levelDesigner);
-                if (!string.IsNullOrEmpty(info.levelDesigner1))
-                    jObject.Add("levelDesigner1", info.levelDesigner1);
-                if (!string.IsNullOrEmpty(info.levelDesigner2))
-                    jObject.Add("levelDesigner2", info.levelDesigner2);
-                if (!string.IsNullOrEmpty(info.levelDesigner3))
-                    jObject.Add("levelDesigner3", info.levelDesigner3);
-                if (!string.IsNullOrEmpty(info.levelDesigner4))
-                    jObject.Add("levelDesigner4", info.levelDesigner4);
-                if (!string.IsNullOrEmpty(info.difficulty1))
-                    jObject.Add("difficulty1", info.difficulty1);
-                if (!string.IsNullOrEmpty(info.difficulty2))
-                    jObject.Add("difficulty2", info.difficulty2);
-                if (!string.IsNullOrEmpty(info.difficulty3))
-                    jObject.Add("difficulty3", info.difficulty3);
-                if (!string.IsNullOrEmpty(info.difficulty4))
-                    jObject.Add("difficulty4", info.difficulty4);
+                var jObject = new JObject
+                {
+                    { "name", info.GetName() },
+                    { "author", info.GetAuthor() },
+                    { "music", $"{key}_music" },
+                    { "demo", $"{key}_demo" },
+                    { "cover", $"{key}_cover" },
+                    { "noteJson", $"{key}_map" }
+                };
+                
+                foreach (PropertyInfo prop in typeof(AlbumInfo).GetProperties())
+                {
+                    string propName = prop.Name;
+                    string propVal = (string) prop.GetValue(info, null);
+                    if (!(propName.StartsWith("name") || propName.StartsWith("author"))
+                        && !string.IsNullOrEmpty(propVal))
+                    {
+                        jObject.Add(propName, propVal);
+                    }
+                }
 
                 jArray.Add(jObject);
             }
@@ -158,28 +151,12 @@ namespace CustomAlbums.Patch
                 assetMapping.Add(fileName, key);
                 dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
 
-                if (!string.IsNullOrEmpty(info.difficulty1))
+                // add difficulty configs
+                foreach (PropertyInfo prop in typeof(AlbumInfo).GetProperties()
+                                        .Where(x => x.Name.StartsWith("difficulty")))
                 {
-                    fileName = $"{key}_map1";
-                    assetMapping.Add(fileName, key);
-                    dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
-                }
-                if (!string.IsNullOrEmpty(info.difficulty2))
-                {
-                    fileName = $"{key}_map2";
-                    assetMapping.Add(fileName, key);
-                    dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
-                }
-                if (!string.IsNullOrEmpty(info.difficulty3))
-                {
-                    fileName = $"{key}_map3";
-                    assetMapping.Add(fileName, key);
-                    dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
-                }
-                if (!string.IsNullOrEmpty(info.difficulty4))
-                {
-                    fileName = $"{key}_map4";
-                    assetMapping.Add(fileName, key);
+                    string suffixNum = prop.Name.Replace("difficulty", "");
+                    fileName = $"{key}_map{suffixNum}";
                     dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
                 }
             }
