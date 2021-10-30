@@ -116,8 +116,9 @@
     <Compile Include="Patch\AssetPatch.cs" />
     <Compile Include="Entry.cs" />
     <Compile Include="Patch\ILCodePatch.cs" />
-    <Compile Include="MyBMSCManager.cs" />
+    <Compile Include="BMSCLoader.cs" />
     <Compile Include="Patch\JsonPatch.cs" />
+    <Compile Include="Patch\StagePatch.cs" />
     <Compile Include="Patch\WebApiPatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils.cs" />

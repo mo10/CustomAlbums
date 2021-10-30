@@ -1,4 +1,6 @@
-﻿using CustomAlbums.Data;
+﻿using Assets.Scripts.GameCore;
+using CustomAlbums.Data;
+using GameLogic;
 using Ionic.Zip;
 using ModHelper;
 using Newtonsoft.Json.Linq;
@@ -8,6 +10,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using Assets.Scripts.PeroTools.Commons;
 
 namespace CustomAlbums
 {
@@ -111,11 +114,52 @@ namespace CustomAlbums
             MusicAudio = RuntimeAudioClipLoader.Manager.Load(MusicStream, format, name, false, true);
             return MusicAudio;
         }
-        public AudioClip GetDemo()
+        public StageInfo GetMap(int index)
         {
+            try
+            {
+                using (Stream stream = Open($"map{index}.bms"))
+                {
+                    /* 1.加载bms
+                     * 2.转换为MusicData
+                     * 3.创建StageInfo
+                     * */
+
+                    var bms = BMSCLoader.Load(stream, $"map_{index}");
+
+                    if (bms == null)
+                    {
+                        return null;
+                    }
+
+                    MusicConfigReader reader = GameLogic.MusicConfigReader.Instance;
+                    reader.ClearData();
+                    reader.bms = bms;
+                    reader.Init("");
+
+
+                    var info = LinqUtils.Cast<MusicData>(reader.GetData());
+                    StageInfo stageInfo = new StageInfo
+                    {
+                        musicDatas = info,
+                        delay = reader.delay,
+                        mapName = (string)reader.bms.info["TITLE"],
+                        music = ((string)reader.bms.info["WAV10"]).BeginBefore('.'),
+                        scene = (string)reader.bms.info["GENRE"],
+                        difficulty = index,
+                        bpm = reader.bms.GetBpm(),
+                        md5 = reader.bms.md5,
+                        sceneEvents = reader.sceneEvents
+                    };
+                    ModLogger.Debug($"Delay: {reader.delay}");
+                    return stageInfo;
+                }
+            }catch(Exception ex)
+            {
+                ModLogger.Debug(ex);
+            }
             return null;
         }
-
         public void DestoryAudio()
         {
             if(MusicAudio != null)
