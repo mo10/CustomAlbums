@@ -54,7 +54,7 @@ namespace CustomAlbums
                         album.Index = nextIndex;
                         nextIndex++;
 
-                        LoadedAlbums.Add($"pkg_{fileName}", album);
+                        LoadedAlbums.Add($"pkg_{fileName}".Replace("/", "_").Replace("\\", "_").Replace(".","_"), album);
                         ModLogger.Debug($"Album \"pkg_{fileName}\" loaded.");
                     }
                 }
@@ -77,7 +77,7 @@ namespace CustomAlbums
                         album.Index = nextIndex;
                         nextIndex++;
 
-                        LoadedAlbums.Add($"fs_{folderName}", album);
+                        LoadedAlbums.Add($"fs_{folderName}".Replace("/", "_").Replace("\\", "_").Replace(".", "_"), album);
                         ModLogger.Debug($"Album \"fs_{folderName}\" loaded.");
                     }
                 }
