@@ -1,4 +1,7 @@
-﻿using Assets.Scripts.PeroTools.Managers;
+﻿using Assets.Scripts.PeroTools.Commons;
+using Assets.Scripts.PeroTools.Managers;
+using Assets.Scripts.PeroTools.Nice.Datas;
+using Assets.Scripts.PeroTools.Nice.Interface;
 using HarmonyLib;
 using ModHelper;
 using Newtonsoft.Json.Linq;
@@ -26,52 +29,84 @@ namespace CustomAlbums.Patch
             ref bool isAutoSend,
             ref string appkey)
         {
-            if ("/musedash/v1/music_tag" == url)
+            var originSuccessCallback = callback;
+            var originFailCallback = faillCallback;
+
+            ModLogger.Debug($"Incoming request:{method} {url}");
+            switch (url)
             {
-                var oldCallback = callback;
-                callback = delegate (JObject jObject) {
-                    var jArray = (JArray)jObject["music_tag_list"];
-
-
-                    foreach (JToken obj in jArray)
+                case "/musedash/v1/music_tag":
+                    callback = delegate (JObject jObject)
                     {
-                        if ((string)obj["object_id"] != "61557604a75ed5015c2e439a")
-                            continue;
-                        ModLogger.Debug("Fucked");
-                        JArray new_music_list = new JArray();
-                        foreach (var uid in obj["music_list"])
+                        var jArray = (JArray)jObject["music_tag_list"];
+
+                        // Fix 45-* in 'music_tag_list'
+                        foreach (JToken obj in jArray)
                         {
-                            string text = (string)uid;
-                            if (text == "45-3" ||
-                                text == "45-4" ||
-                                text == "45-5")
+                            if ((string)obj["object_id"] != "61557604a75ed5015c2e439a")
                                 continue;
+                            ModLogger.Debug("Fucked");
+                            JArray new_music_list = new JArray();
+                            foreach (var uid in obj["music_list"])
+                            {
+                                string text = (string)uid;
+                                if (text == "45-3" ||
+                                    text == "45-4" ||
+                                    text == "45-5")
+                                    continue;
 
-                            if (text.StartsWith("45-"))
-                                new_music_list.Add("44-" + text.RemoveFromStart("45-"));
-                            else
-                                new_music_list.Add(uid);
+                                if (text.StartsWith("45-"))
+                                    new_music_list.Add("44-" + text.RemoveFromStart("45-"));
+                                else
+                                    new_music_list.Add(uid);
+                            }
+                            obj["music_list"] = new_music_list;
                         }
-                        obj["music_list"] = new_music_list;
-                    }
 
-
-                    jArray.Add(JObject.FromObject(new
+                        // Add new music tag
+                        jArray.Add(JObject.FromObject(new
+                        {
+                            object_id = "3d2be24f837b2ec1e5e119bb",
+                            created_at = "2021-10-24T00:00:00.000Z",
+                            updated_at = "2021-10-24T00:00:00.000Z",
+                            tag_name = JObject.FromObject(AlbumManager.Langs),
+                            tag_picture = "https://mdmc.moe/cdn/melon.png",
+                            pic_name = "",
+                            music_list = AlbumManager.GetAllUid(),
+                            anchor_pattern = false,
+                            sort_key = jArray.Count + 1,
+                        }));
+                        ModLogger.Debug("Music tag injected.");
+                        originSuccessCallback(jObject);
+                    };
+                    return true;
+                case "musedash/v2/pcleaderboard/high-score":
+                case "musedash/v2/exhileaderboard/high-score":
+                    var uida = Singleton<DataManager>.instance["Account"]["SelectedMusicUid"].GetResult<string>();
+                    if (uida.StartsWith("999-"))
                     {
-                        object_id = "3d2be24f837b2ec1e5e119bb",
-                        created_at = "2021-10-24T00:00:00.000Z",
-                        updated_at = "2021-10-24T00:00:00.000Z",
-                        tag_name = JObject.FromObject(AlbumManager.Langs),
-                        tag_picture = "https://mdmc.moe/cdn/melon.png",
-                        pic_name = "",
-                        music_list = AlbumManager.GetAllUid(),
-                        anchor_pattern = false,
-                        sort_key = jArray.Count + 1,
-                    }));
-                    ModLogger.Debug("Injected");
-                    oldCallback(jObject);
-                };
-                return true;
+                        ModLogger.Debug($"Blocked high score upload:{uida}");
+                        return false; // block this request
+                    }
+                    ModLogger.Debug($"High score Upload:{uida}");
+                    return true;
+                
+                default:
+                    var innerMethod = method;
+                    var innerUrl = url;
+                    var innerHeaders = headers;
+                    
+
+                    callback = delegate (JObject jObject)
+                    {
+                        // ModLogger.Debug($"Response:{innerMethod} {innerUrl} headers:{innerHeaders.JsonSerialize()} result:{jObject.JsonSerialize()}");
+                        originSuccessCallback?.Invoke(jObject);
+                    };
+                    faillCallback = delegate (string str)
+                    {
+                        originFailCallback?.Invoke(str);
+                    };
+                    break;
             }
             return true;
         }
