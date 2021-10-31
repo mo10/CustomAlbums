@@ -138,7 +138,7 @@ namespace CustomAlbums.Patch
         {
             if (!___m_LoadedAssetBundles.ContainsKey(assetBundleName) && JsonPatch.assetMapping.TryGetValue(assetBundleName, out string albumKey))
             {
-                ModLogger.Debug($"Load Asset Bundle:{assetBundleName}");
+                // ModLogger.Debug($"Load Asset Bundle:{assetBundleName}");
                 ___m_LoadedAssetBundles.Add(assetBundleName, ABundle);
             }
         }
