@@ -18,9 +18,12 @@ namespace CustomAlbums.Patch
             var postfixMethod = AccessTools.Method(typeof(StagePatch), "OnLoadCompletePostfix");
             harmony.Patch(originalMethod, postfix: new HarmonyMethod(postfixMethod));
         }
+        /// <summary>
+        /// Fix music playing too early. 
+        /// Author: thegamemaster1234
+        /// </summary>
         public static void OnLoadCompletePostfix()
         {
-            // Fix play music too early. Author: thegamemaster1234
             Singleton<AudioManager>.instance.bgm.Stop();
             Singleton<AudioManager>.instance.bgm.mute = true;
         }

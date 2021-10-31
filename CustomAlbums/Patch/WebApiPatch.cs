@@ -21,6 +21,19 @@ namespace CustomAlbums.Patch
             var sendToUrlPrefix = AccessTools.Method(typeof(WebApiPatch), "SendToUrlPrefix");
             harmony.Patch(sendToUrl, prefix: new HarmonyMethod(sendToUrlPrefix));
         }
+        /// <summary>
+        /// Hook any web request.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <param name="method"></param>
+        /// <param name="datas"></param>
+        /// <param name="callback"></param>
+        /// <param name="faillCallback"></param>
+        /// <param name="headers"></param>
+        /// <param name="failTime"></param>
+        /// <param name="isAutoSend"></param>
+        /// <param name="appkey"></param>
+        /// <returns></returns>
         public static bool SendToUrlPrefix(ref string url, ref string method, ref Dictionary<string, object> datas,
             ref Action<JObject> callback,
             ref Action<string> faillCallback,

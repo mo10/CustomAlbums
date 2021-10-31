@@ -187,6 +187,10 @@ namespace CustomAlbums.Patch
             ModLogger.Debug($"Json injected!");
         }
 
+        /// <summary>
+        /// Filled empty asset bundle file to every custom albums.
+        /// </summary>
+        /// <param name="___m_LoadedAssetBundles"></param>
         public static void AssetBundleManagerInitPrefix(ref Dictionary<string, LoadedAssetBundle> ___m_LoadedAssetBundles)
         {
             //var name = $"{Application.streamingAssetsPath}/AssetBundles\\Custom_Albums";

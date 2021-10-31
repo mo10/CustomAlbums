@@ -21,7 +21,7 @@ namespace CustomAlbums.Patch
             // ConfigManager.Init
             var method = AccessTools.Method(typeof(DataManager), "Init");
             var methodPostfix = AccessTools.Method(typeof(SavesPatch), "ConfigManagerInitPostfix");
-            // harmony.Patch(method, postfix: new HarmonyMethod(methodPostfix));
+            harmony.Patch(method, postfix: new HarmonyMethod(methodPostfix));
 
             method = AccessTools.Method(typeof(StageBattleComponent), "Exit");
             var methodPrefix = AccessTools.Method(typeof(SavesPatch), "BattleExitPrefix");
@@ -31,19 +31,14 @@ namespace CustomAlbums.Patch
             methodPrefix = AccessTools.Method(typeof(SavesPatch), "OnSaveSelectCallbackPrefix");
             harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
         }
-        
+        /// <summary>
+        /// Clean custom data at ConfigManager Initialization phase.
+        /// </summary>
         public static void ConfigManagerInitPostfix()
         {
-            Dictionary<string, object> dictionary = new Dictionary<string, object>();
-            foreach (KeyValuePair<string, IData> keyValuePair in Singleton<DataManager>.instance.datas)
-            {
-                SingletonDataObject singletonDataObject = keyValuePair.Value as SingletonDataObject;
-                if (singletonDataObject)
-                {
-                    dictionary.Add(keyValuePair.Key, singletonDataObject.ToJson().JsonDeserialize<JObject>());
-                }
-            }
-            // ModLogger.Debug(dictionary.JsonSerialize());
+            ModLogger.Debug(ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
+            SavesCleanUp(Singleton<DataManager>.instance.datas);
+            // ModLogger.Debug(ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
         }
 
         public static void BattleExitPrefix(ref string sceneName, ref Action calllback, ref bool withBack)
@@ -55,8 +50,24 @@ namespace CustomAlbums.Patch
                 ModLogger.Debug($"Game/Finish sceneName:{sceneName} withBack:{withBack} SelectedMusicUid:{result}");
             }
         }
+        /// <summary>
+        /// Clean custom data before clound synchronization.
+        /// </summary>
+        /// <param name="isLocal"></param>
+        /// <param name="datas"></param>
+        /// <param name="auth"></param>
+        /// <param name="jsonDatas"></param>
+        /// <param name="callback"></param>
+        public static void OnSaveSelectCallbackPrefix(ref bool isLocal, ref Dictionary<string, IData> datas, ref string auth, ref JToken jsonDatas, ref Action callback)
+        {
+            SavesCleanUp(datas);
+            ModLogger.Debug(ToJsonDict(datas).JsonSerialize());
 
-        public static void OnSaveSelectCallbackPrefix( ref bool isLocal, ref Dictionary<string, IData> datas, ref string auth, ref JToken jsonDatas, ref Action callback)
+            //ModLogger.Debug($"isLocal:{isLocal} datas:{datas.JsonSerialize()}");
+            //ModLogger.Debug($"jsonDatas:{jsonDatas.JsonSerialize()}");
+        }
+
+        public static void SavesCleanUp(Dictionary<string, IData> datas)
         {
             Dictionary<IVariable, Type> dataMapping = new Dictionary<IVariable, Type>()
             {
@@ -76,7 +87,7 @@ namespace CustomAlbums.Patch
                 {datas["Achievement"]["hard_pass"], typeof(List<string>)},
                 {datas["Achievement"]["master_pass"], typeof(List<string>)},
             };
-            int count = 0;
+            int index = 0;
             try
             {
                 foreach (var mapping in dataMapping)
@@ -89,7 +100,7 @@ namespace CustomAlbums.Patch
                         if (value == 999)
                         {
                             data.SetResult(0);
-                            ModLogger.Debug($"Changed {value} to {0}");
+                            ModLogger.Debug($"dataMapping[{index}]: Set {value} to {0}");
                         }
                     }
                     else if (type == typeof(string))
@@ -99,41 +110,53 @@ namespace CustomAlbums.Patch
                         {
                             var newVal = value.Replace("999", "0");
                             data.SetResult(newVal);
-                            ModLogger.Debug($"Changed {value} to {newVal}");
+                            ModLogger.Debug($"dataMapping[{index}]: Set {value} to {newVal}");
                         }
                     }
-                    else if(type == typeof(List<string>))
+                    else if (type == typeof(List<string>))
                     {
                         var value = data.GetResult<List<string>>();
-                        var items = value.FindAll(str => str.Contains("999"));
-                        if (items.Count > 0)
+                        var count = value.RemoveAll(s => s.Contains("999"));
+                        if (count > 0)
                         {
-                            ModLogger.Debug($"Find custom string:{items}");
+                            ModLogger.Debug($"dataMapping[{index}]: Deleted {count} record(s)");
                         }
                     }
-                    else if(type == typeof(List<IData>))
+                    else if (type == typeof(List<IData>))
                     {
                         var value = data.GetResult<List<IData>>();
-                        var items = value.FindAll((IData d) => d["uid"].GetResult<string>().Contains("999"));
-                        if(items.Count > 0)
+                        //var items = value.Where((IData d) => d["uid"].GetResult<string>().Contains("999"));
+                        var count = value.RemoveAll((IData d) => d["uid"].GetResult<string>().Contains("999"));
+                        if (count > 0)
                         {
-                            ModLogger.Debug($"Find custom item:{items}");
+                            ModLogger.Debug($"dataMapping[{index}]: Deleted {count} record(s)");
                         }
                     }
                     else
                     {
-                        ModLogger.Debug($"Unknown data in list. index:{count}");
+                        ModLogger.Debug($"dataMapping[{index}]: Unknown data type");
                     }
-                    count++;
+                    index++;
                 }
             }
             catch (Exception ex)
             {
-                ModLogger.Debug($"Failed at {count} {ex}");
+                ModLogger.Debug($"Failed at {index} {ex}");
             }
+        }
 
-            //ModLogger.Debug($"isLocal:{isLocal} datas:{datas.JsonSerialize()}");
-            //ModLogger.Debug($"jsonDatas:{jsonDatas.JsonSerialize()}");
+        public static Dictionary<string, JObject> ToJsonDict(Dictionary<string, IData> datas)
+        {
+            Dictionary<string, JObject> dictionary = new Dictionary<string, JObject>();
+            foreach (KeyValuePair<string, IData> keyValuePair in Singleton<DataManager>.instance.datas)
+            {
+                SingletonDataObject singletonDataObject = keyValuePair.Value as SingletonDataObject;
+                if (singletonDataObject)
+                {
+                    dictionary.Add(keyValuePair.Key, singletonDataObject.ToJson().JsonDeserialize<JObject>());
+                }
+            }
+            return dictionary;
         }
     }
 }

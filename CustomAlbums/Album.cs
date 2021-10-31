@@ -97,7 +97,6 @@ namespace CustomAlbums
             }
             return CoverSprite;
         }
-
         public AudioClip GetMusic(string name = "music")
         {
             DestoryAudio(); // Destory old audio
@@ -186,7 +185,11 @@ namespace CustomAlbums
                 CoverTex = null;
             }
         }
-
+        /// <summary>
+        /// Open a streaming from the file.
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         private Stream Open(string filePath)
         {
             if (IsPackaged)
@@ -196,7 +199,7 @@ namespace CustomAlbums
                 {
                     if (!zip.ContainsEntry(filePath))
                         throw new FileNotFoundException($"No such as file:{filePath} in {BasePath}");
-                    ModLogger.Debug($"Loaded:{BasePath}/{filePath}");
+                    // ModLogger.Debug($"Loaded:{BasePath}/{filePath}");
                     // CrcCalculatorStream not support set_position, Read all bytes then convert to MemoryStream
                     return zip[filePath].OpenReader().ToArray().ToStream();
                 }
@@ -208,10 +211,16 @@ namespace CustomAlbums
 
                 if (!File.Exists(fullPath))
                     throw new FileNotFoundException($"No such as file:{fullPath}");
-                ModLogger.Debug($"Loaded:{BasePath}/{filePath}");
+                // ModLogger.Debug($"Loaded:{BasePath}/{filePath}");
                 return File.OpenRead(fullPath);
             }
         }
+        /// <summary>
+        /// Open a streaming from the file list returns only the first exist one.
+        /// </summary>
+        /// <param name="filePaths"></param>
+        /// <param name="openedFilePath"></param>
+        /// <returns></returns>
         private Stream OpenOneOf(IEnumerable<string> filePaths,out string openedFilePath)
         {
             if (IsPackaged)
@@ -224,7 +233,7 @@ namespace CustomAlbums
                         if (!zip.ContainsEntry(filePath))
                             continue;
                         openedFilePath = filePath;
-                        ModLogger.Debug($"Loaded:{BasePath}/{filePath}");
+                        // ModLogger.Debug($"Loaded:{BasePath}/{filePath}");
                         // CrcCalculatorStream doesn't support set_position. We read all bytes then convert to MemoryStream
                         return zip[filePath].OpenReader().ToArray().ToStream();
                     }
@@ -238,7 +247,7 @@ namespace CustomAlbums
                 if (!File.Exists(fullPath))
                     continue;
                 openedFilePath = filePath;
-                ModLogger.Debug($"Loaded:{BasePath}/{filePath}");
+                // ModLogger.Debug($"Loaded:{BasePath}/{filePath}");
                 return File.OpenRead(fullPath);
             }
             throw new FileNotFoundException($"No such as file(s):{filePaths} in {BasePath}");
