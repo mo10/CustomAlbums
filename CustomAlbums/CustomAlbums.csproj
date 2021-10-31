@@ -118,6 +118,7 @@
     <Compile Include="Patch\ILCodePatch.cs" />
     <Compile Include="BMSCLoader.cs" />
     <Compile Include="Patch\JsonPatch.cs" />
+    <Compile Include="Patch\SavesPatch.cs" />
     <Compile Include="Patch\StagePatch.cs" />
     <Compile Include="Patch\WebApiPatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

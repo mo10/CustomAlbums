@@ -1,4 +1,5 @@
-﻿using CustomAlbums.Patch;
+﻿using Assets.Scripts.Common;
+using CustomAlbums.Patch;
 using HarmonyLib;
 using ModHelper;
 using System.Reflection;
@@ -31,7 +32,13 @@ namespace CustomAlbums
             AssetPatch.DoPatching(harmony);
             WebApiPatch.DoPatching(harmony);
             StagePatch.DoPatching(harmony);
+            SavesPatch.DoPatching(harmony);
             //CustomAlbum.LoadCustomAlbums();
+
+            // var entities = CustomDefines.entities.Keys;
+            // var events = CustomDefines.events.Keys;
+            // ModLogger.Debug("entities:" + entities.JsonSerialize());
+            // ModLogger.Debug("events:" + events.JsonSerialize());
         }
     }
 }
