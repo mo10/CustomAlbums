@@ -28,8 +28,8 @@ namespace CustomAlbums.Patch
             methodPrefix = AccessTools.Method(typeof(JsonPatch), "AssetBundleManagerInitPrefix");
             harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
 
-            ModLogger.Debug($"Application.streamingAssetsPath: {Application.streamingAssetsPath}/AssetBundles/Custom_Albums");
-            ModLogger.Debug($"Application.persistentDataPath: {Application.persistentDataPath}");
+            //ModLogger.Debug($"Application.streamingAssetsPath: {Application.streamingAssetsPath}");
+            //ModLogger.Debug($"Application.persistentDataPath: {Application.persistentDataPath}");
         }
 
         /// <summary>
