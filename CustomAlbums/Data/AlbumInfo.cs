@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.ComponentModel;
 
 namespace CustomAlbums.Data
@@ -129,6 +130,68 @@ namespace CustomAlbums.Data
                     break;
             }
             return result;
+        }
+
+        public string GetDifficulty(int idx)
+        {
+            switch (idx)
+            {
+                case 1:
+                    return difficulty1;
+                case 2:
+                    return difficulty2;
+                case 3:
+                    return difficulty3;
+                case 4:
+                    return difficulty4;
+            }
+            return "?";
+        }
+        public string GetLevelDesigner(int idx)
+        {
+            switch (idx)
+            {
+                case 0:
+                    return levelDesigner;
+                case 1:
+                    return levelDesigner1;
+                case 2:
+                    return levelDesigner2;
+                case 3:
+                    return levelDesigner3;
+                case 4:
+                    return levelDesigner4;
+            }
+            return "?";
+        }
+
+        public Dictionary<int, string> GetDifficulties()
+        {
+            Dictionary<int, string> map = new Dictionary<int, string>();
+            map.Add(1, difficulty1);
+            map.Add(2, difficulty2);
+            map.Add(3, difficulty3);
+            if (!string.IsNullOrEmpty(difficulty4))
+                map.Add(4, difficulty4);
+
+            return map;
+        }
+
+        public Dictionary<int,string> GetLevelDesigners()
+        {
+            Dictionary<int, string> map = new Dictionary<int, string>();
+            if (!string.IsNullOrEmpty(levelDesigner))
+                map.Add(0, levelDesigner);
+            if (!string.IsNullOrEmpty(levelDesigner1))
+                map.Add(1, levelDesigner1);
+            if (!string.IsNullOrEmpty(levelDesigner2))
+                map.Add(2, levelDesigner2);
+            if (!string.IsNullOrEmpty(levelDesigner3))
+                map.Add(3, levelDesigner3);
+            if (!string.IsNullOrEmpty(levelDesigner4))
+                map.Add(4, levelDesigner4);
+
+            return map;
         }
     }
 }

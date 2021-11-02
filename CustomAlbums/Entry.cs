@@ -19,11 +19,8 @@ namespace CustomAlbums
         public void DoPatching()
         {
             var harmony = new Harmony("com.github.mo10.customalbums");
-            var assembly = Assembly.GetExecutingAssembly();
-            harmony.PatchAll(assembly);
 
             AlbumManager.LoadAll();
-
             //StageUIPatch.DoPatching(harmony);
             //DataPatch.DoPathcing(harmony);
             //ExtraPatch.DoPatching(harmony);

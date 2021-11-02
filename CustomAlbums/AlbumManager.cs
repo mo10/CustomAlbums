@@ -17,9 +17,9 @@ namespace CustomAlbums
         {
             { "ChineseT", "自定義" },
             { "ChineseS", "自定义" },
-            { "English", "Custom" },
-            { "Korean", "Custom" },
-            { "Japanese", "Custom" },
+            { "English", "Custom Albums" },
+            { "Korean", "Custom Albums" },
+            { "Japanese", "Custom Albums" },
         };
 
         public static readonly string SearchPath = "Custom_Albums";

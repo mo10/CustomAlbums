@@ -27,7 +27,9 @@ namespace CustomAlbums
         public AlbumInfo Info { get; private set; }
         public string BasePath { get; private set; }
         public bool IsPackaged { get; private set; }
+        public Dictionary<int, string> availableMaps = new Dictionary<int, string>();
         public int Index;
+
 
         public Texture2D CoverTex { get; private set; }
         public Sprite CoverSprite { get; private set; }
@@ -42,6 +44,7 @@ namespace CustomAlbums
                 this.Info = File.OpenRead($"{path}/info.json").JsonDeserialize<AlbumInfo>();
                 this.BasePath = path;
                 this.IsPackaged = false;
+                verifyMaps();
                 return;
             }
             else
@@ -54,6 +57,7 @@ namespace CustomAlbums
                         this.Info = zip["info.json"].OpenReader().JsonDeserialize<AlbumInfo>();
                         this.BasePath = path;
                         this.IsPackaged = true;
+                        verifyMaps();
                         return;
                     }
                 }
@@ -65,13 +69,22 @@ namespace CustomAlbums
         {
             return true;
         }
-        public void GetRecord(int map)
-        {
 
-        }
-        public void SetRecord(int map)
+        public void verifyMaps()
         {
-
+            foreach (var mapIdx in Info.GetDifficulties().Keys)
+            {
+                try
+                {
+                    using (var stream = Open($"map{mapIdx}.bms"))
+                    {
+                        availableMaps.Add(mapIdx, stream.ToArray().GetMD5().ToString("x2"));
+                    }
+                }catch(Exception ex)
+                {
+                    // Pass
+                }
+            }
         }
 
         public Sprite GetCover()
