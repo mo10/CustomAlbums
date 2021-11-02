@@ -9,8 +9,11 @@ using ModHelper;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
+using UnityEngine;
 
 namespace CustomAlbums.Patch
 {
@@ -36,8 +39,20 @@ namespace CustomAlbums.Patch
         /// </summary>
         public static void ConfigManagerInitPostfix()
         {
-            ModLogger.Debug(ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
-            SavesCleanUp(Singleton<DataManager>.instance.datas);
+
+            var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"saves_backup");
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+
+            var filePath = Path.Combine(path, $"{DateTime.Now.ToString("yyyy_MM_dd_H_mm_ss")}.json");
+            File.WriteAllText(filePath, ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
+            ModLogger.Debug($"Saves backup:{filePath}");
+            //ModLogger.Debug(ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
+            // SavesCleanUp(Singleton<DataManager>.instance.datas);
+            //foreach (var album in AlbumManager.LoadedAlbums.Values)
+            //{
+            //    ModLogger.Debug(album.availableMaps.JsonSerialize());
+            //}
             // ModLogger.Debug(ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
         }
 
@@ -60,13 +75,88 @@ namespace CustomAlbums.Patch
         /// <param name="callback"></param>
         public static void OnSaveSelectCallbackPrefix(ref bool isLocal, ref Dictionary<string, IData> datas, ref string auth, ref JToken jsonDatas, ref Action callback)
         {
-            SavesCleanUp(datas);
-            ModLogger.Debug(ToJsonDict(datas).JsonSerialize());
+            //SavesCleanUp(datas);
+            //ModLogger.Debug(ToJsonDict(datas).JsonSerialize());
 
             //ModLogger.Debug($"isLocal:{isLocal} datas:{datas.JsonSerialize()}");
             //ModLogger.Debug($"jsonDatas:{jsonDatas.JsonSerialize()}");
         }
 
+        public static JObject CleanAccount(JObject datas)
+        {
+            Dictionary<string, Type> keyMapping = new Dictionary<string, Type>()
+            {
+                {"SelectedAlbumUid", typeof(string)},
+                {"SelectedMusicUidFromInfoList", typeof(string)},
+                {"SelectedAlbumTagIndex", typeof(int)},
+
+                {"Collections", typeof(List<string>)},
+                {"Hides", typeof(List<string>)},
+                {"History", typeof(List<string>)},
+
+                {"highest", typeof(List<JObject>)},
+                {"fail_count", typeof(List<JObject>)},
+                {"full_combo_music", typeof(List<string>)},
+                {"achievements", typeof(List<string>)},
+                {"easy_pass", typeof(List<string>)},
+                {"hard_pass", typeof(List<string>)},
+                {"master_pass", typeof(List<string>)},
+            };
+            foreach (var mapping in keyMapping)
+            {
+                var key = mapping.Key;
+                var type = mapping.Value;
+
+                if (datas[key] == null)
+                    continue;
+
+                if (type == typeof(int))
+                {
+                    var value = datas[key]?.Value<int>() ?? 0;
+                    if (value == 999)
+                    {
+                        datas[key] = 0;
+                        ModLogger.Debug($"{key}: Set {value} to 0");
+                    }
+                }
+                else if (type == typeof(string))
+                {
+                    var value = datas[key]?.Value<string>() ?? "";
+                    if (value.Contains("999"))
+                    {
+                        var newVal = value.Replace("999", "0");
+                        datas[key] = newVal;
+                        ModLogger.Debug($"{key}: Set {value} to {newVal}");
+                    }
+                }
+                else if (type == typeof(List<string>))
+                {
+                    
+                    var value = ((JArray)datas[key]).ToObject<List<string>>();
+                    var count = value.RemoveAll(s => s.Contains("999"));
+                    if (count > 0)
+                    {
+                        datas[key] = JArray.FromObject(value);
+                        ModLogger.Debug($"{key}: Deleted {count} record(s)");
+                    }
+                }
+                else if (type == typeof(List<JObject>))
+                {
+                    var value = ((JArray)datas[key]).ToObject<List<JObject>>();
+                    var count = value.RemoveAll((JObject d) => d["uid"].Value<string>().Contains("999"));
+                    if (count > 0)
+                    {
+                        datas[key] = JArray.FromObject(value);
+                        ModLogger.Debug($"{key}: Deleted {count} record(s)");
+                    }   
+                }
+                else
+                {
+                    ModLogger.Debug($"{key}: Unknown data type: {type}");
+                }
+            }
+            return datas;
+        }
         public static void SavesCleanUp(Dictionary<string, IData> datas)
         {
             Dictionary<IVariable, Type> dataMapping = new Dictionary<IVariable, Type>()

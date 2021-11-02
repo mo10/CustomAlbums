@@ -48,33 +48,11 @@ namespace CustomAlbums.Patch
             ModLogger.Debug($"Incoming request:{method} {url}");
             switch (url)
             {
+                // Add custom tag.
                 case "/musedash/v1/music_tag":
                     callback = delegate (JObject jObject)
                     {
                         var jArray = (JArray)jObject["music_tag_list"];
-
-                        // Fix 45-* in 'music_tag_list'
-                        foreach (JToken obj in jArray)
-                        {
-                            if ((string)obj["object_id"] != "61557604a75ed5015c2e439a")
-                                continue;
-                            ModLogger.Debug("Fucked");
-                            JArray new_music_list = new JArray();
-                            foreach (var uid in obj["music_list"])
-                            {
-                                string text = (string)uid;
-                                if (text == "45-3" ||
-                                    text == "45-4" ||
-                                    text == "45-5")
-                                    continue;
-
-                                if (text.StartsWith("45-"))
-                                    new_music_list.Add("44-" + text.RemoveFromStart("45-"));
-                                else
-                                    new_music_list.Add(uid);
-                            }
-                            obj["music_list"] = new_music_list;
-                        }
 
                         // Add new music tag
                         jArray.Add(JObject.FromObject(new
@@ -92,27 +70,50 @@ namespace CustomAlbums.Patch
                         ModLogger.Debug("Music tag injected.");
                         originSuccessCallback(jObject);
                     };
-                    return true;
-                case "musedash/v2/pcleaderboard/high-score":
-                case "musedash/v2/exhileaderboard/high-score":
-                    var uida = Singleton<DataManager>.instance["Account"]["SelectedMusicUid"].GetResult<string>();
-                    if (uida.StartsWith("999-"))
+                    break;
+                // Block custom play feedback.
+                case "statistics/pc-play-statistics-feedback":
+                    if (((string)datas["music_uid"]).StartsWith("999"))
                     {
-                        ModLogger.Debug($"Blocked high score upload:{uida}");
+                        ModLogger.Debug($"Blocked play feedback upload:{(string)datas["music_uid"]}");
                         return false; // block this request
                     }
-                    ModLogger.Debug($"High score Upload:{uida}");
-                    return true;
-                
+                    ModLogger.Debug($"Upload play feedback:{(string)datas["music_uid"]}");
+                    break;
+                // Block custom album high score upload.
+                case "musedash/v2/pcleaderboard/high-score":
+                case "musedash/v2/exhileaderboard/high-score":
+                    var selectedUid = Singleton<DataManager>.instance["Account"]["SelectedMusicUid"].GetResult<string>();
+                    if (selectedUid.StartsWith("999-"))
+                    {
+                        ModLogger.Debug($"Blocked high score upload:{selectedUid}");
+                        return false; // block this request
+                    }
+                    ModLogger.Debug($"Upload high score:{selectedUid}");
+                    break;
+                case "musedash/v2/save":
+                    if (method != "PUT")
+                        goto default;
+                    var save = datas["save"] as Dictionary<string, string>;
+                    var account = save["Account"].JsonDeserialize<JObject>();
+                    var achievement = save["Achievement"].JsonDeserialize<JObject>();
+
+                    save["Account"] = SavesPatch.CleanAccount(account).JsonSerialize();
+                    save["Achievement"] = SavesPatch.CleanAccount(achievement).JsonSerialize();
+                    //ModLogger.Debug(save.JsonSerialize());
+                    break;
                 default:
                     var innerMethod = method;
                     var innerUrl = url;
                     var innerHeaders = headers;
-                    
+                    var innerDatas = datas;
+
+                    ModLogger.Debug($"Request:{innerMethod} {innerUrl}");
+                    //ModLogger.Debug($"Request:{innerMethod} {innerUrl} headers:{innerHeaders?.JsonSerialize()} datas:{innerDatas?.JsonSerialize()}");
 
                     callback = delegate (JObject jObject)
                     {
-                        // ModLogger.Debug($"Response:{innerMethod} {innerUrl} headers:{innerHeaders.JsonSerialize()} result:{jObject.JsonSerialize()}");
+                        //ModLogger.Debug($"Response:{innerMethod} {innerUrl} result:{jObject?.JsonSerialize()}");
                         originSuccessCallback?.Invoke(jObject);
                     };
                     faillCallback = delegate (string str)
