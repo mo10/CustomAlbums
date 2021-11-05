@@ -14,7 +14,14 @@ namespace CustomAlbums
 {
     public static class BMSCLoader
     {
-        // Assets.Scripts.GameCore.Managers.iBMSCManager
+        /// <summary>
+        /// A bms loader copied from MuseDash.
+        /// 
+        /// Ref: Assets.Scripts.GameCore.Managers.iBMSCManager
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="bmsName"></param>
+        /// <returns></returns>
         public static BMS Load(Stream stream, string bmsName)
 		{
             Dictionary<string, float> bpmTones = new Dictionary<string, float>();

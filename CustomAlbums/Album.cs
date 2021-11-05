@@ -35,7 +35,10 @@ namespace CustomAlbums
         public Sprite CoverSprite { get; private set; }
         public static AudioClip MusicAudio { get; private set; }
         public static Stream MusicStream { get; private set; }
-
+        /// <summary>
+        /// Load custom from folder or mdm file.
+        /// </summary>
+        /// <param name="path"></param>
         public Album(string path)
         {
             if (File.Exists($"{path}/info.json"))
@@ -64,12 +67,18 @@ namespace CustomAlbums
             }
             throw new FileNotFoundException($"info.json not found");
         }
-
+        /// <summary>
+        /// TODO: Check this difficulty can be play.
+        /// </summary>
+        /// <returns></returns>
         public bool IsPlayable()
         {
             return true;
         }
-
+        /// <summary>
+        /// Get chart hash.
+        /// TODO: for custom score.
+        /// </summary>
         public void verifyMaps()
         {
             foreach (var mapIdx in Info.GetDifficulties().Keys)
@@ -86,7 +95,10 @@ namespace CustomAlbums
                 }
             }
         }
-
+        /// <summary>
+        /// Get cover sprite
+        /// </summary>
+        /// <returns></returns>
         public Sprite GetCover()
         {
             if (CoverSprite != null)
@@ -110,6 +122,11 @@ namespace CustomAlbums
             }
             return CoverSprite;
         }
+        /// <summary>
+        /// Get music AudioClip.
+        /// </summary>
+        /// <param name="name">"music" or "demo"</param>
+        /// <returns></returns>
         public AudioClip GetMusic(string name = "music")
         {
             DestoryAudio(); // Destory old audio
@@ -126,6 +143,14 @@ namespace CustomAlbums
             MusicAudio = RuntimeAudioClipLoader.Manager.Load(MusicStream, format, name, false, true);
             return MusicAudio;
         }
+        /// <summary>
+        /// Load map.
+        /// 1. Load map*.bms.
+        /// 2. Convert to MusicData.
+        /// 3. Create StageInfo.
+        /// </summary>
+        /// <param name="index">map index</param>
+        /// <returns></returns>
         public StageInfo GetMap(int index)
         {
             try
@@ -172,6 +197,9 @@ namespace CustomAlbums
             }
             return null;
         }
+        /// <summary>
+        /// Destory AudioClip instance and close buffer stream.
+        /// </summary>
         public void DestoryAudio()
         {
             if(MusicAudio != null)
@@ -185,6 +213,9 @@ namespace CustomAlbums
                 MusicStream = null;
             }
         }
+        /// <summary>
+        /// Destory Sprite instance and destory Texture2D instance.
+        /// </summary>
         public void DestoryCover()
         {
             if (CoverSprite != null)

@@ -77,55 +77,9 @@ namespace CustomAlbums.Patch
                                 __result = album.GetMap(4);
                                 break;
                         }
-
-                        //if(beforeAlbum != null)
-                        //    beforeAlbum.DestoryAudio();
-                        //beforeAlbum = album;
                     }
                     break;
                 }
-
-                //if (customAssets.TryGetValue(name, out CustomAlbumInfo albumInfo))
-                //{
-                //    // Load cover image 
-                //    if (type == typeof(UnityEngine.Sprite))
-                //    {
-                //        __result = albumInfo.GetCoverSprite();
-                //        return;
-                //    }
-                //    // Load demo audio
-                //    if (type == typeof(UnityEngine.AudioClip) && name.EndsWith("_demo.mp3"))
-                //    // Load full music audio
-                //    if (type == typeof(UnityEngine.AudioClip) && name.EndsWith("_music.mp3"))
-                //    {
-                //        __result = albumInfo.GetAudioClip("music");
-                //        return;
-                //    }
-                //    // Load map
-                //    if (type == typeof(StageInfo))
-                //    {
-                //        if (name.EndsWith("_map1.bms"))
-                //        {
-                //            __result = albumInfo.GetMap(1);
-                //            return;
-                //        }
-                //        if (name.EndsWith("_map2.bms"))
-                //        {
-                //            __result = albumInfo.GetMap(2);
-                //            return;
-                //        }
-                //        if (name.EndsWith("_map3.bms"))
-                //        {
-                //            __result = albumInfo.GetMap(3);
-                //            return;
-                //        }
-                //        if (name.EndsWith("_map4.bms"))
-                //        {
-                //            __result = albumInfo.GetMap(4);
-                //            return;
-                //        }
-                //    }
-                //}
             }
         }
         /// <summary>

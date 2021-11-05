@@ -27,13 +27,14 @@ namespace CustomAlbums.Patch
             method = AccessTools.Method(typeof(AssetBundleManager), "Init");
             methodPrefix = AccessTools.Method(typeof(JsonPatch), "AssetBundleManagerInitPrefix");
             harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
-
-            //ModLogger.Debug($"Application.streamingAssetsPath: {Application.streamingAssetsPath}");
-            //ModLogger.Debug($"Application.persistentDataPath: {Application.persistentDataPath}");
+#if DEBUG
+            ModLogger.Debug($"Application.streamingAssetsPath: {Application.streamingAssetsPath}");
+            ModLogger.Debug($"Application.persistentDataPath: {Application.persistentDataPath}");
+#endif
         }
 
         /// <summary>
-        /// Inject albums.json album_<lang>.json ALBUM1000.json ALBUM1000_<lang>.json
+        /// Inject: albums.json album_LANG.json ALBUM1000.json ALBUM1000_LANG.json
         /// </summary>
         /// <param name="___m_Dictionary"></param>
         /// <param name="___m_TextAssets"></param>
@@ -208,16 +209,25 @@ namespace CustomAlbums.Patch
             }
 
         }
+        /// <summary>
+        /// Add original TextAsset to m_TextAssets.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="m_TextAssets"></param>
+        /// <returns></returns>
         public static string LoadTextAsset(string name, ref Dictionary<string, TextAsset> m_TextAssets)
         {
             var textAsset = Singleton<AssetBundleManager>.instance.LoadFromName<TextAsset>($"{name}.json");
             m_TextAssets.Add(name, textAsset);
             return textAsset.text;
         }
-
+        /// <summary>
+        /// Create a new ABConfig
+        /// </summary>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         public static ABConfig CreateABConfig(string fileName)
         {
-            // Create new ABConfig
             ABConfig abConfig = new ABConfig();
             abConfig.directory = AlbumManager.SearchPath;
             abConfig.abName = fileName;

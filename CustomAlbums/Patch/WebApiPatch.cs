@@ -28,7 +28,7 @@ namespace CustomAlbums.Patch
         /// <param name="method"></param>
         /// <param name="datas"></param>
         /// <param name="callback"></param>
-        /// <param name="faillCallback"></param>
+        /// <param name="faillCallback">Typo</param>
         /// <param name="headers"></param>
         /// <param name="failTime"></param>
         /// <param name="isAutoSend"></param>
@@ -45,7 +45,9 @@ namespace CustomAlbums.Patch
             var originSuccessCallback = callback;
             var originFailCallback = faillCallback;
 
+#if DEBUG
             ModLogger.Debug($"Incoming request:{method} {url}");
+#endif
             switch (url)
             {
                 // Add custom tag.
@@ -78,7 +80,6 @@ namespace CustomAlbums.Patch
                         ModLogger.Debug($"Blocked play feedback upload:{(string)datas["music_uid"]}");
                         return false; // block this request
                     }
-                    ModLogger.Debug($"Upload play feedback:{(string)datas["music_uid"]}");
                     break;
                 // Block custom album high score upload.
                 case "musedash/v2/pcleaderboard/high-score":
@@ -89,8 +90,8 @@ namespace CustomAlbums.Patch
                         ModLogger.Debug($"Blocked high score upload:{selectedUid}");
                         return false; // block this request
                     }
-                    ModLogger.Debug($"Upload high score:{selectedUid}");
                     break;
+                // Clean the cloud saves
                 case "musedash/v2/save":
                     if (method != "PUT")
                         goto default;
@@ -100,7 +101,9 @@ namespace CustomAlbums.Patch
 
                     save["Account"] = SavesPatch.CleanAccount(account).JsonSerialize();
                     save["Achievement"] = SavesPatch.CleanAccount(achievement).JsonSerialize();
-                    //ModLogger.Debug(save.JsonSerialize());
+#if DEBUG
+                    ModLogger.Debug(save.JsonSerialize());
+#endif
                     break;
                 default:
                     var innerMethod = method;
@@ -108,16 +111,21 @@ namespace CustomAlbums.Patch
                     var innerHeaders = headers;
                     var innerDatas = datas;
 
-                    ModLogger.Debug($"Request:{innerMethod} {innerUrl}");
-                    //ModLogger.Debug($"Request:{innerMethod} {innerUrl} headers:{innerHeaders?.JsonSerialize()} datas:{innerDatas?.JsonSerialize()}");
-
+#if DEBUG
+                    ModLogger.Debug($"Request:{innerMethod} {innerUrl} headers:{innerHeaders?.JsonSerialize()} datas:{innerDatas?.JsonSerialize()}");
+#endif
                     callback = delegate (JObject jObject)
                     {
-                        //ModLogger.Debug($"Response:{innerMethod} {innerUrl} result:{jObject?.JsonSerialize()}");
+#if DEBUG
+                        ModLogger.Debug($"Response:{innerMethod} {innerUrl} result:{jObject?.JsonSerialize()}");
+#endif
                         originSuccessCallback?.Invoke(jObject);
                     };
                     faillCallback = delegate (string str)
                     {
+#if DEBUG
+                        ModLogger.Debug($"Response failed:{innerMethod} {innerUrl} result:{str}");
+#endif
                         originFailCallback?.Invoke(str);
                     };
                     break;

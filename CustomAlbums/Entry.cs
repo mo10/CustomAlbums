@@ -21,21 +21,13 @@ namespace CustomAlbums
             var harmony = new Harmony("com.github.mo10.customalbums");
 
             AlbumManager.LoadAll();
-            //StageUIPatch.DoPatching(harmony);
-            //DataPatch.DoPathcing(harmony);
-            //ExtraPatch.DoPatching(harmony);
+
             ILCodePatch.DoPatching(harmony);
             JsonPatch.DoPatching(harmony);
             AssetPatch.DoPatching(harmony);
             WebApiPatch.DoPatching(harmony);
             StagePatch.DoPatching(harmony);
             SavesPatch.DoPatching(harmony);
-            //CustomAlbum.LoadCustomAlbums();
-
-            // var entities = CustomDefines.entities.Keys;
-            // var events = CustomDefines.events.Keys;
-            // ModLogger.Debug("entities:" + entities.JsonSerialize());
-            // ModLogger.Debug("events:" + events.JsonSerialize());
         }
     }
 }

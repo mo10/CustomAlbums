@@ -35,7 +35,9 @@ namespace CustomAlbums.Patch
             harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
         }
         /// <summary>
-        /// Clean custom data at ConfigManager Initialization phase.
+        /// Dump local saves for each startup.
+        /// 
+        /// WIP:Clean custom data at ConfigManager Initialization phase.
         /// </summary>
         public static void ConfigManagerInitPostfix()
         {
@@ -43,10 +45,10 @@ namespace CustomAlbums.Patch
             var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"saves_backup");
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
-
             var filePath = Path.Combine(path, $"{DateTime.Now.ToString("yyyy_MM_dd_H_mm_ss")}.json");
             File.WriteAllText(filePath, ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
             ModLogger.Debug($"Saves backup:{filePath}");
+
             //ModLogger.Debug(ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
             // SavesCleanUp(Singleton<DataManager>.instance.datas);
             //foreach (var album in AlbumManager.LoadedAlbums.Values)
@@ -55,18 +57,25 @@ namespace CustomAlbums.Patch
             //}
             // ModLogger.Debug(ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
         }
-
+        /// <summary>
+        /// On battle end.
+        /// </summary>
+        /// <param name="sceneName"></param>
+        /// <param name="calllback"></param>
+        /// <param name="withBack"></param>
         public static void BattleExitPrefix(ref string sceneName, ref Action calllback, ref bool withBack)
         {
+#if false
             string result = Singleton<DataManager>.instance["Account"]["SelectedMusicUid"].GetResult<string>();
 
             if (result.StartsWith("999-"))
             {
                 ModLogger.Debug($"Game/Finish sceneName:{sceneName} withBack:{withBack} SelectedMusicUid:{result}");
             }
+#endif
         }
         /// <summary>
-        /// Clean custom data before clound synchronization.
+        /// Clean custom data before cloud synchronization.
         /// </summary>
         /// <param name="isLocal"></param>
         /// <param name="datas"></param>
@@ -157,84 +166,11 @@ namespace CustomAlbums.Patch
             }
             return datas;
         }
-        public static void SavesCleanUp(Dictionary<string, IData> datas)
-        {
-            Dictionary<IVariable, Type> dataMapping = new Dictionary<IVariable, Type>()
-            {
-                {datas["Account"]["SelectedAlbumUid"], typeof(string)},
-                {datas["Account"]["SelectedMusicUidFromInfoList"], typeof(string)},
-                {datas["Account"]["SelectedAlbumTagIndex"], typeof(int)},
-
-                {datas["Account"]["Collections"], typeof(List<string>)},
-                {datas["Account"]["Hides"], typeof(List<string>)},
-                {datas["Account"]["History"], typeof(List<string>)},
-
-                {datas["Achievement"]["highest"], typeof(List<IData>)},
-                {datas["Achievement"]["fail_count"], typeof(List<IData>)},
-                {datas["Achievement"]["full_combo_music"], typeof(List<string>)},
-                {datas["Achievement"]["achievements"], typeof(List<string>)},
-                {datas["Achievement"]["easy_pass"], typeof(List<string>)},
-                {datas["Achievement"]["hard_pass"], typeof(List<string>)},
-                {datas["Achievement"]["master_pass"], typeof(List<string>)},
-            };
-            int index = 0;
-            try
-            {
-                foreach (var mapping in dataMapping)
-                {
-                    var data = mapping.Key;
-                    var type = mapping.Value;
-                    if (type == typeof(int))
-                    {
-                        var value = (int)data.result;
-                        if (value == 999)
-                        {
-                            data.SetResult(0);
-                            ModLogger.Debug($"dataMapping[{index}]: Set {value} to {0}");
-                        }
-                    }
-                    else if (type == typeof(string))
-                    {
-                        var value = data.GetResult<string>();
-                        if (value.Contains("999"))
-                        {
-                            var newVal = value.Replace("999", "0");
-                            data.SetResult(newVal);
-                            ModLogger.Debug($"dataMapping[{index}]: Set {value} to {newVal}");
-                        }
-                    }
-                    else if (type == typeof(List<string>))
-                    {
-                        var value = data.GetResult<List<string>>();
-                        var count = value.RemoveAll(s => s.Contains("999"));
-                        if (count > 0)
-                        {
-                            ModLogger.Debug($"dataMapping[{index}]: Deleted {count} record(s)");
-                        }
-                    }
-                    else if (type == typeof(List<IData>))
-                    {
-                        var value = data.GetResult<List<IData>>();
-                        //var items = value.Where((IData d) => d["uid"].GetResult<string>().Contains("999"));
-                        var count = value.RemoveAll((IData d) => d["uid"].GetResult<string>().Contains("999"));
-                        if (count > 0)
-                        {
-                            ModLogger.Debug($"dataMapping[{index}]: Deleted {count} record(s)");
-                        }
-                    }
-                    else
-                    {
-                        ModLogger.Debug($"dataMapping[{index}]: Unknown data type");
-                    }
-                    index++;
-                }
-            }
-            catch (Exception ex)
-            {
-                ModLogger.Debug($"Failed at {index} {ex}");
-            }
-        }
-
+        /// <summary>
+        /// IData dict to JObject dict
+        /// </summary>
+        /// <param name="datas"></param>
+        /// <returns></returns>
         public static Dictionary<string, JObject> ToJsonDict(Dictionary<string, IData> datas)
         {
             Dictionary<string, JObject> dictionary = new Dictionary<string, JObject>();
