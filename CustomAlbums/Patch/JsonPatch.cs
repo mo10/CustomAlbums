@@ -126,18 +126,24 @@ namespace CustomAlbums.Patch
             #region Inject defaultTag.json
             text = LoadTextAsset("defaultTag", ref ___m_TextAssets);
             jArray = JsonUtils.ToArray(text);
-            jArray.Add(JObject.FromObject(new
-            {
-                object_id = "3d2be24f837b2ec1e5e119bb",
-                created_at = "2021-10-24T00:00:00.000Z",
-                updated_at = "2021-10-24T00:00:00.000Z",
-                tag_name = JObject.FromObject(AlbumManager.Langs),
-                tag_picture = "https://mdmc.moe/cdn/melon.png",
-                pic_name = "ImgCollab",
-                music_list = AlbumManager.GetAllUid(),
-                anchor_pattern = false,
-                sort_key = jArray.Count + 1,
-            }));
+            // Add new music tag
+            var music_tag = jArray.Find(o => o.Value<int>("sort_key") == 8);
+            music_tag["tag_name"] = JObject.FromObject(AlbumManager.Langs);
+            music_tag["tag_picture"] = "https://mdmc.moe/cdn/melon.png";
+            music_tag["pic_name"] = "ImgCollab";
+            music_tag["music_list"] = JArray.FromObject(AlbumManager.GetAllUid());
+            //jArray.Add(JObject.FromObject(new
+            //{
+            //    object_id = "3d2be24f837b2ec1e5e119bb",
+            //    created_at = "2021-10-24T00:00:00.000Z",
+            //    updated_at = "2021-10-24T00:00:00.000Z",
+            //    tag_name = JObject.FromObject(AlbumManager.Langs),
+            //    tag_picture = "https://mdmc.moe/cdn/melon.png",
+            //    pic_name = "ImgCollab",
+            //    music_list = AlbumManager.GetAllUid(),
+            //    anchor_pattern = false,
+            //    sort_key = jArray.Count + 1,
+            //}));
             #endregion
             #region Inject AssetBundle
             var dict = SingletonScriptableObject<AssetBundleConfigManager>.instance.dict;

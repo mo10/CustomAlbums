@@ -91,18 +91,18 @@ namespace CustomAlbums.Patch
             //ModLogger.Debug($"jsonDatas:{jsonDatas.JsonSerialize()}");
         }
 
-        public static JObject CleanAccount(JObject datas)
+        public static JObject Clean(JObject datas)
         {
             Dictionary<string, Type> keyMapping = new Dictionary<string, Type>()
             {
+                // Account
                 {"SelectedAlbumUid", typeof(string)},
                 {"SelectedMusicUidFromInfoList", typeof(string)},
                 {"SelectedAlbumTagIndex", typeof(int)},
-
                 {"Collections", typeof(List<string>)},
                 {"Hides", typeof(List<string>)},
                 {"History", typeof(List<string>)},
-
+                // Achievement
                 {"highest", typeof(List<JObject>)},
                 {"fail_count", typeof(List<JObject>)},
                 {"full_combo_music", typeof(List<string>)},
@@ -119,25 +119,25 @@ namespace CustomAlbums.Patch
                 if (datas[key] == null)
                     continue;
 
-                if (type == typeof(int))
-                {
-                    var value = datas[key]?.Value<int>() ?? 0;
-                    if (value == 999)
-                    {
-                        datas[key] = 0;
-                        ModLogger.Debug($"{key}: Set {value} to 0");
-                    }
-                }
-                else if (type == typeof(string))
-                {
-                    var value = datas[key]?.Value<string>() ?? "";
-                    if (value.Contains("999"))
-                    {
-                        var newVal = value.Replace("999", "0");
-                        datas[key] = newVal;
-                        ModLogger.Debug($"{key}: Set {value} to {newVal}");
-                    }
-                }
+                //if (type == typeof(int))
+                //{
+                //    var value = datas[key]?.Value<int>() ?? 0;
+                //    if (value == 999)
+                //    {
+                //        datas[key] = 0;
+                //        ModLogger.Debug($"{key}: Set {value} to 0");
+                //    }
+                //}
+                //else if (type == typeof(string))
+                //{
+                //    var value = datas[key]?.Value<string>() ?? "";
+                //    if (value.Contains("999"))
+                //    {
+                //        var newVal = value.Replace("999", "0");
+                //        datas[key] = newVal;
+                //        ModLogger.Debug($"{key}: Set {value} to {newVal}");
+                //    }
+                //}
                 else if (type == typeof(List<string>))
                 {
                     

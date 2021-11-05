@@ -57,18 +57,24 @@ namespace CustomAlbums.Patch
                         var jArray = (JArray)jObject["music_tag_list"];
 
                         // Add new music tag
-                        jArray.Add(JObject.FromObject(new
-                        {
-                            object_id = "3d2be24f837b2ec1e5e119bb",
-                            created_at = "2021-10-24T00:00:00.000Z",
-                            updated_at = "2021-10-24T00:00:00.000Z",
-                            tag_name = JObject.FromObject(AlbumManager.Langs),
-                            tag_picture = "https://mdmc.moe/cdn/melon.png",
-                            pic_name = "",
-                            music_list = AlbumManager.GetAllUid(),
-                            anchor_pattern = false,
-                            sort_key = jArray.Count + 1,
-                        }));
+                        var music_tag = jArray.Find(o => o.Value<int>("sort_key") == 8);
+                        music_tag["tag_name"] = JObject.FromObject(AlbumManager.Langs);
+                        music_tag["tag_picture"] = "https://mdmc.moe/cdn/melon.png";
+                        music_tag["pic_name"] = "";
+                        music_tag["music_list"] = JArray.FromObject(AlbumManager.GetAllUid());
+
+                        //jArray.Add(JObject.FromObject(new
+                        //{
+                        //    object_id = "3d2be24f837b2ec1e5e119bb",
+                        //    created_at = "2021-10-24T00:00:00.000Z",
+                        //    updated_at = "2021-10-24T00:00:00.000Z",
+                        //    tag_name = JObject.FromObject(AlbumManager.Langs),
+                        //    tag_picture = "https://mdmc.moe/cdn/melon.png",
+                        //    pic_name = "",
+                        //    music_list = AlbumManager.GetAllUid(),
+                        //    anchor_pattern = false,
+                        //    sort_key = jArray.Count + 1,
+                        //}));
                         ModLogger.Debug("Music tag injected.");
                         originSuccessCallback(jObject);
                     };
@@ -93,14 +99,15 @@ namespace CustomAlbums.Patch
                     break;
                 // Clean the cloud saves
                 case "musedash/v2/save":
+                    goto default;
                     if (method != "PUT")
                         goto default;
                     var save = datas["save"] as Dictionary<string, string>;
                     var account = save["Account"].JsonDeserialize<JObject>();
                     var achievement = save["Achievement"].JsonDeserialize<JObject>();
 
-                    save["Account"] = SavesPatch.CleanAccount(account).JsonSerialize();
-                    save["Achievement"] = SavesPatch.CleanAccount(achievement).JsonSerialize();
+                    save["Account"] = SavesPatch.Clean(account).JsonSerialize();
+                    save["Achievement"] = SavesPatch.Clean(achievement).JsonSerialize();
 #if DEBUG
                     ModLogger.Debug(save.JsonSerialize());
 #endif
