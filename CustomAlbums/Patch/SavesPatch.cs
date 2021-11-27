@@ -3,6 +3,9 @@ using Assets.Scripts.PeroTools.Commons;
 using Assets.Scripts.PeroTools.Managers;
 using Assets.Scripts.PeroTools.Nice.Datas;
 using Assets.Scripts.PeroTools.Nice.Interface;
+using Assets.Scripts.PeroTools.Platforms;
+using Assets.Scripts.PeroTools.Platforms.Steam;
+using Assets.Scripts.UI.Panels;
 using FormulaBase;
 using HarmonyLib;
 using ModHelper;
@@ -21,25 +24,39 @@ namespace CustomAlbums.Patch
     {
         public static void DoPatching(Harmony harmony)
         {
-            // ConfigManager.Init
-            var method = AccessTools.Method(typeof(DataManager), "Init");
-            var methodPostfix = AccessTools.Method(typeof(SavesPatch), "ConfigManagerInitPostfix");
-            harmony.Patch(method, postfix: new HarmonyMethod(methodPostfix));
+            MethodInfo method;
+            MethodInfo methodPrefix;
+            MethodInfo methodPostfix;
 
+            // ConfigManager.Init
+            method = AccessTools.Method(typeof(DataManager), "Init");
+            methodPostfix = AccessTools.Method(typeof(SavesPatch), "DataManagerInitPostfix");
+            harmony.Patch(method, postfix: new HarmonyMethod(methodPostfix));
+            // StageBattleComponent.Exit
             method = AccessTools.Method(typeof(StageBattleComponent), "Exit");
-            var methodPrefix = AccessTools.Method(typeof(SavesPatch), "BattleExitPrefix");
+            methodPrefix = AccessTools.Method(typeof(SavesPatch), "BattleExitPrefix");
             harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
             // XDSDKManager.OnSaveSelectCallback
             method = AccessTools.Method(typeof(XDSDKManager), "OnSaveSelectCallback");
             methodPrefix = AccessTools.Method(typeof(SavesPatch), "OnSaveSelectCallbackPrefix");
+            methodPrefix = AccessTools.Method(typeof(SavesPatch), "OnSaveSelectCallbackPrefix");
+            harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
+            // PnlStage.PreWarm
+            method = AccessTools.Method(typeof(PnlStage), "PreWarm");
+            methodPrefix = AccessTools.Method(typeof(SavesPatch), "PreWarmPrefix");
             harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
         }
+        public static void PreWarmPrefix()
+        {
+            NoPollutionHelper.UpgradeAndRestore();
+        }
         /// <summary>
-        /// Dump local saves for each startup.
         /// 
-        /// WIP:Clean custom data at ConfigManager Initialization phase.
+        /// Todo: Restore custom score at ConfigManager initialization phase.
+        /// 
+        /// Note: NoPollution data save in Singleton<DataManager>.instance["Account"]["CustomTracks"]
         /// </summary>
-        public static void ConfigManagerInitPostfix()
+        public static void DataManagerInitPostfix()
         {
 
             var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"saves_backup");
@@ -65,14 +82,12 @@ namespace CustomAlbums.Patch
         /// <param name="withBack"></param>
         public static void BattleExitPrefix(ref string sceneName, ref Action calllback, ref bool withBack)
         {
-#if false
             string result = Singleton<DataManager>.instance["Account"]["SelectedMusicUid"].GetResult<string>();
 
             if (result.StartsWith("999-"))
             {
                 ModLogger.Debug($"Game/Finish sceneName:{sceneName} withBack:{withBack} SelectedMusicUid:{result}");
             }
-#endif
         }
         /// <summary>
         /// Clean custom data before cloud synchronization.
@@ -110,6 +125,7 @@ namespace CustomAlbums.Patch
                 {"easy_pass", typeof(List<string>)},
                 {"hard_pass", typeof(List<string>)},
                 {"master_pass", typeof(List<string>)},
+
             };
             foreach (var mapping in keyMapping)
             {
@@ -140,7 +156,7 @@ namespace CustomAlbums.Patch
                 //}
                 else if (type == typeof(List<string>))
                 {
-                    
+
                     var value = ((JArray)datas[key]).ToObject<List<string>>();
                     var count = value.RemoveAll(s => s.Contains("999"));
                     if (count > 0)
@@ -157,7 +173,7 @@ namespace CustomAlbums.Patch
                     {
                         datas[key] = JArray.FromObject(value);
                         ModLogger.Debug($"{key}: Deleted {count} record(s)");
-                    }   
+                    }
                 }
                 else
                 {

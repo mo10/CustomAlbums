@@ -22,7 +22,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <DocumentationFile>..\..\Mods\CustomAlbums.xml</DocumentationFile>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="0Harmony, Version=2.0.0.8, Culture=neutral, processorArchitecture=MSIL">
@@ -114,6 +116,7 @@
     <Compile Include="Album.cs" />
     <Compile Include="AlbumManager.cs" />
     <Compile Include="Data\AlbumInfo.cs" />
+    <Compile Include="NoPollutionHelper.cs" />
     <Compile Include="Patch\AssetPatch.cs" />
     <Compile Include="Entry.cs" />
     <Compile Include="Patch\ILCodePatch.cs" />
