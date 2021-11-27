@@ -89,7 +89,7 @@ namespace CustomAlbums
                     {
                         availableMaps.Add(mapIdx, stream.ToArray().GetMD5().ToString("x2"));
                     }
-                }catch(Exception ex)
+                }catch(Exception)
                 {
                     // Pass
                 }
