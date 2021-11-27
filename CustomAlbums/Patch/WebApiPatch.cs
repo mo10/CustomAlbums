@@ -56,13 +56,14 @@ namespace CustomAlbums.Patch
                     {
                         var jArray = (JArray)jObject["music_tag_list"];
 
-                        // Add new music tag
+                        // Replace Cute tag
                         var music_tag = jArray.Find(o => o.Value<int>("sort_key") == 8);
                         music_tag["tag_name"] = JObject.FromObject(AlbumManager.Langs);
                         music_tag["tag_picture"] = "https://mdmc.moe/cdn/melon.png";
-                        music_tag["pic_name"] = "";
+                        music_tag["icon_name"] = "";
                         music_tag["music_list"] = JArray.FromObject(AlbumManager.GetAllUid());
-
+                        
+                        // Add new music tag
                         //jArray.Add(JObject.FromObject(new
                         //{
                         //    object_id = "3d2be24f837b2ec1e5e119bb",
@@ -99,13 +100,13 @@ namespace CustomAlbums.Patch
                     break;
                 // Clean the cloud saves
                 case "musedash/v2/save":
-                    goto default;
                     if (method != "PUT")
                         goto default;
                     var save = datas["save"] as Dictionary<string, string>;
                     var account = save["Account"].JsonDeserialize<JObject>();
                     var achievement = save["Achievement"].JsonDeserialize<JObject>();
 
+                    account.Remove("CustomAlbums");
                     save["Account"] = SavesPatch.Clean(account).JsonSerialize();
                     save["Achievement"] = SavesPatch.Clean(achievement).JsonSerialize();
 #if DEBUG

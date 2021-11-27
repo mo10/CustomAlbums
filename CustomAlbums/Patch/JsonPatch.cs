@@ -126,12 +126,14 @@ namespace CustomAlbums.Patch
             #region Inject defaultTag.json
             text = LoadTextAsset("defaultTag", ref ___m_TextAssets);
             jArray = JsonUtils.ToArray(text);
-            // Add new music tag
+
+            // Replace Cute tag
             var music_tag = jArray.Find(o => o.Value<int>("sort_key") == 8);
             music_tag["tag_name"] = JObject.FromObject(AlbumManager.Langs);
             music_tag["tag_picture"] = "https://mdmc.moe/cdn/melon.png";
-            music_tag["pic_name"] = "ImgCollab";
+            music_tag["pic_name"] = "IconHideMap";
             music_tag["music_list"] = JArray.FromObject(AlbumManager.GetAllUid());
+            // Add new music tag
             //jArray.Add(JObject.FromObject(new
             //{
             //    object_id = "3d2be24f837b2ec1e5e119bb",
