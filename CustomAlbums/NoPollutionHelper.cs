@@ -1,5 +1,6 @@
 ﻿using Assets.Scripts.PeroTools.Commons;
 using Assets.Scripts.PeroTools.Nice.Datas;
+using NiceData = Assets.Scripts.PeroTools.Nice.Datas.Data;
 using Assets.Scripts.PeroTools.Nice.Interface;
 using CustomAlbums.Data;
 using ModHelper;
@@ -30,7 +31,7 @@ namespace CustomAlbums
             if (fields.ContainsKey("CustomTracks"))
             {
                 DataObject oldRecord = Singleton<DataManager>.instance["Account"]["CustomTracks"].result as DataObject;
-                var newRecord = Singleton<DataManager>.instance["Account"]["CustomAlbums"].GetResult<Assets.Scripts.PeroTools.Nice.Datas.Data>() ?? new Assets.Scripts.PeroTools.Nice.Datas.Data();
+                var newRecord = Singleton<DataManager>.instance["Account"]["CustomAlbums"].GetResult<NiceData>() ?? new NiceData();
 
                 foreach (var data in oldRecord.fields)
                 {
@@ -61,6 +62,5 @@ namespace CustomAlbums
             uint desiHash = (uint)info.levelDesigner.GetHashCode();
             return $"{nameHash}-{authHash}-{desiHash}";
         }
-
     }
 }
