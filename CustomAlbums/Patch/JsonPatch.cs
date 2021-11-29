@@ -205,14 +205,15 @@ namespace CustomAlbums.Patch
             //var name = $"{Application.streamingAssetsPath}/AssetBundles\\Custom_Albums";
             //var ab = new LoadedAssetBundle(AssetBundle.LoadFromMemory(Utils.ReadEmbeddedFile("Resources.EmptyAssetBundle")));
             //___m_LoadedAssetBundles.Add(name, ab);
+            var ab = AssetBundle.LoadFromMemory(Utils.ReadEmbeddedFile("Resources.EmptyAssetBundle"));
             foreach (var keyValue in AlbumManager.LoadedAlbums)
             {
                 var key = keyValue.Key;
                 var album = keyValue.Value;
                 var info = album.Info;
 
-                var ab = new LoadedAssetBundle(AssetBundle.LoadFromMemory(Utils.ReadEmbeddedFile("Resources.EmptyAssetBundle")));
-                ___m_LoadedAssetBundles.Add(key, ab);
+                var loadedAB = new LoadedAssetBundle(ab);
+                ___m_LoadedAssetBundles.Add(key, loadedAB);
 
             }
 
