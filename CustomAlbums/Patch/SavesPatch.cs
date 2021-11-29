@@ -48,7 +48,7 @@ namespace CustomAlbums.Patch
         }
         public static void PreWarmPrefix()
         {
-            NoPollutionHelper.UpgradeAndRestore();
+            //NoPollutionHelper.UpgradeAndRestore();
         }
         /// <summary>
         /// 
@@ -65,7 +65,8 @@ namespace CustomAlbums.Patch
             var filePath = Path.Combine(path, $"{DateTime.Now.ToString("yyyy_MM_dd_H_mm_ss")}.json");
             File.WriteAllText(filePath, ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
             ModLogger.Debug($"Saves backup:{filePath}");
-
+            SaveManager.SplitCustomData();
+            SaveManager.Save();
             //ModLogger.Debug(ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
             // SavesCleanUp(Singleton<DataManager>.instance.datas);
             //foreach (var album in AlbumManager.LoadedAlbums.Values)

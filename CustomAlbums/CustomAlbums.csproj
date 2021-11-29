@@ -116,6 +116,7 @@
     <Compile Include="Album.cs" />
     <Compile Include="AlbumManager.cs" />
     <Compile Include="Data\AlbumInfo.cs" />
+    <Compile Include="Data\CustomData.cs" />
     <Compile Include="NoPollutionHelper.cs" />
     <Compile Include="Patch\AssetPatch.cs" />
     <Compile Include="Entry.cs" />
@@ -126,6 +127,7 @@
     <Compile Include="Patch\StagePatch.cs" />
     <Compile Include="Patch\WebApiPatch.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SaveManager.cs" />
     <Compile Include="Utils.cs" />
   </ItemGroup>
   <ItemGroup>

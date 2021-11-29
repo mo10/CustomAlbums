@@ -78,7 +78,7 @@ namespace CustomAlbums
                         album.Index = nextIndex;
                         nextIndex++;
 
-                        LoadedAlbums.Add($"pkg_{fileName}".Replace("/", "_").Replace("\\", "_").Replace(".","_"), album);
+                        LoadedAlbums.Add($"pkg_{fileName}".Replace("/", "_").Replace("\\", "_").Replace(".", "_"), album);
                         ModLogger.Debug($"Album \"pkg_{fileName}\" loaded.");
                     }
                 }
@@ -120,12 +120,21 @@ namespace CustomAlbums
         {
             List<string> uids = new List<string>();
 
-            foreach(var album in LoadedAlbums)
+            foreach (var album in LoadedAlbums)
             {
                 uids.Add($"{Uid}-{album.Value.Index}");
             }
 
             return uids;
+        }
+        /// <summary>
+        /// Get album mapping key from index
+        /// </summary>
+        /// <param name="index"></param>
+        /// <returns></returns>
+        public static string GetAlbumKeyByIndex(int index)
+        {
+            return LoadedAlbums.FirstOrDefault(pair => pair.Value.Index == index).Key;
         }
     }
 }
