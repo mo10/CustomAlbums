@@ -109,7 +109,6 @@ namespace CustomAlbums
             }
             return str;
         }
-
         /// <summary>
         /// Read all bytes from a Stream.
         /// </summary>
@@ -155,6 +154,18 @@ namespace CustomAlbums
         public static byte[] GetMD5(this IEnumerable<byte> bytes)
         {
             return MD5.Create().ComputeHash(bytes.ToArray());
+        }
+        /// <summary>
+        /// Search all implementation classes of interfce
+        /// </summary>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static IEnumerable<Type> GetAllImplement(this Type type)    
+        {
+            var classes = Assembly.GetAssembly(type).GetTypes().Where(ta =>
+                ta.GetInterfaces().Contains(type) && ta.GetConstructor(Type.EmptyTypes) != null);
+
+            return classes;
         }
     }
 }

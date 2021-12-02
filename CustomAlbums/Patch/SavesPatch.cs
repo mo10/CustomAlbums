@@ -28,10 +28,6 @@ namespace CustomAlbums.Patch
             MethodInfo methodPrefix;
             MethodInfo methodPostfix;
 
-            // ConfigManager.Init
-            method = AccessTools.Method(typeof(DataManager), "Init");
-            methodPostfix = AccessTools.Method(typeof(SavesPatch), "DataManagerInitPostfix");
-            harmony.Patch(method, postfix: new HarmonyMethod(methodPostfix));
             // StageBattleComponent.Exit
             method = AccessTools.Method(typeof(StageBattleComponent), "Exit");
             methodPrefix = AccessTools.Method(typeof(SavesPatch), "BattleExitPrefix");
@@ -39,42 +35,78 @@ namespace CustomAlbums.Patch
             // XDSDKManager.OnSaveSelectCallback
             method = AccessTools.Method(typeof(XDSDKManager), "OnSaveSelectCallback");
             methodPrefix = AccessTools.Method(typeof(SavesPatch), "OnSaveSelectCallbackPrefix");
-            methodPrefix = AccessTools.Method(typeof(SavesPatch), "OnSaveSelectCallbackPrefix");
+            methodPostfix = AccessTools.Method(typeof(SavesPatch), "OnSaveSelectCallbackPostfix");
+            harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix), postfix: new HarmonyMethod(methodPostfix));
+            // XDSDKManager.RefreshDatas
+            method = AccessTools.Method(typeof(XDSDKManager), "RefreshDatas");
+            methodPrefix = AccessTools.Method(typeof(SavesPatch), "RefreshDatasPrefix");
             harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
-            // PnlStage.PreWarm
-            method = AccessTools.Method(typeof(PnlStage), "PreWarm");
-            methodPrefix = AccessTools.Method(typeof(SavesPatch), "PreWarmPrefix");
-            harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
-        }
-        public static void PreWarmPrefix()
-        {
-            //NoPollutionHelper.UpgradeAndRestore();
+            // ISync implement
+            foreach (var ISyncImpl in typeof(ISync).GetAllImplement())
+            {
+                // ISync.SaveLocal
+                method = AccessTools.Method(ISyncImpl, "SaveLocal");    
+                methodPrefix = AccessTools.Method(typeof(SavesPatch), "ISyncSaveLocalPrefix");
+                methodPostfix = AccessTools.Method(typeof(SavesPatch), "ISyncSaveLocalPostfix");
+                harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix), postfix: new HarmonyMethod(methodPostfix));
+                // ISync.LoadLocal
+                method = AccessTools.Method(ISyncImpl, "LoadLocal");
+                // methodPrefix = AccessTools.Method(typeof(SavesPatch), "ISyncLoadLocalPrefix");
+                methodPostfix = AccessTools.Method(typeof(SavesPatch), "ISyncLoadLocalPostfix");
+                harmony.Patch(method, postfix: new HarmonyMethod(methodPostfix));
+            }
         }
         /// <summary>
-        /// 
-        /// Todo: Restore custom score at ConfigManager initialization phase.
-        /// 
-        /// Note: NoPollution data save in Singleton<DataManager>.instance["Account"]["CustomTracks"]
+        /// Remove custom data before saving.
         /// </summary>
-        public static void DataManagerInitPostfix()
+        public static void ISyncSaveLocalPrefix()
         {
-
+            SaveManager.SplitCustomData();
+            SaveManager.Save();
+            SaveManager.CleanCustomData();
+        }
+        /// <summary>
+        /// Restore custom data after saving.
+        /// </summary>
+        public static void ISyncSaveLocalPostfix()
+        {
+            SaveManager.RestoreCustomData();
+        }
+        /// <summary>
+        /// Restore custom data after save file loaded.
+        /// </summary>
+        public static void ISyncLoadLocalPostfix()
+        {
+            // Backup
             var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"saves_backup");
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
-            var filePath = Path.Combine(path, $"{DateTime.Now.ToString("yyyy_MM_dd_H_mm_ss")}.json");
-            File.WriteAllText(filePath, ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
-            ModLogger.Debug($"Saves backup:{filePath}");
-            SaveManager.SplitCustomData();
-            SaveManager.Save();
-            //ModLogger.Debug(ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
-            // SavesCleanUp(Singleton<DataManager>.instance.datas);
-            //foreach (var album in AlbumManager.LoadedAlbums.Values)
-            //{
-            //    ModLogger.Debug(album.availableMaps.JsonSerialize());
-            //}
-            // ModLogger.Debug(ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
+            var filePath = Path.Combine(path, $"{DateTime.Now.ToString("yyyy_MM_dd_H_mm_ss")}.sav");
+            File.WriteAllBytes(filePath, Singleton<DataManager>.instance.ToBytes());
+            ModLogger.Debug($"Save backup: {filePath}");
+
+            NoPollutionHelper.Upgrade();
+            SaveManager.CleanCustomData();
+            SaveManager.RestoreCustomData();
         }
+        /// <summary>
+        /// Upgrade NoPollution data and restore custom data after cloud synchronization
+        /// </summary>
+        public static void RefreshDatasPrefix()
+        {
+            // Backup
+            var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"saves_backup");
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
+            var filePath = Path.Combine(path, $"{DateTime.Now.ToString("yyyy_MM_dd_H_mm_ss")}_cloudsync.sav");
+            File.WriteAllBytes(filePath, Singleton<DataManager>.instance.ToBytes());
+            ModLogger.Debug($"Save backup: {filePath}");
+
+            NoPollutionHelper.Upgrade();
+            SaveManager.CleanCustomData();
+            SaveManager.RestoreCustomData();
+        }
+
         /// <summary>
         /// On battle end.
         /// </summary>
@@ -90,21 +122,23 @@ namespace CustomAlbums.Patch
                 ModLogger.Debug($"Game/Finish sceneName:{sceneName} withBack:{withBack} SelectedMusicUid:{result}");
             }
         }
-        /// <summary>
-        /// Clean custom data before cloud synchronization.
-        /// </summary>
-        /// <param name="isLocal"></param>
-        /// <param name="datas"></param>
-        /// <param name="auth"></param>
-        /// <param name="jsonDatas"></param>
-        /// <param name="callback"></param>
-        public static void OnSaveSelectCallbackPrefix(ref bool isLocal, ref Dictionary<string, IData> datas, ref string auth, ref JToken jsonDatas, ref Action callback)
-        {
-            //SavesCleanUp(datas);
-            //ModLogger.Debug(ToJsonDict(datas).JsonSerialize());
 
-            //ModLogger.Debug($"isLocal:{isLocal} datas:{datas.JsonSerialize()}");
-            //ModLogger.Debug($"jsonDatas:{jsonDatas.JsonSerialize()}");
+
+        public static void OnSaveSelectCallbackPrefix(ref bool isLocal)
+        {
+            if (isLocal)
+            {
+                SaveManager.SplitCustomData();
+                SaveManager.Save();
+                SaveManager.CleanCustomData();
+            }
+        }
+        public static void OnSaveSelectCallbackPostfix(ref bool isLocal)
+        {
+            if (isLocal)
+            {
+                SaveManager.RestoreCustomData();
+            }
         }
 
         public static JObject Clean(JObject datas)

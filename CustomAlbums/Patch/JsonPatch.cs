@@ -8,6 +8,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using UnityEngine;
 using static Assets.Scripts.PeroTools.Managers.AssetBundleConfigManager;
@@ -19,20 +20,44 @@ namespace CustomAlbums.Patch
         public static Dictionary<string, string> assetMapping = new Dictionary<string, string>();
         public static void DoPatching(Harmony harmony)
         {
+            MethodInfo method;
+            MethodInfo methodPrefix;
+            MethodInfo methodPostfix;
+
             // ConfigManager.Init
-            var method = AccessTools.Method(typeof(ConfigManager), "Init");
-            var methodPrefix = AccessTools.Method(typeof(JsonPatch), "ConfigManagerInitPrefix");
+            method = AccessTools.Method(typeof(ConfigManager), "Init");
+            methodPrefix = AccessTools.Method(typeof(JsonPatch), "ConfigManagerInitPrefix");
             harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
             // AssetBundleManager.Init
             method = AccessTools.Method(typeof(AssetBundleManager), "Init");
             methodPrefix = AccessTools.Method(typeof(JsonPatch), "AssetBundleManagerInitPrefix");
             harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
+            // MusicTagManager.CustomTagPaser
+            method = AccessTools.Method(typeof(MusicTagManager), "CustomTagPaser");
+            methodPostfix = AccessTools.Method(typeof(JsonPatch), "CustomTagPaserPostfix");
+            harmony.Patch(method, postfix: new HarmonyMethod(methodPostfix));
 #if DEBUG
             ModLogger.Debug($"Application.streamingAssetsPath: {Application.streamingAssetsPath}");
             ModLogger.Debug($"Application.persistentDataPath: {Application.persistentDataPath}");
 #endif
         }
-
+        /// <summary>
+        /// Make sure that the music selector is in the correct position
+        /// </summary>
+        /// <param name="___m_SelectedAlbumsID"></param>
+        /// <param name="___m_SelectedAlbumsIDPrev"></param>
+        public static void CustomTagPaserPostfix(ref uint ___m_SelectedAlbumsID, ref uint ___m_SelectedAlbumsIDPrev,ref List<uint> ___albumRangeList)
+        {
+            if (___m_SelectedAlbumsID != ___m_SelectedAlbumsIDPrev
+                && ___albumRangeList.Contains(___m_SelectedAlbumsIDPrev))
+            {
+#if DEBUG
+                ModLogger.Debug($"Fixed position:{___m_SelectedAlbumsIDPrev}");
+#endif
+                // Force use m_SelectedAlbumsIDPrev
+                ___m_SelectedAlbumsID = ___m_SelectedAlbumsIDPrev;
+            }
+        }
         /// <summary>
         /// Inject: albums.json album_LANG.json ALBUM1000.json ALBUM1000_LANG.json
         /// </summary>
@@ -131,8 +156,9 @@ namespace CustomAlbums.Patch
             var music_tag = jArray.Find(o => o.Value<int>("sort_key") == 8);
             music_tag["tag_name"] = JObject.FromObject(AlbumManager.Langs);
             music_tag["tag_picture"] = "https://mdmc.moe/cdn/melon.png";
-            music_tag["pic_name"] = "IconHideMap";
+            music_tag["pic_name"] = "";
             music_tag["music_list"] = JArray.FromObject(AlbumManager.GetAllUid());
+            ___m_Dictionary.Add("defaultTag", jArray);
             // Add new music tag
             //jArray.Add(JObject.FromObject(new
             //{

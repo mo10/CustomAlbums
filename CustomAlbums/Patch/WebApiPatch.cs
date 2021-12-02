@@ -2,6 +2,7 @@
 using Assets.Scripts.PeroTools.Managers;
 using Assets.Scripts.PeroTools.Nice.Datas;
 using Assets.Scripts.PeroTools.Nice.Interface;
+using Assets.Scripts.UI.Controls;
 using HarmonyLib;
 using ModHelper;
 using Newtonsoft.Json.Linq;
@@ -100,18 +101,18 @@ namespace CustomAlbums.Patch
                     break;
                 // Clean the cloud saves
                 case "musedash/v2/save":
-                    if (method != "PUT")
-                        goto default;
-                    var save = datas["save"] as Dictionary<string, string>;
-                    var account = save["Account"].JsonDeserialize<JObject>();
-                    var achievement = save["Achievement"].JsonDeserialize<JObject>();
-
-                    account.Remove("CustomAlbums");
-                    save["Account"] = SavesPatch.Clean(account).JsonSerialize();
-                    save["Achievement"] = SavesPatch.Clean(achievement).JsonSerialize();
-#if DEBUG
-                    ModLogger.Debug(save.JsonSerialize());
-#endif
+                    if (method == "PUT")
+                    {
+                        ModLogger.Debug("PUT");
+                        ModLogger.Debug("Save:" + datas.JsonSerialize());
+                        var save = datas["save"] as Dictionary<string, string>;
+                        ModLogger.Debug("Account:" + save["Account"].JsonDeserialize<JObject>().JsonSerialize());
+                        ModLogger.Debug("Achievement:" + save["Achievement"].JsonDeserialize<JObject>().JsonSerialize());
+                        //ModLogger.Debug("Cloud sync is disabled!");
+                        //ShowText.ShowInfo("Cloud sync is disabled!");
+                        //Singleton<EventManager>.instance.Invoke("Net/OnConnectFail", new object[0]);
+                        //return false; // block this request
+                    }
                     break;
                 default:
                     var innerMethod = method;

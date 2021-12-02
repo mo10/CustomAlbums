@@ -17,13 +17,13 @@ namespace CustomAlbums.Data
         [JsonProperty("Accuracy")]
         public float accuracy;
         [JsonProperty("AccuracyStr")]
-        public string accuracyStr;
+        public string accuracyString;
         [JsonProperty("Clear")]
         public float clear;
         [JsonProperty("FailCount")]
-        public int fail_count;
+        public int failCount;
         [JsonProperty("Passed")]
-        public bool pass;
+        public bool isPassed;
     }
 
     public class CustomData
@@ -33,14 +33,14 @@ namespace CustomAlbums.Data
         [JsonProperty]
         public int SelectedDifficulty;
         [JsonProperty]
-        public List<string> Collections;
+        public List<string> Collections = new List<string>();
         [JsonProperty]
-        public List<string> Hides;
+        public List<string> Hides = new List<string>();
         [JsonProperty]
-        public List<string> History;
-        [JsonProperty("Highest")]
-        public Dictionary<string, Dictionary<int, CustomScore>> highest;
-        [JsonProperty("FullCombo")]
-        public Dictionary<string, List<int>> full_combo_music;
+        public List<string> History = new List<string>();
+        [JsonProperty]
+        public Dictionary<string, Dictionary<int, CustomScore>> Highest = new Dictionary<string, Dictionary<int, CustomScore>>();
+        [JsonProperty]
+        public Dictionary<string, List<int>> FullCombo = new Dictionary<string, List<int>>();
     }
 }

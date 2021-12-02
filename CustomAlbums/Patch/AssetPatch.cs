@@ -18,14 +18,18 @@ namespace CustomAlbums.Patch
 
         public static void DoPatching(Harmony harmony)
         {
-            // AssetBundle.LoadAsset
-            var loadAsset = AccessTools.Method(typeof(AssetBundle), "LoadAsset", new Type[] { typeof(string), typeof(Type) });
-            var loadAssetPostfix = AccessTools.Method(typeof(AssetPatch), "LoadAssetPostfix");
-            harmony.Patch(loadAsset, null, new HarmonyMethod(loadAssetPostfix));
+            MethodInfo method;
+            MethodInfo methodPrefix;
+            MethodInfo methodPostfix;
 
-            var loadAssetBundle = AccessTools.Method(typeof(AssetBundleManager), "LoadAssetBundle");
-            var loadAssetBundlePrefix = AccessTools.Method(typeof(AssetPatch), "LoadAssetBundlePrefix");
-            harmony.Patch(loadAssetBundle, new HarmonyMethod(loadAssetBundlePrefix));
+            // AssetBundle.LoadAsset
+            method = AccessTools.Method(typeof(AssetBundle), "LoadAsset", new Type[] { typeof(string), typeof(Type) });
+            methodPostfix = AccessTools.Method(typeof(AssetPatch), "LoadAssetPostfix");
+            harmony.Patch(method, postfix: new HarmonyMethod(methodPostfix));
+            // AssetBundleManager.LoadAssetBundle
+            method = AccessTools.Method(typeof(AssetBundleManager), "LoadAssetBundle");
+            methodPrefix = AccessTools.Method(typeof(AssetPatch), "LoadAssetBundlePrefix");
+            harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
         }
         /// <summary>
         /// Load resource from custom album

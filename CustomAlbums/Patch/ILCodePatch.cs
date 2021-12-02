@@ -19,19 +19,21 @@ namespace CustomAlbums.Patch
     {
         public static void DoPatching(Harmony harmony)
         {
+            MethodInfo method;
+            MethodInfo methodTranspiler;
+
             // PnlRank.Refresh
-            var refresh = AccessTools.Method(typeof(PnlRank), "Refresh");
-            var refreshTranspiler = AccessTools.Method(typeof(ILCodePatch), "RefreshTranspiler");
-            harmony.Patch(refresh, transpiler: new HarmonyMethod(refreshTranspiler));
-
+            method = AccessTools.Method(typeof(PnlRank), "Refresh");
+            methodTranspiler = AccessTools.Method(typeof(ILCodePatch), "RefreshTranspiler");
+            harmony.Patch(method, transpiler: new HarmonyMethod(methodTranspiler));
             // WebUtils.SendToUrl
-            var sendToUrl = AccessTools.Method(typeof(WebUtils), "SendToUrl");
-            var sendToUrlTranspiler = AccessTools.Method(typeof(ILCodePatch), "SendToUrlTranspiler");
-            harmony.Patch(sendToUrl, transpiler: new HarmonyMethod(sendToUrlTranspiler));
-
+            method = AccessTools.Method(typeof(WebUtils), "SendToUrl");
+            methodTranspiler = AccessTools.Method(typeof(ILCodePatch), "SendToUrlTranspiler");
+            harmony.Patch(method, transpiler: new HarmonyMethod(methodTranspiler));
             // WebUtils.SendToUrl callback
-            var sendToUrlCallback = AccessTools.Method(typeof(WebUtils).GetNestedNonPublicType("<SendToUrl>c__AnonStorey0"), "<>m__1");
-            harmony.Patch(sendToUrlCallback, transpiler: new HarmonyMethod(sendToUrlTranspiler));
+            method = AccessTools.Method(typeof(WebUtils).GetNestedNonPublicType("<SendToUrl>c__AnonStorey0"), "<>m__1");
+            methodTranspiler = AccessTools.Method(typeof(ILCodePatch), "SendToUrlTranspiler");
+            harmony.Patch(method, transpiler: new HarmonyMethod(methodTranspiler));
         }
 
         /// <summary>

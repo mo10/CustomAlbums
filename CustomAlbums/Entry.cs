@@ -1,7 +1,9 @@
 ﻿using Assets.Scripts.Common;
+using Assets.Scripts.PeroTools.Platforms;
 using CustomAlbums.Patch;
 using HarmonyLib;
 using ModHelper;
+using System;
 using System.Reflection;
 
 namespace CustomAlbums
@@ -21,6 +23,7 @@ namespace CustomAlbums
             var harmony = new Harmony("com.github.mo10.customalbums");
 
             AlbumManager.LoadAll();
+            SaveManager.Load();
 
             ILCodePatch.DoPatching(harmony);
             JsonPatch.DoPatching(harmony);
@@ -29,5 +32,6 @@ namespace CustomAlbums
             StagePatch.DoPatching(harmony);
             SavesPatch.DoPatching(harmony);
         }
+        
     }
 }
