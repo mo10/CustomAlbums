@@ -99,19 +99,12 @@ namespace CustomAlbums.Patch
                         return false; // block this request
                     }
                     break;
-                // Clean the cloud saves
                 case "musedash/v2/save":
+                    if (method == "GET")
+                        goto default;
                     if (method == "PUT")
                     {
-                        ModLogger.Debug("PUT");
-                        ModLogger.Debug("Save:" + datas.JsonSerialize());
-                        var save = datas["save"] as Dictionary<string, string>;
-                        ModLogger.Debug("Account:" + save["Account"].JsonDeserialize<JObject>().JsonSerialize());
-                        ModLogger.Debug("Achievement:" + save["Achievement"].JsonDeserialize<JObject>().JsonSerialize());
-                        //ModLogger.Debug("Cloud sync is disabled!");
-                        //ShowText.ShowInfo("Cloud sync is disabled!");
-                        //Singleton<EventManager>.instance.Invoke("Net/OnConnectFail", new object[0]);
-                        //return false; // block this request
+                        ModLogger.Debug("Push save:" + datas.JsonSerialize());
                     }
                     break;
                 default:

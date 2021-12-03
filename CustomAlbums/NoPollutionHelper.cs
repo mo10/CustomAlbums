@@ -51,22 +51,19 @@ namespace CustomAlbums
             // Upgrading
             ModLogger.Debug("Data upgrade started");
             DataObject oldRecord = Singleton<DataManager>.instance["Account"]["CustomTracks"].result as DataObject;
-            if (oldRecord != null)
+            foreach (var data in oldRecord.fields)
             {
-                foreach (var data in oldRecord.fields)
+                var hash = data.Key;
+                var uid = data.Value.GetResult<string>();
+
+                if (!map.ContainsKey(data.Key))
                 {
-                    var hash = data.Key;
-                    var uid = data.Value.GetResult<string>();
-
-                    if (!map.ContainsKey(data.Key))
-                    {
-                        ModLogger.Debug($"Album not found: Hash: {data.Key}");
-                        continue;
-                    }
-                    UpgradeDataToSaveManager(map[data.Key], uid);
-
-                    ModLogger.Debug($"Upgraded: {map[data.Key]}");
+                    ModLogger.Debug($"Album not found: Hash: {data.Key}");
+                    continue;
                 }
+                UpgradeDataToSaveManager(map[data.Key], uid);
+
+                ModLogger.Debug($"Upgraded: {map[data.Key]}");
             }
             // Remove old record
             fields.Remove("CustomTracks");
