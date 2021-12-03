@@ -8,38 +8,35 @@ using System.Security.Cryptography;
 using System.Text;
 using UnityEngine;
 using Sirenix.Utilities;
+using static Assets.Scripts.GameCore.Managers.iBMSCManager;
 
 namespace CustomAlbums
 {
-    class MyBMSCManager
+    public static class BMSCLoader
     {
-		public static readonly MyBMSCManager instance = new MyBMSCManager();
-
-		private MyBMSCManager() { }
-
-		public Dictionary<string, float> bpmTones = new Dictionary<string, float>();
-
-		// Assets.Scripts.GameCore.Managers.iBMSCManager
-		public iBMSCManager.BMS Load(byte[] bytes, string bmsName)
+        /// <summary>
+        /// A bms loader copied from MuseDash.
+        /// 
+        /// Ref: Assets.Scripts.GameCore.Managers.iBMSCManager
+        /// </summary>
+        /// <param name="stream"></param>
+        /// <param name="bmsName"></param>
+        /// <returns></returns>
+        public static BMS Load(Stream stream, string bmsName)
 		{
-			bpmTones.Clear();
+            Dictionary<string, float> bpmTones = new Dictionary<string, float>();
 
-			JObject info = new JObject();
+            JObject info = new JObject();
 			JArray notes = new JArray();
 
 			JArray notesPercent = new JArray();
 			List<JObject> list = new List<JObject>();
 
-			StreamReader streamReader = new StreamReader(new MemoryStream(bytes), AssetsUtils.GetBytesEncodeType(bytes));
-			// Calculate MD5 of bms bytes
-			byte[] md5Array = MD5.Create().ComputeHash(bytes);
-			StringBuilder sb = new StringBuilder();
-			for (int i = 0; i < md5Array.Length; i++)
-			{
-				sb.Append(md5Array[i].ToString("x2"));
-			}
-			string md5 = sb.ToString();
-
+            // Calculate MD5 of bms bytes
+            string md5 = stream.ToArray().GetMD5().ToString("x2");
+            stream.Position = 0;
+            StreamReader streamReader = new StreamReader(stream);
+            
 			string txtLine;
 			// Parse bms
 			while ((txtLine = streamReader.ReadLine()) != null)
@@ -66,7 +63,7 @@ namespace CustomAlbums
 						}
 						else if (infoKey.Contains("BPM"))
 						{
-							this.bpmTones.Add(infoKey.Replace("BPM", string.Empty), float.Parse(infoValue));
+							bpmTones.Add(infoKey.Replace("BPM", string.Empty), float.Parse(infoValue));
 						}
 					}
 					else if (txtLine.Contains(":"))
@@ -99,7 +96,7 @@ namespace CustomAlbums
 								// 变速
 								if (type == "03" || type == "08")
 								{
-									float freq = 60f / ((type != "08" || !this.bpmTones.ContainsKey(note)) ? ((float)Convert.ToInt32(note, 16)) : this.bpmTones[note]) * 4f;
+									float freq = 60f / ((type != "08" || !bpmTones.ContainsKey(note)) ? ((float)Convert.ToInt32(note, 16)) : bpmTones[note]) * 4f;
 									JObject jObject = new JObject();
 									jObject["tick"] = theTick;
 									jObject["freq"] = freq;
@@ -184,8 +181,8 @@ namespace CustomAlbums
 				}
 				return 0;
 			});
-			iBMSCManager.BMS bms = new iBMSCManager.BMS
-			{
+            BMS bms = new BMS
+            {
 				info = info,
 				notes = notes,
 				notesPercent = notesPercent,
