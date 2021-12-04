@@ -25,12 +25,13 @@ namespace CustomAlbums
             AlbumManager.LoadAll();
             SaveManager.Load();
 
-            ILCodePatch.DoPatching(harmony);
+            //ILCodePatch.DoPatching(harmony);
             JsonPatch.DoPatching(harmony);
             AssetPatch.DoPatching(harmony);
             WebApiPatch.DoPatching(harmony);
             StagePatch.DoPatching(harmony);
             SavesPatch.DoPatching(harmony);
+
         }
         
     }
