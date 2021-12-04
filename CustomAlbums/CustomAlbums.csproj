@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CustomAlbums</RootNamespace>
     <AssemblyName>CustomAlbums</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
     <TargetFrameworkProfile />
@@ -47,8 +47,8 @@
       <HintPath>..\..\MuseDash_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="DotNetZip, Version=1.12.0.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
-      <HintPath>..\packages\DotNetZip.1.12.0\lib\net20\DotNetZip.dll</HintPath>
+    <Reference Include="DotNetZip, Version=1.16.0.0, Culture=neutral, PublicKeyToken=6583c7c814667745, processorArchitecture=MSIL">
+      <HintPath>..\packages\DotNetZip.1.16.0\lib\net40\DotNetZip.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="ModHelper">
@@ -62,6 +62,30 @@
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\MuseDash_Data\Managed\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PeroTools2">
+      <HintPath>..\..\MuseDash_Data\Managed\PeroTools2.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PeroTools2.Account">
+      <HintPath>..\..\MuseDash_Data\Managed\PeroTools2.Account.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PeroTools2.Audio">
+      <HintPath>..\..\MuseDash_Data\Managed\PeroTools2.Audio.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PeroTools2.GeneralLocalization">
+      <HintPath>..\..\MuseDash_Data\Managed\PeroTools2.GeneralLocalization.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PeroTools2.Pool">
+      <HintPath>..\..\MuseDash_Data\Managed\PeroTools2.Pool.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="PeroTools2.UI">
+      <HintPath>..\..\MuseDash_Data\Managed\PeroTools2.UI.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Sirenix.Serialization">
@@ -83,8 +107,20 @@
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="Unity.Addressables">
+      <HintPath>..\..\MuseDash_Data\Managed\Unity.Addressables.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Unity.ResourceManager">
+      <HintPath>..\..\MuseDash_Data\Managed\Unity.ResourceManager.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
     <Reference Include="UnityEngine">
       <HintPath>..\..\MuseDash_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>..\..\MuseDash_Data\Managed\UnityEngine.AssetBundleModule.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEngine.AudioModule">
@@ -134,20 +170,20 @@
     <EmbeddedResource Include="Resources\EmptyAssetBundle" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="..\packages\DotNetZip.1.12.0\lib\net20\DotNetZip.dll">
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="..\packages\DotNetZip.1.16.0\lib\net40\DotNetZip.dll">
       <Link>Depends\DotNetZip.dll</Link>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Depends\I18N.CJK.dll" />
-    <EmbeddedResource Include="Depends\I18N.dll" />
-    <EmbeddedResource Include="Depends\I18N.MidEast.dll" />
-    <EmbeddedResource Include="Depends\I18N.Other.dll" />
-    <EmbeddedResource Include="Depends\I18N.Rare.dll" />
-    <EmbeddedResource Include="Depends\I18N.West.dll" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <EmbeddedResource Include="Depends\2019.4.32f1\I18N.CJK.dll" />
+    <EmbeddedResource Include="Depends\2019.4.32f1\I18N.dll" />
+    <EmbeddedResource Include="Depends\2019.4.32f1\I18N.MidEast.dll" />
+    <EmbeddedResource Include="Depends\2019.4.32f1\I18N.Other.dll" />
+    <EmbeddedResource Include="Depends\2019.4.32f1\I18N.Rare.dll" />
+    <EmbeddedResource Include="Depends\2019.4.32f1\I18N.West.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
