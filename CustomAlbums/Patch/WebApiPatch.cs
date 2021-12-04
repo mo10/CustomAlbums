@@ -1,8 +1,6 @@
-﻿using Assets.Scripts.PeroTools.Commons;
-using Assets.Scripts.PeroTools.Managers;
+﻿using PeroTools2.Commons;
 using Assets.Scripts.PeroTools.Nice.Datas;
 using Assets.Scripts.PeroTools.Nice.Interface;
-using Assets.Scripts.UI.Controls;
 using HarmonyLib;
 using ModHelper;
 using Newtonsoft.Json.Linq;
@@ -10,50 +8,53 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Account;
+using System.Reflection;
+using UnityEngine.Networking;
 
 namespace CustomAlbums.Patch
 {
     class WebApiPatch
-    {
+    { 
         public static void DoPatching(Harmony harmony)
         {
-            // ServerManager.SendToUrl
-            var sendToUrl = AccessTools.Method(typeof(ServerManager), "SendToUrl");
-            var sendToUrlPrefix = AccessTools.Method(typeof(WebApiPatch), "SendToUrlPrefix");
-            harmony.Patch(sendToUrl, prefix: new HarmonyMethod(sendToUrlPrefix));
+            MethodInfo method;
+            MethodInfo methodPrefix;
+            MethodInfo methodPostfix;
+
+            // WebUtils.SendToUrl
+            method = AccessTools.Method(typeof(WebUtils), "SendToUrl",new Type[] { typeof(WebUtils.PeroWebRequest) } );
+            methodPrefix = AccessTools.Method(typeof(WebApiPatch), "WebUtilsSendToUrlPrefix");
+            harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
+            // GameAccountSystem.SendToUrl
+            method = AccessTools.Method(typeof(GameAccountSystem), "SendToUrl");
+            methodPrefix = AccessTools.Method(typeof(WebApiPatch), "SendToUrlPrefix");
+            harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
         }
         /// <summary>
-        /// Hook any web request.
+        /// Hook GameAccountSystem request.
         /// </summary>
-        /// <param name="url"></param>
-        /// <param name="method"></param>
-        /// <param name="datas"></param>
-        /// <param name="callback"></param>
-        /// <param name="faillCallback">Typo</param>
-        /// <param name="headers"></param>
-        /// <param name="failTime"></param>
-        /// <param name="isAutoSend"></param>
-        /// <param name="appkey"></param>
         /// <returns></returns>
-        public static bool SendToUrlPrefix(ref string url, ref string method, ref Dictionary<string, object> datas,
-            ref Action<JObject> callback,
-            ref Action<string> faillCallback,
-            ref Dictionary<string, string> headers,
-            ref int failTime,
-            ref bool isAutoSend,
-            ref string appkey)
+        public static bool SendToUrlPrefix(
+            ref string url,
+            ref string method ,
+            ref Dictionary<string, object> datas ,
+            ref Action<JObject> succeedCallback , 
+            ref Action<long, string> faillCallback , 
+            ref Action startCallback, 
+            ref Action completeCallback , 
+            ref Dictionary<string, string> headers 
+            )
         {
-            var originSuccessCallback = callback;
-            var originFailCallback = faillCallback;
 
-#if DEBUG
-            ModLogger.Debug($"Incoming request:{method} {url}");
-#endif
+            var originSuccessCallback = succeedCallback;
+            var originFailCallback = faillCallback;
+            
             switch (url)
             {
                 // Add custom tag.
-                case "/musedash/v1/music_tag":
-                    callback = delegate (JObject jObject)
+                case "musedash/v1/music_tag":
+                    succeedCallback = delegate (JObject jObject)
                     {
                         var jArray = (JArray)jObject["music_tag_list"];
 
@@ -64,19 +65,6 @@ namespace CustomAlbums.Patch
                         music_tag["icon_name"] = "";
                         music_tag["music_list"] = JArray.FromObject(AlbumManager.GetAllUid());
                         
-                        // Add new music tag
-                        //jArray.Add(JObject.FromObject(new
-                        //{
-                        //    object_id = "3d2be24f837b2ec1e5e119bb",
-                        //    created_at = "2021-10-24T00:00:00.000Z",
-                        //    updated_at = "2021-10-24T00:00:00.000Z",
-                        //    tag_name = JObject.FromObject(AlbumManager.Langs),
-                        //    tag_picture = "https://mdmc.moe/cdn/melon.png",
-                        //    pic_name = "",
-                        //    music_list = AlbumManager.GetAllUid(),
-                        //    anchor_pattern = false,
-                        //    sort_key = jArray.Count + 1,
-                        //}));
                         ModLogger.Debug("Music tag injected.");
                         originSuccessCallback(jObject);
                     };
@@ -91,7 +79,7 @@ namespace CustomAlbums.Patch
                     break;
                 // Block custom album high score upload.
                 case "musedash/v2/pcleaderboard/high-score":
-                case "musedash/v2/exhileaderboard/high-score":
+                case "musedash/v2/exhileaderboard/high-score": // This is old
                     var selectedUid = Singleton<DataManager>.instance["Account"]["SelectedMusicUid"].GetResult<string>();
                     if (selectedUid.StartsWith("999-"))
                     {
@@ -100,38 +88,38 @@ namespace CustomAlbums.Patch
                     }
                     break;
                 case "musedash/v2/save":
-                    if (method == "GET")
-                        goto default;
                     if (method == "PUT")
                     {
-                        ModLogger.Debug("Push save:" + datas.JsonSerialize());
+                        ModLogger.Debug("Sync save:" + datas.JsonSerialize());
                     }
                     break;
-                default:
-                    var innerMethod = method;
-                    var innerUrl = url;
-                    var innerHeaders = headers;
-                    var innerDatas = datas;
-
-#if DEBUG
-                    ModLogger.Debug($"Request:{innerMethod} {innerUrl} headers:{innerHeaders?.JsonSerialize()} datas:{innerDatas?.JsonSerialize()}");
-#endif
-                    callback = delegate (JObject jObject)
-                    {
-#if DEBUG
-                        ModLogger.Debug($"Response:{innerMethod} {innerUrl} result:{jObject?.JsonSerialize()}");
-#endif
-                        originSuccessCallback?.Invoke(jObject);
-                    };
-                    faillCallback = delegate (string str)
-                    {
-#if DEBUG
-                        ModLogger.Debug($"Response failed:{innerMethod} {innerUrl} result:{str}");
-#endif
-                        originFailCallback?.Invoke(str);
-                    };
-                    break;
             }
+            return true;
+        }
+        /// <summary>
+        /// Hook all request.
+        /// </summary>
+        /// <returns></returns>
+        public static bool WebUtilsSendToUrlPrefix(WebUtils.PeroWebRequest webRequest)
+        {
+            var originSuccessCallback = webRequest.succeedCallback;
+            var originFailCallback = webRequest.faillCallback;
+
+            ModLogger.Debug($"Incoming request:{webRequest.method} {webRequest.url}");
+            
+#if DEBUG
+            ModLogger.Debug($"Request:{webRequest.method} {webRequest.url} headers:{webRequest.headers?.JsonSerialize()} datas:{webRequest.datas?.JsonSerialize()}");
+            webRequest.succeedCallback = delegate (DownloadHandler handler)
+            {
+                ModLogger.Debug($"Response:{webRequest.method} {webRequest.url} content:{handler.text}");
+                originSuccessCallback?.Invoke(handler);
+            };
+            webRequest.faillCallback = delegate (long code, string error)
+            {
+                ModLogger.Debug($"Response failed:{webRequest.method} {webRequest.url} code:{code} error:{error}");
+                originFailCallback?.Invoke(code, error);
+            };
+#endif
             return true;
         }
     }
