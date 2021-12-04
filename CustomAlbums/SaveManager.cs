@@ -97,7 +97,7 @@ namespace CustomAlbums
                 var difficulty = int.Parse(dUid.RemoveFromStart($"{AlbumManager.Uid}-").Split('_')[1]);
                 var albumKey = AlbumManager.GetAlbumKeyByIndex(albumIndex);
 
-                if (AssertAlbumKeyIndex(albumKey, albumIndex))
+                if (!AssertAlbumKeyIndex(albumKey, albumIndex))
                     continue;
 
                 var failData = GameFailCount.FirstOrDefault(d => d["uid"].GetResult<string>() == dUid);
@@ -145,7 +145,7 @@ namespace CustomAlbums
                 var difficulty = int.Parse(dUid.RemoveFromStart($"{AlbumManager.Uid}-").Split('_')[1]);
                 var albumKey = AlbumManager.GetAlbumKeyByIndex(albumIndex);
 
-                if (AssertAlbumKeyIndex(albumKey, albumIndex))
+                if (!AssertAlbumKeyIndex(albumKey, albumIndex))
                     continue;
 
                 // New
