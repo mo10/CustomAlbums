@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using Assets.Scripts.PeroTools.Commons;
+using UnityEngine.AddressableAssets;
 
 namespace CustomAlbums
 {
@@ -114,6 +115,7 @@ namespace CustomAlbums
                 CoverSprite = Sprite.Create(CoverTex,
                     new Rect(0, 0, CoverTex.width, CoverTex.height),
                     new Vector2(CoverTex.width / 2, CoverTex.height / 2));
+                CoverSprite.name = AlbumManager.GetAlbumKeyByIndex(Index)+"_cover";
             }
             catch (Exception ex)
             {
@@ -129,18 +131,33 @@ namespace CustomAlbums
         /// <returns></returns>
         public AudioClip GetMusic(string name = "music")
         {
-            DestoryAudio(); // Destory old audio
+            //DestoryAudio(); // Destory old audio
 
             List<string> fileNames = new List<string>();
-            foreach(var ext in AudioFormatMapping.Keys)
+            foreach (var ext in AudioFormatMapping.Keys)
             {
                 fileNames.Add(name + ext);
             }
 
             AudioFormat format = AudioFormat.unknown;
+
+            if (MusicStream != null)
+            {
+                MusicStream.Dispose();
+                MusicStream = null;
+            }
             MusicStream = OpenOneOf(fileNames, out string fileName);
+
             AudioFormatMapping.TryGetValue(Path.GetExtension(fileName), out format);
-            MusicAudio = RuntimeAudioClipLoader.Manager.Load(MusicStream, format, name, false, true);
+
+            MusicAudio = RuntimeAudioClipLoader.Manager.Load(
+                dataStream: MusicStream,
+                audioFormat: format,
+                unityAudioClipName: AlbumManager.GetAlbumKeyByIndex(Index) + "_" + name,
+                doStream: false,
+                loadInBackground: true,
+                diposeDataStreamIfNotNeeded: true);
+            MusicAudio.LoadAudioData();
             return MusicAudio;
         }
         /// <summary>
@@ -200,14 +217,14 @@ namespace CustomAlbums
         /// <summary>
         /// Destory AudioClip instance and close buffer stream.
         /// </summary>
-        public void DestoryAudio()
+        public static void DestoryAudio()
         {
-            if(MusicAudio != null)
+            if (MusicAudio != null)
             {
-                UnityEngine.Object.DestroyImmediate(MusicAudio);
+                UnityEngine.Object.Destroy(MusicAudio);
                 MusicAudio = null;
             }
-            if(MusicStream != null)
+            if (MusicStream != null)
             {
                 MusicStream.Dispose();
                 MusicStream = null;
@@ -220,11 +237,13 @@ namespace CustomAlbums
         {
             if (CoverSprite != null)
             {
+                Addressables.Release(CoverSprite);
                 UnityEngine.Object.Destroy(CoverSprite);
                 CoverSprite = null;
             }
             if (CoverTex != null)
             {
+                Addressables.Release(CoverTex);
                 UnityEngine.Object.Destroy(CoverTex);
                 CoverTex = null;
             }
