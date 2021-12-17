@@ -55,6 +55,7 @@ jobs:
         run: msbuild.exe /p:platform="Any CPU" /p:configuration="Release"
 
       - name: Upload artifact
-      - uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v2
         with:
+          name: CustomAlbumsMod
           path: ../mods
