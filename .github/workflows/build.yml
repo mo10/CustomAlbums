@@ -21,7 +21,7 @@ jobs:
         STEAM_DEPOTID: 774172
     steps:
       - uses: actions/checkout@v2
-      - run: choco install netfx-4.0.2-devpack
+      - run: choco install dotnet4.0
       - uses: microsoft/setup-msbuild@v1.1
       - uses: NuGet/setup-nuget@v1.0.5
 
