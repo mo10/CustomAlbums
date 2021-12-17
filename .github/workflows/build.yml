@@ -12,6 +12,8 @@ jobs:
         DEPOT_URL: https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_2.4.5/depotdownloader-2.4.5.zip
         DEPOT_PATH: ${{ github.workspace }}/../depot
         GAME_PATH: ${{ github.workspace }}/..
+        MODLOADER_URL: https://github.com/mo10/MuseDashModLoader/releases/download/1.0.6/Dist.Release.zip
+
         STEAM_USER: ${{ secrets.STEAM_USER }}
         STEAM_PASS: ${{ secrets.STEAM_PASS }}
         STEAM_APPID: 774171
@@ -40,6 +42,11 @@ jobs:
           -max-downloads 32 `
           -dir $Env:GAME_PATH `
           -filelist $Env:DEPOT_PATH/regex.txt
+      
+      - name: Download ModLoader
+        run: |
+          Invoke-WebRequest -Uri $Env:MODLOADER_URL -OutFile $Env:GAME_PATH/modloader.zip
+          7z e $Env:GAME_PATH/modloader.zip -o"$Env:GAME_PATH"
 
       - name: Show dir
         run: |
@@ -47,6 +54,7 @@ jobs:
           dir $Env:DEPOT_PATH
           dir $Env:MANIFEST_PATH
           dir $Env:GAME_PATH
+          dir $Env:GAME_PATH/MuseDash_Data/Managed
 
       - name: Restore NuGet package
         run: nuget restore
