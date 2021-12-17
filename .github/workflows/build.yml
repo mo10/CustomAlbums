@@ -21,10 +21,15 @@ jobs:
         STEAM_DEPOTID: 774172
     steps:
       - uses: actions/checkout@v2
-      - run: choco install netfx-4.0.3-devpack
       - uses: microsoft/setup-msbuild@v1.1
       - uses: NuGet/setup-nuget@v1.0.5
-
+      - name: Install .NET Framework 4.0 Dev Pack
+      - run: |
+        $ArgumentList = ("Setup", "/passive", "/norestart")
+        Install-Binary |
+        -Url https://download.microsoft.com/download/9/5/A/95A9616B-7A37-4AF6-BC36-D6EA96C8DAAE/dotNetFx40_Full_x86_x64.exe |
+        -Name dotNetFx40_Full_x86_x64.exe -ArgumentList $ArgumentList
+        
       - name: Install DepotDownloader
         run: |
           mkdir $Env:DEPOT_PATH
