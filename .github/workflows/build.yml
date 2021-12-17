@@ -20,7 +20,7 @@ jobs:
         STEAM_DEPOTID: 774172
     steps:
       - uses: actions/checkout@v2
-      - uses: microsoft/setup-msbuild@v1
+      - uses: microsoft/setup-msbuild@v1.1
       - uses: NuGet/setup-nuget@v1.0.5
 
       - name: Install DepotDownloader
@@ -66,4 +66,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: CustomAlbumsMod
-          path: ../Mods
+          path: ../Mods/CustomAlbums.dll
