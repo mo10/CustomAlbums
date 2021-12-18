@@ -28,7 +28,7 @@ jobs:
           $ArgumentList = ("Setup", "/passive", "/norestart")
           Install-Binary `
           -Url https://download.microsoft.com/download/4/3/B/43B61315-B2CE-4F5B-9E32-34CCA07B2F0E/NDP452-KB2901951-x86-x64-DevPack.exe `
-          -Name dotNetFx40_Full_x86_x64.exe -ArgumentList $ArgumentList
+          -Name NDP452-KB2901951-x86-x64-DevPack.exe -ArgumentList $ArgumentList
 
       - name: Install DepotDownloader
         run: |
