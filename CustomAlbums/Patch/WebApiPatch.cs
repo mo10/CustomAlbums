@@ -15,7 +15,7 @@ using UnityEngine.Networking;
 namespace CustomAlbums.Patch
 {
     class WebApiPatch
-    { 
+    {
         public static void DoPatching(Harmony harmony)
         {
             MethodInfo method;
@@ -23,7 +23,7 @@ namespace CustomAlbums.Patch
             MethodInfo methodPostfix;
 
             // WebUtils.SendToUrl
-            method = AccessTools.Method(typeof(WebUtils), "SendToUrl",new Type[] { typeof(WebUtils.PeroWebRequest) } );
+            method = AccessTools.Method(typeof(WebUtils), "SendToUrl", new Type[] { typeof(WebUtils.PeroWebRequest) });
             methodPrefix = AccessTools.Method(typeof(WebApiPatch), "WebUtilsSendToUrlPrefix");
             harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
             // GameAccountSystem.SendToUrl
@@ -37,13 +37,13 @@ namespace CustomAlbums.Patch
         /// <returns></returns>
         public static bool SendToUrlPrefix(
             ref string url,
-            ref string method ,
-            ref Dictionary<string, object> datas ,
-            ref Action<JObject> succeedCallback , 
-            ref Action<long, string> faillCallback , 
-            ref Action startCallback, 
-            ref Action completeCallback , 
-            ref Dictionary<string, string> headers 
+            ref string method,
+            ref Dictionary<string, object> datas,
+            ref Action<JObject> succeedCallback,
+            ref Action<long, string> faillCallback,
+            ref Action startCallback,
+            ref Action completeCallback,
+            ref Dictionary<string, string> headers
             )
         {
             var originSuccessCallback = succeedCallback;
@@ -80,7 +80,9 @@ namespace CustomAlbums.Patch
                 // Block custom album high score upload.
                 case "musedash/v2/pcleaderboard/high-score":
                     var playData = PlayDataHelper.Load(datas);
+#if DEBUG
                     ModLogger.Debug(playData.JsonSerialize());
+#endif
                     if (playData.SelectedMusicUid.StartsWith("999"))
                     {
                         ModLogger.Debug($"Blocked high score upload:{playData.SelectedMusicUid}");
