@@ -49,13 +49,13 @@ jobs:
           Invoke-WebRequest -Uri $Env:MODLOADER_URL -OutFile $Env:GAME_PATH/modloader.zip
           7z e $Env:GAME_PATH/modloader.zip -o"$Env:GAME_PATH"
 
-      - name: Show dir
-        run: |
-          dir $Env:GITHUB_WORKSPACE
-          dir $Env:DEPOT_PATH
-          dir $Env:MANIFEST_PATH
-          dir $Env:GAME_PATH
-          dir $Env:GAME_PATH/MuseDash_Data/Managed
+      # - name: Show dir
+      #   run: |
+      #     dir $Env:GITHUB_WORKSPACE
+      #     dir $Env:DEPOT_PATH
+      #     dir $Env:MANIFEST_PATH
+      #     dir $Env:GAME_PATH
+      #     dir $Env:GAME_PATH/MuseDash_Data/Managed
 
       - name: Restore NuGet package
         run: nuget restore
@@ -63,8 +63,11 @@ jobs:
       - name: Build
         run: msbuild.exe /p:platform="Any CPU" /p:configuration="Release"
 
+      - name: Prepare artifact
+        run: copy $Env:GAME_PATH/Mods/CustomAlbums.dll $Env:GITHUB_WORKSPACE/CustomAlbums.dll
+
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
-          name: CustomAlbumsMod
-          path: ${{ env.GAME_PATH }}/Mods/CustomAlbums.dll
+          name: CustomAlbums
+          path: ${{ github.workspace }}/CustomAlbums.dll
