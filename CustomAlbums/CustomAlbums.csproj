@@ -157,6 +157,8 @@
     <Compile Include="AlbumManager.cs" />
     <Compile Include="Data\AlbumInfo.cs" />
     <Compile Include="Data\CustomData.cs" />
+    <Compile Include="Data\PlayData.cs" />
+    <Compile Include="PlayDataHelper.cs" />
     <Compile Include="NoPollutionHelper.cs" />
     <Compile Include="Patch\AssetPatch.cs" />
     <Compile Include="Entry.cs" />
