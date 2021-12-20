@@ -15,19 +15,19 @@ namespace CustomAlbums
 {
     public static class SaveManager
     {
-        public static readonly string FileName = "CustomAlbums.json";
+        public static readonly string FilePath = "Mods/CustomAlbums.json";
 
         public static CustomData CustomData = new CustomData();
 
         public static void Save()
         {
-            var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), FileName);
-            File.WriteAllText(path, CustomData.JsonSerialize());
+            var path = Path.Combine(Directory.GetCurrentDirectory(), FilePath);
+            File.WriteAllText(FilePath, CustomData.JsonSerialize());
         }
 
         public static void Load()
         {
-            var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), FileName);
+            var path = Path.Combine(Directory.GetCurrentDirectory(), FilePath);
             if (File.Exists(path))
             {
                 CustomData = File.ReadAllText(path).JsonDeserialize<CustomData>();

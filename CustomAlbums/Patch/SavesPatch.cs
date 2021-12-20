@@ -22,6 +22,8 @@ namespace CustomAlbums.Patch
 {
     public static class SavesPatch
     {
+        public static readonly string BackupPath = "Mods/saves_backup";
+
         public static void DoPatching(Harmony harmony)
         {
             MethodInfo method;
@@ -134,9 +136,10 @@ namespace CustomAlbums.Patch
         public static void Backup()
         {
             // Backup
-            var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"saves_backup");
+            var path = Path.Combine(Directory.GetCurrentDirectory(), BackupPath);
             if (!Directory.Exists(path))
                 Directory.CreateDirectory(path);
+
             var now = DateTime.Now.ToString("yyyy_MM_dd_H_mm_ss");
             var filePath = Path.Combine(path, $"{now}.sav");
             File.WriteAllBytes(filePath, Singleton<DataManager>.instance.ToBytes());
