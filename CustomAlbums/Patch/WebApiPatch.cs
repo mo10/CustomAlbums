@@ -46,10 +46,9 @@ namespace CustomAlbums.Patch
             ref Dictionary<string, string> headers 
             )
         {
-
             var originSuccessCallback = succeedCallback;
             var originFailCallback = faillCallback;
-            
+
             switch (url)
             {
                 // Add custom tag.
@@ -64,14 +63,15 @@ namespace CustomAlbums.Patch
                         music_tag["tag_picture"] = "https://mdmc.moe/cdn/melon.png";
                         music_tag["icon_name"] = "";
                         music_tag["music_list"] = JArray.FromObject(AlbumManager.GetAllUid());
-                        
+
                         ModLogger.Debug("Music tag injected.");
                         originSuccessCallback(jObject);
                     };
                     break;
                 // Block custom play feedback.
                 case "statistics/pc-play-statistics-feedback":
-                    if (((string)datas["music_uid"]).StartsWith("999"))
+                    var uid = datas["music_uid"] as string;
+                    if (uid.StartsWith("999"))
                     {
                         ModLogger.Debug($"Blocked play feedback upload:{(string)datas["music_uid"]}");
                         return false; // block this request
@@ -79,21 +79,18 @@ namespace CustomAlbums.Patch
                     break;
                 // Block custom album high score upload.
                 case "musedash/v2/pcleaderboard/high-score":
-                case "musedash/v2/exhileaderboard/high-score": // This is old
-                    var selectedUid = Singleton<DataManager>.instance["Account"]["SelectedMusicUid"].GetResult<string>();
-                    if (selectedUid.StartsWith("999-"))
+                    var playData = PlayDataHelper.Load(datas);
+                    ModLogger.Debug(playData.JsonSerialize());
+                    if (playData.SelectedMusicUid.StartsWith("999"))
                     {
-                        ModLogger.Debug($"Blocked high score upload:{selectedUid}");
+                        ModLogger.Debug($"Blocked high score upload:{playData.SelectedMusicUid}");
                         return false; // block this request
                     }
                     break;
                 case "musedash/v2/save":
-                    if (method == "PUT")
-                    {
-                        ModLogger.Debug("Sync save:" + datas.JsonSerialize());
-                    }
                     break;
             }
+
             return true;
         }
         /// <summary>
@@ -102,12 +99,11 @@ namespace CustomAlbums.Patch
         /// <returns></returns>
         public static bool WebUtilsSendToUrlPrefix(WebUtils.PeroWebRequest webRequest)
         {
+            ModLogger.Debug($"Incoming request:{webRequest.method} {webRequest.url}");
+
+#if DEBUG
             var originSuccessCallback = webRequest.succeedCallback;
             var originFailCallback = webRequest.faillCallback;
-
-            ModLogger.Debug($"Incoming request:{webRequest.method} {webRequest.url}");
-            
-#if DEBUG
             ModLogger.Debug($"Request:{webRequest.method} {webRequest.url} headers:{webRequest.headers?.JsonSerialize()} datas:{webRequest.datas?.JsonSerialize()}");
             webRequest.succeedCallback = delegate (DownloadHandler handler)
             {

@@ -147,7 +147,7 @@ namespace CustomAlbums.Patch
             // Backup as json
             filePath = Path.Combine(path, $"{now}_debug.json");
             File.WriteAllText(filePath, ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
-            ModLogger.Debug($"Save backup:{filePath}");
+            ModLogger.Debug($"Save backup: {filePath}");
         }
         /// <summary>
         /// IData dict to JObject dict
