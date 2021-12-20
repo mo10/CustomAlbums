@@ -13,7 +13,7 @@ jobs:
         DEPOT_URL: https://github.com/SteamRE/DepotDownloader/releases/download/DepotDownloader_2.4.5/depotdownloader-2.4.5.zip
         DEPOT_PATH: ${{ github.workspace }}/../depot
         GAME_PATH: ${{ github.workspace }}/..
-        MODLOADER_URL: https://github.com/mo10/MuseDashModLoader/releases/download/1.0.6/Dist.Release.zip
+        MODLOADER_URL: https://github.com/mo10/MuseDashModLoader/releases/download/1.0.25/ModLoader.zip
 
         STEAM_USER: ${{ secrets.STEAM_USER }}
         STEAM_PASS: ${{ secrets.STEAM_PASS }}
@@ -67,4 +67,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: CustomAlbumsMod
-          path: ../Mods/CustomAlbums.dll
+          path: ${{ env.GAME_PATH }}/Mods/CustomAlbums.dll
