@@ -23,12 +23,6 @@ jobs:
       - uses: actions/checkout@v2
       - uses: microsoft/setup-msbuild@v1.1
       - uses: NuGet/setup-nuget@v1.0.5
-      - name: Install .NET Framework 4.0 Dev Pack
-        run: |
-          $ArgumentList = ("Setup", "/passive", "/norestart")
-          Install-Binary `
-          -Url https://download.microsoft.com/download/4/3/B/43B61315-B2CE-4F5B-9E32-34CCA07B2F0E/NDP452-KB2901951-x86-x64-DevPack.exe `
-          -Name NDP452-KB2901951-x86-x64-DevPack.exe -ArgumentList $ArgumentList
 
       - name: Install DepotDownloader
         run: |
