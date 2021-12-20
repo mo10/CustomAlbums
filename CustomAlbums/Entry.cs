@@ -5,6 +5,7 @@ using HarmonyLib;
 using ModHelper;
 using System;
 using System.Reflection;
+using UnityEngine;
 
 namespace CustomAlbums
 {
@@ -20,6 +21,9 @@ namespace CustomAlbums
 
         public void DoPatching()
         {
+            // Fix game pauses when loses focus
+            Application.runInBackground = true;
+
             var harmony = new Harmony("com.github.mo10.customalbums");
 
             AlbumManager.LoadAll();
@@ -31,8 +35,6 @@ namespace CustomAlbums
             WebApiPatch.DoPatching(harmony);
             StagePatch.DoPatching(harmony);
             SavesPatch.DoPatching(harmony);
-
         }
-        
     }
 }
