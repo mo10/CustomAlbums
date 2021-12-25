@@ -1,4 +1,4 @@
-﻿using Assets.Scripts.Common.XDSDK;
+﻿using Account;
 using Assets.Scripts.PeroTools.Commons;
 using Assets.Scripts.PeroTools.Managers;
 using Assets.Scripts.PeroTools.Nice.Datas;
@@ -22,6 +22,8 @@ namespace CustomAlbums.Patch
 {
     public static class SavesPatch
     {
+        public static readonly string BackupPath = "Mods/saves_backup";
+
         public static void DoPatching(Harmony harmony)
         {
             MethodInfo method;
@@ -33,12 +35,12 @@ namespace CustomAlbums.Patch
             methodPrefix = AccessTools.Method(typeof(SavesPatch), "BattleExitPrefix");
             harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
             // XDSDKManager.OnSaveSelectCallback
-            method = AccessTools.Method(typeof(XDSDKManager), "OnSaveSelectCallback");
+            method = AccessTools.Method(typeof(GameAccountSystem), "OnSaveSelectCallback");
             methodPrefix = AccessTools.Method(typeof(SavesPatch), "OnSaveSelectCallbackPrefix");
             methodPostfix = AccessTools.Method(typeof(SavesPatch), "OnSaveSelectCallbackPostfix");
             harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix), postfix: new HarmonyMethod(methodPostfix));
             // XDSDKManager.RefreshDatas
-            method = AccessTools.Method(typeof(XDSDKManager), "RefreshDatas");
+            method = AccessTools.Method(typeof(GameAccountSystem), "RefreshDatas");
             methodPrefix = AccessTools.Method(typeof(SavesPatch), "RefreshDatasPrefix");
             harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
             // ISync implement
@@ -77,13 +79,7 @@ namespace CustomAlbums.Patch
         /// </summary>
         public static void ISyncLoadLocalPostfix()
         {
-            // Backup
-            var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"saves_backup");
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
-            var filePath = Path.Combine(path, $"{DateTime.Now.ToString("yyyy_MM_dd_H_mm_ss")}.sav");
-            File.WriteAllBytes(filePath, Singleton<DataManager>.instance.ToBytes());
-            ModLogger.Debug($"Save backup: {filePath}");
+            Backup();
 
             NoPollutionHelper.Upgrade();
             SaveManager.CleanCustomData();
@@ -94,13 +90,10 @@ namespace CustomAlbums.Patch
         /// </summary>
         public static void RefreshDatasPrefix()
         {
-            // Backup
-            var path = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), $"saves_backup");
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
-            var filePath = Path.Combine(path, $"{DateTime.Now.ToString("yyyy_MM_dd_H_mm_ss")}_cloudsync.sav");
-            File.WriteAllBytes(filePath, Singleton<DataManager>.instance.ToBytes());
-            ModLogger.Debug($"Save backup: {filePath}");
+            Backup();
+
+            SaveManager.SplitCustomData();
+            SaveManager.Save();
 
             NoPollutionHelper.Upgrade();
             SaveManager.CleanCustomData();
@@ -140,82 +133,21 @@ namespace CustomAlbums.Patch
                 SaveManager.RestoreCustomData();
             }
         }
-
-        public static JObject Clean(JObject datas)
+        public static void Backup()
         {
-            Dictionary<string, Type> keyMapping = new Dictionary<string, Type>()
-            {
-                // Account
-                {"SelectedAlbumUid", typeof(string)},
-                {"SelectedMusicUidFromInfoList", typeof(string)},
-                {"SelectedAlbumTagIndex", typeof(int)},
-                {"Collections", typeof(List<string>)},
-                {"Hides", typeof(List<string>)},
-                {"History", typeof(List<string>)},
-                // Achievement
-                {"highest", typeof(List<JObject>)},
-                {"fail_count", typeof(List<JObject>)},
-                {"full_combo_music", typeof(List<string>)},
-                {"achievements", typeof(List<string>)},
-                {"easy_pass", typeof(List<string>)},
-                {"hard_pass", typeof(List<string>)},
-                {"master_pass", typeof(List<string>)},
+            // Backup
+            var path = Path.Combine(Directory.GetCurrentDirectory(), BackupPath);
+            if (!Directory.Exists(path))
+                Directory.CreateDirectory(path);
 
-            };
-            foreach (var mapping in keyMapping)
-            {
-                var key = mapping.Key;
-                var type = mapping.Value;
-
-                if (datas[key] == null)
-                    continue;
-
-                //if (type == typeof(int))
-                //{
-                //    var value = datas[key]?.Value<int>() ?? 0;
-                //    if (value == 999)
-                //    {
-                //        datas[key] = 0;
-                //        ModLogger.Debug($"{key}: Set {value} to 0");
-                //    }
-                //}
-                //else if (type == typeof(string))
-                //{
-                //    var value = datas[key]?.Value<string>() ?? "";
-                //    if (value.Contains("999"))
-                //    {
-                //        var newVal = value.Replace("999", "0");
-                //        datas[key] = newVal;
-                //        ModLogger.Debug($"{key}: Set {value} to {newVal}");
-                //    }
-                //}
-                else if (type == typeof(List<string>))
-                {
-
-                    var value = ((JArray)datas[key]).ToObject<List<string>>();
-                    var count = value.RemoveAll(s => s.Contains("999"));
-                    if (count > 0)
-                    {
-                        datas[key] = JArray.FromObject(value);
-                        ModLogger.Debug($"{key}: Deleted {count} record(s)");
-                    }
-                }
-                else if (type == typeof(List<JObject>))
-                {
-                    var value = ((JArray)datas[key]).ToObject<List<JObject>>();
-                    var count = value.RemoveAll((JObject d) => d["uid"].Value<string>().Contains("999"));
-                    if (count > 0)
-                    {
-                        datas[key] = JArray.FromObject(value);
-                        ModLogger.Debug($"{key}: Deleted {count} record(s)");
-                    }
-                }
-                else
-                {
-                    ModLogger.Debug($"{key}: Unknown data type: {type}");
-                }
-            }
-            return datas;
+            var now = DateTime.Now.ToString("yyyy_MM_dd_H_mm_ss");
+            var filePath = Path.Combine(path, $"{now}.sav");
+            File.WriteAllBytes(filePath, Singleton<DataManager>.instance.ToBytes());
+            ModLogger.Debug($"Save backup: {filePath}");
+            // Backup as json
+            filePath = Path.Combine(path, $"{now}_debug.json");
+            File.WriteAllText(filePath, ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
+            ModLogger.Debug($"Save backup: {filePath}");
         }
         /// <summary>
         /// IData dict to JObject dict

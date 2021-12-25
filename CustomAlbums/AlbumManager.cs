@@ -49,6 +49,8 @@ namespace CustomAlbums
         /// Failed to load custom album.
         /// </summary>
         public static Dictionary<string, string> CorruptedAlbums = new Dictionary<string, string>();
+
+        public static List<string> AssertKeys = new List<string>();
         /// <summary>
         /// Clear all loaded custom albums and reload.
         /// </summary>
@@ -110,6 +112,25 @@ namespace CustomAlbums
                     ModLogger.Debug($"Load album failed: fs_{folderName}, reason: {ex}");
                     CorruptedAlbums.Add(path, ex.Message);
                 }
+            }
+            // Get all asset keys
+            foreach(var album in LoadedAlbums)
+            {
+                var albumKey = album.Key;
+                var info = album.Value.Info;
+
+                AssertKeys.Add($"{albumKey}_demo");
+                AssertKeys.Add($"{albumKey}_music");
+                AssertKeys.Add($"{albumKey}_cover");
+
+                if (!string.IsNullOrEmpty(info.difficulty1))
+                    AssertKeys.Add($"{albumKey}_map1");
+                if (!string.IsNullOrEmpty(info.difficulty2))
+                    AssertKeys.Add($"{albumKey}_map2");
+                if (!string.IsNullOrEmpty(info.difficulty3))
+                    AssertKeys.Add($"{albumKey}_map3");
+                if (!string.IsNullOrEmpty(info.difficulty4))
+                    AssertKeys.Add($"{albumKey}_map4");
             }
         }
         /// <summary>

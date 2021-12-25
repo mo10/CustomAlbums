@@ -1,17 +1,17 @@
 ﻿using Assets.Scripts.GameCore;
-using Assets.Scripts.PeroTools.AssetBundles;
 using Assets.Scripts.PeroTools.Commons;
 using Assets.Scripts.PeroTools.Managers;
 using HarmonyLib;
 using ModHelper;
 using Newtonsoft.Json.Linq;
+using PeroTools2.Resources;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
-using static Assets.Scripts.PeroTools.Managers.AssetBundleConfigManager;
+using UnityEngine.AddressableAssets;
 
 namespace CustomAlbums.Patch
 {
@@ -29,8 +29,8 @@ namespace CustomAlbums.Patch
             methodPrefix = AccessTools.Method(typeof(JsonPatch), "ConfigManagerInitPrefix");
             harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
             // AssetBundleManager.Init
-            method = AccessTools.Method(typeof(AssetBundleManager), "Init");
-            methodPrefix = AccessTools.Method(typeof(JsonPatch), "AssetBundleManagerInitPrefix");
+            method = AccessTools.Method(typeof(ResourcesManager), "Init");
+            methodPrefix = AccessTools.Method(typeof(JsonPatch), "ResourcesManagerInitPrefix");
             harmony.Patch(method, prefix: new HarmonyMethod(methodPrefix));
             // MusicTagManager.CustomTagPaser
             method = AccessTools.Method(typeof(MusicTagManager), "CustomTagPaser");
@@ -66,8 +66,10 @@ namespace CustomAlbums.Patch
         public static void ConfigManagerInitPrefix(ref Dictionary<string, JArray> ___m_Dictionary, ref Dictionary<string, TextAsset> ___m_TextAssets)
         {
             #region Inject albums.json
-            var text = LoadTextAsset("albums", ref ___m_TextAssets);
-            JArray jArray = JsonUtils.ToArray(text);
+            //var text = LoadTextAsset("albums", ref ___m_TextAssets);
+            //JArray jArray = JsonUtils.ToArray(text);
+            JArray jArray = Singleton<ConfigManager>.instance.GetJson("albums", false);
+
             jArray.Add(JObject.FromObject(new
             {
                 uid = AlbumManager.MusicPackge,
@@ -78,18 +80,19 @@ namespace CustomAlbums.Patch
                 needPurchase = false,
                 free = true,
             }));
-            ___m_Dictionary.Add("albums", jArray);
+            //___m_Dictionary.Add("albums", jArray);
             #endregion
             #region Inject albums_<lang>.json
             foreach (var lang in AlbumManager.Langs)
             {
-                text = LoadTextAsset($"albums_{lang.Key}", ref ___m_TextAssets);
-                jArray = JsonUtils.ToArray(text);
+                //text = LoadTextAsset($"albums_{lang.Key}", ref ___m_TextAssets);
+                //jArray = JsonUtils.ToArray(text);
+                jArray = Singleton<ConfigManager>.instance.GetJson($"albums_{lang.Key}", false);
                 jArray.Add(JObject.FromObject(new
                 {
                     title = lang.Value,
                 }));
-                ___m_Dictionary.Add($"albums_{lang.Key}", jArray);
+                //___m_Dictionary.Add($"albums_{lang.Key}", jArray);
             }
             #endregion
             #region Inject ALBUM1000.json
@@ -149,84 +152,73 @@ namespace CustomAlbums.Patch
             }
             #endregion
             #region Inject defaultTag.json
-            text = LoadTextAsset("defaultTag", ref ___m_TextAssets);
-            jArray = JsonUtils.ToArray(text);
-
+            //text = LoadTextAsset("defaultTag", ref ___m_TextAssets);
+            //jArray = JsonUtils.ToArray(text);
+            jArray = Singleton<ConfigManager>.instance.GetJson("defaultTag", false);
             // Replace Cute tag
             var music_tag = jArray.Find(o => o.Value<int>("sort_key") == 8);
             music_tag["tag_name"] = JObject.FromObject(AlbumManager.Langs);
             music_tag["tag_picture"] = "https://mdmc.moe/cdn/melon.png";
             music_tag["pic_name"] = "";
             music_tag["music_list"] = JArray.FromObject(AlbumManager.GetAllUid());
-            ___m_Dictionary.Add("defaultTag", jArray);
-            // Add new music tag
-            //jArray.Add(JObject.FromObject(new
-            //{
-            //    object_id = "3d2be24f837b2ec1e5e119bb",
-            //    created_at = "2021-10-24T00:00:00.000Z",
-            //    updated_at = "2021-10-24T00:00:00.000Z",
-            //    tag_name = JObject.FromObject(AlbumManager.Langs),
-            //    tag_picture = "https://mdmc.moe/cdn/melon.png",
-            //    pic_name = "ImgCollab",
-            //    music_list = AlbumManager.GetAllUid(),
-            //    anchor_pattern = false,
-            //    sort_key = jArray.Count + 1,
-            //}));
+            // ___m_Dictionary.Add("defaultTag", jArray);
             #endregion
             #region Inject AssetBundle
-            var dict = SingletonScriptableObject<AssetBundleConfigManager>.instance.dict;
-            foreach (var keyValue in AlbumManager.LoadedAlbums)
-            {
-                var key = keyValue.Key;
-                var album = keyValue.Value;
-                var info = album.Info;
+            //var dict = SingletonScriptableObject<AssetBundleConfigManager>.instance.dict;
+            //foreach (var keyValue in AlbumManager.LoadedAlbums)
+            //{
+            //    var key = keyValue.Key;
+            //    var album = keyValue.Value;
+            //    var info = album.Info;
 
-                List<string> configList = new List<string>();
+            //    List<string> configList = new List<string>();
 
-                var fileName = $"{key}_cover";
-                assetMapping.Add(fileName, key);
-                dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
-                fileName = $"{key}_demo";
-                assetMapping.Add(fileName, key);
-                dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
-                fileName = $"{key}_music";
-                assetMapping.Add(fileName, key);
-                dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
+            //    var fileName = $"{key}_cover";
+            //    assetMapping.Add(fileName, key);
+            //    dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
+            //    fileName = $"{key}_demo";
+            //    assetMapping.Add(fileName, key);
+            //    dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
+            //    fileName = $"{key}_music";
+            //    assetMapping.Add(fileName, key);
+            //    dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
 
-                if (!string.IsNullOrEmpty(info.difficulty1))
-                {
-                    fileName = $"{key}_map1";
-                    assetMapping.Add(fileName, key);
-                    dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
-                }
-                if (!string.IsNullOrEmpty(info.difficulty2))
-                {
-                    fileName = $"{key}_map2";
-                    assetMapping.Add(fileName, key);
-                    dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
-                }
-                if (!string.IsNullOrEmpty(info.difficulty3))
-                {
-                    fileName = $"{key}_map3";
-                    assetMapping.Add(fileName, key);
-                    dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
-                }
-                if (!string.IsNullOrEmpty(info.difficulty4))
-                {
-                    fileName = $"{key}_map4";
-                    assetMapping.Add(fileName, key);
-                    dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
-                }
-            }
+            //    if (!string.IsNullOrEmpty(info.difficulty1))
+            //    {
+            //        fileName = $"{key}_map1";
+            //        assetMapping.Add(fileName, key);
+            //        dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
+            //    }
+            //    if (!string.IsNullOrEmpty(info.difficulty2))
+            //    {
+            //        fileName = $"{key}_map2";
+            //        assetMapping.Add(fileName, key);
+            //        dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
+            //    }
+            //    if (!string.IsNullOrEmpty(info.difficulty3))
+            //    {
+            //        fileName = $"{key}_map3";
+            //        assetMapping.Add(fileName, key);
+            //        dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
+            //    }
+            //    if (!string.IsNullOrEmpty(info.difficulty4))
+            //    {
+            //        fileName = $"{key}_map4";
+            //        assetMapping.Add(fileName, key);
+            //        dict.Add(fileName, new List<ABConfig>() { CreateABConfig(fileName) });
+            //    }
+            //}
             #endregion
+
+            Addressables.ResourceManager.ResourceProviders.Add(new CustomAlbumAssetResourceProvider());
+            Addressables.AddResourceLocator(new CustomAlbumAssetLocator(), remoteCatalogLocation: new CustomAlbumAssetResourceLocation());
             ModLogger.Debug($"Json injected!");
         }
 
         /// <summary>
         /// Filled empty asset bundle file to every custom albums.
         /// </summary>
-        /// <param name="___m_LoadedAssetBundles"></param>
-        public static void AssetBundleManagerInitPrefix(ref Dictionary<string, LoadedAssetBundle> ___m_LoadedAssetBundles)
+        public static void ResourcesManagerInitPrefix(ref Dictionary<string, ResourcesManager.AssetData> ___m_AssetDatas)
         {
             //var name = $"{Application.streamingAssetsPath}/AssetBundles\\Custom_Albums";
             //var ab = new LoadedAssetBundle(AssetBundle.LoadFromMemory(Utils.ReadEmbeddedFile("Resources.EmptyAssetBundle")));
@@ -234,15 +226,58 @@ namespace CustomAlbums.Patch
             var ab = AssetBundle.LoadFromMemory(Utils.ReadEmbeddedFile("Resources.EmptyAssetBundle"));
             foreach (var keyValue in AlbumManager.LoadedAlbums)
             {
-                var key = keyValue.Key;
+                var albumkey = keyValue.Key;
                 var album = keyValue.Value;
                 var info = album.Info;
 
-                var loadedAB = new LoadedAssetBundle(ab);
-                ___m_LoadedAssetBundles.Add(key, loadedAB);
+                ___m_AssetDatas.Add($"{albumkey}_demo", new ResourcesManager.AssetData()
+                {
+                    guid = albumkey,
+                    path = "CustomAlbums/demo",
+                    type = typeof(AudioClip)
+                });
+                ___m_AssetDatas.Add($"{albumkey}_music", new ResourcesManager.AssetData()
+                {
+                    guid = albumkey,
+                    path = "CustomAlbums/music",
+                    type = typeof(AudioClip)
+                });
+                ___m_AssetDatas.Add($"{albumkey}_cover", new ResourcesManager.AssetData()
+                {
+                    guid = albumkey,
+                    path = "CustomAlbums/cover",
+                    type = typeof(Sprite)
+                });
 
+                if (!string.IsNullOrEmpty(info.difficulty1))
+                    ___m_AssetDatas.Add($"{albumkey}_map1", new ResourcesManager.AssetData()
+                    {
+                        guid = albumkey,
+                        path = "CustomAlbums/map1",
+                        type = typeof(StageInfo)
+                    });
+                if (!string.IsNullOrEmpty(info.difficulty2))
+                    ___m_AssetDatas.Add($"{albumkey}_map2", new ResourcesManager.AssetData()
+                    {
+                        guid = albumkey,
+                        path = "CustomAlbums/map2",
+                        type = typeof(StageInfo)
+                    });
+                if (!string.IsNullOrEmpty(info.difficulty3))
+                    ___m_AssetDatas.Add($"{albumkey}_map3", new ResourcesManager.AssetData()
+                    {
+                        guid = albumkey,
+                        path = "CustomAlbums/map3",
+                        type = typeof(StageInfo)
+                    });
+                if (!string.IsNullOrEmpty(info.difficulty4))
+                    ___m_AssetDatas.Add($"{albumkey}_map4", new ResourcesManager.AssetData()
+                    {
+                        guid = albumkey,
+                        path = "CustomAlbums/map4",
+                        type = typeof(StageInfo)
+                    });
             }
-
         }
         /// <summary>
         /// Add original TextAsset to m_TextAssets.
@@ -252,10 +287,11 @@ namespace CustomAlbums.Patch
         /// <returns></returns>
         public static string LoadTextAsset(string name, ref Dictionary<string, TextAsset> m_TextAssets)
         {
-            var textAsset = Singleton<AssetBundleManager>.instance.LoadFromName<TextAsset>($"{name}.json");
+            var textAsset = SingletonScriptableObject<ResourcesManager>.instance.LoadFromName<TextAsset>($"{name}.json");
             m_TextAssets.Add(name, textAsset);
             return textAsset.text;
         }
+#if false
         /// <summary>
         /// Create a new ABConfig
         /// </summary>
@@ -289,5 +325,6 @@ namespace CustomAlbums.Patch
 
             return abConfig;
         }
+#endif
     }
 }

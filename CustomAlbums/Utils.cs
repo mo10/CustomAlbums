@@ -162,8 +162,15 @@ namespace CustomAlbums
         /// <returns></returns>
         public static IEnumerable<Type> GetAllImplement(this Type type)    
         {
-            var classes = Assembly.GetAssembly(type).GetTypes().Where(ta =>
-                ta.GetInterfaces().Contains(type) && ta.GetConstructor(Type.EmptyTypes) != null);
+            var classes = Assembly.GetAssembly(type).GetTypes().Where(t =>
+                t.GetInterfaces().Contains(type) && t.GetConstructor(Type.EmptyTypes) != null);
+
+            return classes;
+        }
+        public static IEnumerable<Type> GetAllSublass(this Type type)
+        {
+            var classes = Assembly.GetAssembly(type).GetTypes().Where(
+                t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(type));
 
             return classes;
         }
