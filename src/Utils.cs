@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using HarmonyLib;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -6,11 +8,23 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Encodings.Web;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using UnhollowerBaseLib;
 
 namespace CustomAlbums
 {
     public static class Utils
     {
+        unsafe public static IntPtr NativeMethod(Type type, string name, Type[] parameters = null, Type[] generics = null)
+        {
+            var method = AccessTools.Method(type, name, parameters, generics);
+
+            var methodPtr = *(IntPtr*)(IntPtr)UnhollowerUtils.GetIl2CppMethodInfoPointerFieldForGeneratedMethod(method)
+                .GetValue(null);
+            return methodPtr;
+        }
         /// <summary>
         /// Read embedded file from this assembly.
         /// </summary>
@@ -49,6 +63,15 @@ namespace CustomAlbums
         {
             return JsonConvert.DeserializeObject<T>(text);
         }
+        public static JObject ToJObject(this Il2CppSystem.Object o)
+        {
+            JToken token;
+            Newtonsoft.Json.JsonSerializer jsonSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
+            JTokenWriter jtokenWriter = new JTokenWriter();
+            jsonSerializer.Serialize(jtokenWriter, o);
+            token = jtokenWriter.Token;
+            return (JObject)token;
+        }
         /// <summary>
         /// Convert a object to json string.
         /// </summary>
@@ -56,13 +79,19 @@ namespace CustomAlbums
         /// <returns></returns>
         public static string JsonSerialize(this Il2CppSystem.Object obj)
         {
-#if BEPINEX
             var settings = new JsonSerializerSettings();
             settings._formatting = new Il2CppSystem.Nullable<Formatting>(Formatting.Indented);
             return JsonConvert.SerializeObject(obj, settings);
-#elif MELON
-            return JsonConvert.SerializeObject(obj, Formatting.Indented);
-#endif
+        }
+        public static string JsonSerialize<T>(this T obj) where T : JsonNode
+        {
+            var options = new JsonSerializerOptions
+            {
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = true
+            };
+
+            return System.Text.Json.JsonSerializer.Serialize(obj, options);
         }
         /// <summary>
         /// Get the specified non-public type.
@@ -128,9 +157,13 @@ namespace CustomAlbums
         /// </summary>
         /// <param name="bytes"></param>
         /// <returns></returns>
-        public static MemoryStream ToStream(this byte[] bytes)
+        public static Il2CppSystem.IO.MemoryStream ToIl2CppStream(this byte[] bytes)
         {
-            return new MemoryStream(bytes);
+            return new Il2CppSystem.IO.MemoryStream(bytes);
+        }
+        public static System.IO.MemoryStream ToStream(this byte[] bytes)
+        {
+            return new System.IO.MemoryStream(bytes);
         }
         public static string ToString(this IEnumerable<byte> bytes, string format)
         {
