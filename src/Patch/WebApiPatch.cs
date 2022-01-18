@@ -1,5 +1,6 @@
 ﻿using PeroTools2.Commons;
 using Newtonsoft.Json.Linq;
+using IL2CppJson = Il2CppNewtonsoft.Json.Linq;
 using System;
 using Account;
 using UnityEngine.Networking;
@@ -9,9 +10,7 @@ using UnhollowerRuntimeLib;
 using UnhollowerBaseLib;
 using HarmonyLib;
 using System.Runtime.InteropServices;
-using System.Text.Json;
 using System.Linq;
-using System.Text.Json.Nodes;
 #if MELON
 using MelonLoader;
 #endif
@@ -65,22 +64,21 @@ namespace CustomAlbums.Patch
             IntPtr nativeMethodInfo
             )
         {
-            bool flag = true;
-
+            bool blockThisRequest = false;
             var _url = IL2CPP.Il2CppStringToManaged(url);
             var _method = IL2CPP.Il2CppStringToManaged(method);
             Dictionary<string, Il2CppSystem.Object> _datas = null;
-            Il2CppSystem.Action<JObject> _succeedCallback = null;
-            Il2CppSystem.Action<JObject> _failCallback = null;
+            Il2CppSystem.Action<IL2CppJson.JObject> _succeedCallback = null;
+            Il2CppSystem.Action<IL2CppJson.JObject> _failCallback = null;
 
             if (datas != IntPtr.Zero)
                 _datas = new Dictionary<string, Il2CppSystem.Object>(datas);
 
             if (succeedCallback != IntPtr.Zero)
-                _succeedCallback = new Il2CppSystem.Action<JObject>(succeedCallback);
+                _succeedCallback = new Il2CppSystem.Action<IL2CppJson.JObject>(succeedCallback);
 
             if (failCallback != IntPtr.Zero)
-                _failCallback = new Il2CppSystem.Action<JObject>(failCallback);
+                _failCallback = new Il2CppSystem.Action<IL2CppJson.JObject>(failCallback);
 
 
             var originalSucceedCallback = _succeedCallback;
@@ -92,35 +90,34 @@ namespace CustomAlbums.Patch
             {
                 // Add custom tag.
                 case "musedash/v1/music_tag":
-                    _succeedCallback = new Action<JObject>(jObject =>
+                    _succeedCallback = new Action<IL2CppJson.JObject>(jObject =>
                     {
-                        var JObj = JsonSerializer.Deserialize<JsonObject>(jObject.JsonSerialize());
-                        var jArray = (JsonArray)JObj["music_tag_list"];
+                        var JObj = jObject.IL2CppJsonSerialize().JsonDeserialize<JArray>();
+                        var jArray = (JArray)JObj["music_tag_list"];
+                        var music_tag = jArray.First(o => o["sort_key"].Value<int>() == 8);
 
-                        var music_tag = jArray.First(o => o["sort_key"].GetValue<int>() == 8);
-                        foreach(var kv in AlbumManager.Langs)
-                            music_tag["tag_name"][kv.Key] = kv.Value;
+                        music_tag["tag_name"] = JObject.FromObject(AlbumManager.Langs);
                         music_tag["tag_picture"] = "https://mdmc.moe/cdn/melon.png";
                         music_tag["icon_name"] = "";
-                        music_tag["music_list"] = AlbumManager.GetAllUid();
+                        music_tag["music_list"] = JArray.FromObject(AlbumManager.GetAllUid());
 
-
-                        //jArray.RemoveAt
-                        originalSucceedCallback?.Invoke(jObject);
+                        var newJObject = music_tag.JsonSerialize().IL2CppJsonDeserialize<IL2CppJson.JObject>();
+                        originalSucceedCallback?.Invoke(newJObject);
                     });
+                    blockThisRequest = false;
                     break;
             }
 
-            if (flag)
+            if (!blockThisRequest)
                 return OriginalSendToUrl(hiddenStructReturn, thisPtr, url, method, datas, succeedCallback, failCallback, startCallback, completeCallback, headers, nativeMethodInfo);
-
+            // Request blocked
             return IntPtr.Zero;
         }
         public static bool SendToUrlPrefix(
             ref string url,
             ref string method, 
             ref Dictionary<string, Il2CppSystem.Object> datas, 
-            ref Il2CppSystem.Action<JObject> succeedCallback , 
+            ref Il2CppSystem.Action<IL2CppJson.JObject> succeedCallback , 
             ref Il2CppSystem.Action<long, string> faillCallback,
             ref Il2CppSystem.Action startCallback,
             ref Il2CppSystem.Action completeCallback,

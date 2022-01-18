@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using IL2CppJson = Il2CppNewtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -8,9 +9,6 @@ using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using UnhollowerBaseLib;
 
 namespace CustomAlbums
@@ -47,6 +45,48 @@ namespace CustomAlbums
         /// <typeparam name="T"></typeparam>
         /// <param name="steamReader"></param>
         /// <returns></returns>
+        public static T IL2CppJsonDeserialize<T>(this Stream steamReader)
+        {
+            var buffer = new byte[steamReader.Length];
+            steamReader.Read(buffer, 0, buffer.Length);
+            return IL2CppJson.JsonConvert.DeserializeObject<T>(Encoding.UTF8.GetString(buffer));
+        }
+        /// <summary>
+        /// Load json from string.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="text"></param>
+        /// <returns></returns>
+        public static T IL2CppJsonDeserialize<T>(this string text)
+        {
+            return IL2CppJson.JsonConvert.DeserializeObject<T>(text);
+        }
+        public static JObject ToJObject(this Il2CppSystem.Object o)
+        {
+            JToken token;
+            Newtonsoft.Json.JsonSerializer jsonSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
+            JTokenWriter jtokenWriter = new JTokenWriter();
+            jsonSerializer.Serialize(jtokenWriter, o);
+            token = jtokenWriter.Token;
+            return (JObject)token;
+        }
+        /// <summary>
+        /// Convert a il2cpp object to json string.
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static string IL2CppJsonSerialize(this Il2CppSystem.Object obj)
+        {
+            var settings = new IL2CppJson.JsonSerializerSettings();
+            settings._formatting = new Il2CppSystem.Nullable<IL2CppJson.Formatting>(IL2CppJson.Formatting.Indented);
+            return IL2CppJson.JsonConvert.SerializeObject(obj, settings);
+        }
+        /// <summary>
+        /// Load json from stream.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="steamReader"></param>
+        /// <returns></returns>
         public static T JsonDeserialize<T>(this Stream steamReader)
         {
             var buffer = new byte[steamReader.Length];
@@ -63,35 +103,15 @@ namespace CustomAlbums
         {
             return JsonConvert.DeserializeObject<T>(text);
         }
-        public static JObject ToJObject(this Il2CppSystem.Object o)
-        {
-            JToken token;
-            Newtonsoft.Json.JsonSerializer jsonSerializer = Newtonsoft.Json.JsonSerializer.CreateDefault();
-            JTokenWriter jtokenWriter = new JTokenWriter();
-            jsonSerializer.Serialize(jtokenWriter, o);
-            token = jtokenWriter.Token;
-            return (JObject)token;
-        }
         /// <summary>
         /// Convert a object to json string.
         /// </summary>
+        /// <typeparam name="T"></typeparam>
         /// <param name="obj"></param>
         /// <returns></returns>
-        public static string JsonSerialize(this Il2CppSystem.Object obj)
+        public static string JsonSerialize(this object obj)
         {
-            var settings = new JsonSerializerSettings();
-            settings._formatting = new Il2CppSystem.Nullable<Formatting>(Formatting.Indented);
-            return JsonConvert.SerializeObject(obj, settings);
-        }
-        public static string JsonSerialize<T>(this T obj) where T : JsonNode
-        {
-            var options = new JsonSerializerOptions
-            {
-                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                WriteIndented = true
-            };
-
-            return System.Text.Json.JsonSerializer.Serialize(obj, options);
+            return JsonConvert.SerializeObject(obj, Formatting.Indented);
         }
         /// <summary>
         /// Get the specified non-public type.
@@ -157,7 +177,7 @@ namespace CustomAlbums
         /// </summary>
         /// <param name="bytes"></param>
         /// <returns></returns>
-        public static Il2CppSystem.IO.MemoryStream ToIl2CppStream(this byte[] bytes)
+        public static Il2CppSystem.IO.MemoryStream ToIL2CppStream(this byte[] bytes)
         {
             return new Il2CppSystem.IO.MemoryStream(bytes);
         }

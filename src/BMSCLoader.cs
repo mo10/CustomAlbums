@@ -1,6 +1,7 @@
 using Assets.Scripts.GameCore.Managers;
 using Assets.Scripts.PeroTools.Commons;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,7 +10,6 @@ using System.Text;
 using UnityEngine;
 using Sirenix.Utilities;
 using static Assets.Scripts.GameCore.Managers.iBMSCManager;
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 
 namespace CustomAlbums
@@ -27,13 +27,13 @@ namespace CustomAlbums
 		/// <returns></returns>
 		public static BMS Load(Stream stream, string bmsName)
 		{
-			JsonObject header = new JsonObject();
+			JObject header = new JObject();
 			Dictionary<string, float> BPMExt = new Dictionary<string, float>();
-			List<JsonObject> BPMList = new List<JsonObject>();
+			List<JObject> BPMList = new List<JObject>();
 
-			List<JsonObject> notes = new List<JsonObject>();
+			List<JObject> notes = new List<JObject>();
 
-			JsonArray notesPercent = new JsonArray();
+			JArray notesPercent = new JArray();
 
 			// Calculate MD5 of bms bytes
 			string md5 = stream.ToArray().GetMD5().ToString("x2");
@@ -53,7 +53,7 @@ namespace CustomAlbums
 				// Parse header field
 				if (line.Contains(" "))
 				{
-					var fileds = line.Split(' ', 2);
+					var fileds = line.Split(new char[] { ' ' }, 2);
 					string key = fileds[0];
 					string value = fileds[1];
 
@@ -63,7 +63,7 @@ namespace CustomAlbums
 					{
 						// Set default bpm
 						float freq = 60f / float.Parse(value) * 4f;
-						JsonObject jObject = new JsonObject();
+						JObject jObject = new JObject();
 						jObject["tick"] = 0f;
 						jObject["freq"] = freq;
 						BPMList.Add(jObject);
@@ -97,7 +97,7 @@ namespace CustomAlbums
 					if ("02" == channel)
 					{
 						// 小节的缩短
-						JsonObject jObject = new JsonObject();
+						JObject jObject = new JObject();
 						jObject["beat"] = channel;
 						jObject["percent"] = float.Parse(rawData);
 						notesPercent.Add(jObject);
@@ -111,7 +111,7 @@ namespace CustomAlbums
 							bpm = BPMExt[data];// 扩展变速
 						else
 							bpm = Convert.ToInt32(data, 16);
-						JsonObject jObject = new JsonObject();
+						JObject jObject = new JObject();
 						jObject["tick"] = currentTick;
 						jObject["freq"] = 60f / bpm * 4f;
 						BPMList.Add(jObject);
@@ -175,7 +175,7 @@ namespace CustomAlbums
 							}
 
 						}
-						JsonObject jObject = new JsonObject();
+						JObject jObject = new JObject();
 						jObject["time"] = 0;
 						jObject["value"] = data;
 						jObject["tone"] = 0;

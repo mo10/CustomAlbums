@@ -113,7 +113,7 @@ namespace CustomAlbums
                 {
                     CoverTex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
                     CoverTex.hideFlags = HideFlags.HideAndDontSave;
-                    CoverTex.LoadImage(stream.ToArray(),false);
+                   // CoverTex.LoadImage(stream.ToArray(),false);
                 }
                 CoverSprite = Sprite.Create(CoverTex,
                     new Rect(0, 0, CoverTex.width, CoverTex.height),
@@ -148,7 +148,7 @@ namespace CustomAlbums
                 MusicStream.Dispose();
                 MusicStream = null;
             }
-            MusicStream = OpenOneOf(fileNames, out string fileName).ToIl2CppStream();
+            MusicStream = OpenOneOf(fileNames, out string fileName).ToIL2CppStream();
 
             AudioFormatMapping.TryGetValue(Path.GetExtension(fileName), out format);
             MusicAudio = RuntimeAudioClipLoader.Manager.Load(

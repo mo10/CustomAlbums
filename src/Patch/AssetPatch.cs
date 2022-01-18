@@ -1,15 +1,12 @@
 ﻿using HarmonyLib;
 using UnityEngine;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using Assets.Scripts.PeroTools.Managers;
 using PeroTools2.Resources;
 using UnhollowerRuntimeLib;
-using System.Text.Encodings.Web;
-using System.Text.Unicode;
 using SystemGeneric =  System.Collections.Generic;
 using Assets.Scripts.Database;
 using System;
+using Newtonsoft.Json.Linq;
 
 namespace CustomAlbums.Patch
 {
@@ -26,7 +23,7 @@ namespace CustomAlbums.Patch
         {
             if("albums" == __instance.name)
             {
-                var jArray = JsonSerializer.Deserialize<JsonArray>(__result);
+                var jArray = __result.JsonDeserialize<JArray>();
                 jArray.Add(new
                 {
                     uid = AlbumManager.MusicPackge,
@@ -37,12 +34,6 @@ namespace CustomAlbums.Patch
                     needPurchase = false,
                     free = true,
                 });
-                var options = new JsonSerializerOptions
-                {
-                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                    WriteIndented = true
-                };
-
                 __result = jArray.JsonSerialize();
 
                 Log.Debug($"albums injected");
