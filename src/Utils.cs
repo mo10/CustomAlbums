@@ -77,9 +77,7 @@ namespace CustomAlbums
         /// <returns></returns>
         public static string IL2CppJsonSerialize(this Il2CppSystem.Object obj)
         {
-            var settings = new IL2CppJson.JsonSerializerSettings();
-            settings._formatting = new Il2CppSystem.Nullable<IL2CppJson.Formatting>(IL2CppJson.Formatting.Indented);
-            return IL2CppJson.JsonConvert.SerializeObject(obj, settings);
+            return IL2CppJson.JsonConvert.SerializeObject(obj);
         }
         /// <summary>
         /// Load json from stream.

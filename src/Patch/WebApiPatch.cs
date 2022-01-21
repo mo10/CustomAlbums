@@ -71,19 +71,19 @@ namespace CustomAlbums.Patch
             Il2CppSystem.Action<IL2CppJson.JObject> _succeedCallback = null;
             Il2CppSystem.Action<IL2CppJson.JObject> _failCallback = null;
 
+            // Convert PtrInt to Il2Cpp object
             if (datas != IntPtr.Zero)
                 _datas = new Dictionary<string, Il2CppSystem.Object>(datas);
-
             if (succeedCallback != IntPtr.Zero)
                 _succeedCallback = new Il2CppSystem.Action<IL2CppJson.JObject>(succeedCallback);
-
             if (failCallback != IntPtr.Zero)
                 _failCallback = new Il2CppSystem.Action<IL2CppJson.JObject>(failCallback);
 
-
+            
+            // Store original callback reference
             var originalSucceedCallback = _succeedCallback;
             var originalFailCallback = _failCallback;
-            
+
             Log.Debug($"[SendToUrlPatch] url:{_url} method:{_method}");
 
             switch (_url)
@@ -92,8 +92,9 @@ namespace CustomAlbums.Patch
                 case "musedash/v1/music_tag":
                     _succeedCallback = new Action<IL2CppJson.JObject>(jObject =>
                     {
-                        var JObj = jObject.IL2CppJsonSerialize().JsonDeserialize<JArray>();
-                        var jArray = (JArray)JObj["music_tag_list"];
+                        Log.Debug("Injected: musedash/v1/music_tag");
+                        var JObj = jObject.IL2CppJsonSerialize().JsonDeserialize<JObject>();
+                        var jArray = JObj["music_tag_list"];
                         var music_tag = jArray.First(o => o["sort_key"].Value<int>() == 8);
 
                         music_tag["tag_name"] = JObject.FromObject(AlbumManager.Langs);
@@ -101,10 +102,10 @@ namespace CustomAlbums.Patch
                         music_tag["icon_name"] = "";
                         music_tag["music_list"] = JArray.FromObject(AlbumManager.GetAllUid());
 
-                        var newJObject = music_tag.JsonSerialize().IL2CppJsonDeserialize<IL2CppJson.JObject>();
+                        var newJObject = JObj.JsonSerialize().IL2CppJsonDeserialize<IL2CppJson.JObject>();
                         originalSucceedCallback?.Invoke(newJObject);
                     });
-                    blockThisRequest = false;
+                    OriginalSendToUrl(hiddenStructReturn, thisPtr, url, method, datas, _succeedCallback.Pointer, failCallback, startCallback, completeCallback, headers, nativeMethodInfo);
                     break;
             }
 
