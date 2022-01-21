@@ -1,9 +1,14 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace CustomAlbums
 {
     public static class AlbumManager
     {
+        private static readonly Logger Log = new Logger("AlbumManager");
+
         /// <summary>
         /// Music package uid.
         /// </summary>
@@ -75,12 +80,12 @@ namespace CustomAlbums
                         nextIndex++;
 
                         LoadedAlbums.Add($"pkg_{fileName}".Replace("/", "_").Replace("\\", "_").Replace(".", "_"), album);
-                        ModLogger.Debug($"Album \"pkg_{fileName}\" loaded.");
+                        Log.Debug($"Album \"pkg_{fileName}\" loaded.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    ModLogger.Debug($"Load album failed: pkg_{fileName}, reason: {ex}");
+                    Log.Debug($"Load album failed: pkg_{fileName}, reason: {ex.Message}");
                     CorruptedAlbums.Add(file, ex.Message);
                 }
             }
@@ -98,12 +103,12 @@ namespace CustomAlbums
                         nextIndex++;
 
                         LoadedAlbums.Add($"fs_{folderName}".Replace("/", "_").Replace("\\", "_").Replace(".", "_"), album);
-                        ModLogger.Debug($"Album \"fs_{folderName}\" loaded.");
+                        Log.Debug($"Album \"fs_{folderName}\" loaded.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    ModLogger.Debug($"Load album failed: fs_{folderName}, reason: {ex}");
+                    Log.Debug($"Load album failed: fs_{folderName}, reason: {ex.Message}");
                     CorruptedAlbums.Add(path, ex.Message);
                 }
             }
