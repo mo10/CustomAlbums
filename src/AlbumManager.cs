@@ -1,7 +1,8 @@
+using Il2Generic = Il2CppSystem.Collections.Generic;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace CustomAlbums
 {
@@ -22,15 +23,15 @@ namespace CustomAlbums
         /// </summary>
         public static readonly string MusicPackge = $"music_package_{Uid}";
         /// <summary>
-        /// Localized string.
+        /// Localized string. Do not move the order of items!!
         /// </summary>
         public static readonly Dictionary<string, string> Langs = new Dictionary<string, string>()
         {
-            { "ChineseT", "自定義" },
-            { "ChineseS", "自定义" },
             { "English", "Custom Albums" },
-            { "Korean", "Custom Albums" },
+            { "ChineseS", "自定义" },
+            { "ChineseT", "自定義" },
             { "Japanese", "Custom Albums" },
+            { "Korean", "Custom Albums" },
         };
         /// <summary>
         /// Search custom album in this folder.
@@ -49,7 +50,7 @@ namespace CustomAlbums
         /// </summary>
         public static Dictionary<string, string> CorruptedAlbums = new Dictionary<string, string>();
 
-        public static List<string> AssertKeys = new List<string>();
+        public static Il2Generic.List<Il2CppSystem.Object> AssetKeys = new Il2Generic.List<Il2CppSystem.Object>();
         /// <summary>
         /// Clear all loaded custom albums and reload.
         /// </summary>
@@ -118,18 +119,18 @@ namespace CustomAlbums
                 var albumKey = album.Key;
                 var info = album.Value.Info;
 
-                AssertKeys.Add($"{albumKey}_demo");
-                AssertKeys.Add($"{albumKey}_music");
-                AssertKeys.Add($"{albumKey}_cover");
+                AssetKeys.Add($"{albumKey}_demo");
+                AssetKeys.Add($"{albumKey}_music");
+                AssetKeys.Add($"{albumKey}_cover");
 
                 if (!string.IsNullOrEmpty(info.difficulty1))
-                    AssertKeys.Add($"{albumKey}_map1");
+                    AssetKeys.Add($"{albumKey}_map1");
                 if (!string.IsNullOrEmpty(info.difficulty2))
-                    AssertKeys.Add($"{albumKey}_map2");
+                    AssetKeys.Add($"{albumKey}_map2");
                 if (!string.IsNullOrEmpty(info.difficulty3))
-                    AssertKeys.Add($"{albumKey}_map3");
+                    AssetKeys.Add($"{albumKey}_map3");
                 if (!string.IsNullOrEmpty(info.difficulty4))
-                    AssertKeys.Add($"{albumKey}_map4");
+                    AssetKeys.Add($"{albumKey}_map4");
             }
         }
         /// <summary>
