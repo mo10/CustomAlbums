@@ -1,5 +1,13 @@
 ﻿using CustomAlbums.Patch;
 using UnityEngine;
+using Assets.Scripts.PeroTools.Commons;
+using Assets.Scripts.GameCore.Managers;
+using UnhollowerRuntimeLib;
+using CustomAlbums.Addressable;
+using UnityEngine.ResourceManagement.ResourceProviders;
+using UnityEngine.AddressableAssets.ResourceLocators;
+using UnityEngine.ResourceManagement.ResourceLocations;
+using UnityEngine.AddressableAssets;
 #if BEPINEX
 using BepInEx;
 using BepInEx.IL2CPP;
@@ -17,12 +25,16 @@ namespace CustomAlbums
         public static void DoPatching(HarmonyLib.Harmony harmony)
         {
             Application.runInBackground = true;
-            //harmony.PatchAll(typeof(AssetPatch));
+
+            AlbumManager.LoadAll();
+            harmony.PatchAll(typeof(SteamPatch));
+            harmony.PatchAll(typeof(AssetPatch));
             WebApiPatch.DoPatching();
-            //harmony.PatchAll(typeof(WebApiPatch));
+            harmony.PatchAll(typeof(WebApiPatch));
+            harmony.PatchAll(typeof(ResourcePatch));
+            //ResourcePatch.DoPatching(harmony);
         }
     }
-
 
 #if BEPINEX
     [BepInPlugin("com.github.mo10.customalbums", PluginInfo.PLUGIN_NAME, PluginInfo.PLUGIN_VERSION)]
@@ -44,6 +56,25 @@ namespace CustomAlbums
         public override void OnApplicationStart()
         {
             LoggerInstance.Msg($"CustomAlbums is loaded!");
+            LoggerInstance.Msg($"Singleton<iBMSCManager>.instance {Singleton<iBMSCManager>.instance.bmsFile}");
+
+            //ClassInjector.RegisterTypeInIl2CppWithInterfaces<ResourceProviderEmpty>(true, typeof(IResourceProvider));
+            //ClassInjector.RegisterTypeInIl2CppWithInterfaces<ResourceLocatorEmpty>(true, typeof(IResourceLocator));
+            //ClassInjector.RegisterTypeInIl2CppWithInterfaces<ResourceLocationEmpty>(true, typeof(IResourceLocation));
+
+            //var providerPtr = new ResourceProviderEmpty().Pointer;
+            //var locatorPtr = new ResourceLocatorEmpty().Pointer;
+            //var locationPtr = new ResourceLocationEmpty().Pointer;
+
+            //var provider = new IResourceProvider(providerPtr);
+            //var locator = new IResourceLocator(locatorPtr);
+            //var location = new IResourceLocation(locationPtr);
+
+            //Addressables.ResourceManager.m_ResourceProviders.Add(provider);
+            //Addressables.m_Addressables.m_ResourceLocators.Add(new AddressablesImpl.ResourceLocatorInfo(locator, "CustomLocator", location));
+
+            //LoggerInstance.Msg($"m_ResourceLocators:{Addressables.m_Addressables.m_ResourceLocators.Count}");
+
             Entry.DoPatching(HarmonyInstance);
         }
     }

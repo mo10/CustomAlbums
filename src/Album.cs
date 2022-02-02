@@ -14,6 +14,8 @@ using System.IO;
 
 using Il2CppGeneric = Il2CppSystem.Collections.Generic;
 using Il2CppMemoryStream = Il2CppSystem.IO.MemoryStream;
+using Assets.Scripts.GameCore.Managers;
+
 namespace CustomAlbums
 {
     public class Album
@@ -181,8 +183,8 @@ namespace CustomAlbums
                      * 3.´´½¨StageInfo
                      * */
 
-                    var bms = BMSCLoader.Load(stream, $"map_{index}");
-
+                    //var bms = BMSCLoader.Load(stream, $"map_{index}");
+                    var bms = Singleton<iBMSCManager>.instance.Load("test");
                     if (bms == null)
                     {
                         return null;
@@ -202,7 +204,7 @@ namespace CustomAlbums
                         musicDatas = new Il2CppGeneric.List<MusicData>(musicDatas),
                         delay = reader.delay,
                         mapName = (string)reader.bms.info["TITLE"],
-                        music = ((string)reader.bms.info["WAV10"]).BeginBefore('.'),
+                        //music = ((string)reader.bms.info["WAV10"]).BeginBefore('.'),
                         scene = (string)reader.bms.info["GENRE"],
                         difficulty = index,
                         bpm = reader.bms.GetBpm(),

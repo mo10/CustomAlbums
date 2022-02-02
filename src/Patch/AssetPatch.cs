@@ -20,27 +20,25 @@ using Assets.Scripts.PeroTools.Nice.Actions;
 using Assets.Scripts.GameCore;
 using UnityEngine.AddressableAssets.ResourceLocators;
 using MelonLoader;
+using CustomAlbums.Addressable;
+using UnityEngine.ResourceManagement.ResourceProviders;
+using UnityEngine.ResourceManagement.ResourceLocations;
+using System.Reflection;
 
 namespace CustomAlbums.Patch
 {
+    [HarmonyPatch]
     class ResourcePatch
     {
         private static readonly Logger Log = new Logger("ResourcePatch");
-
-        public static void LoadFromName(string assetName, Il2CppSystem.Action<TextAsset> callback)
+        static IEnumerable<MethodBase> TargetMethods() => new[]
         {
-            Log.Debug($"assetName : {assetName} type: TextAsset");
-        }
-        unsafe public static void DoPatching(HarmonyLib.Harmony harmony)
+            AccessTools.Method(typeof(ResourcesManager),nameof(ResourcesManager.LoadFromName),new Type[] { typeof(string) }, new Type[]{ typeof(Sprite)})
+        };
+
+        public static void Prefix(ref string assetName)
         {
-            //var original = AccessTools.Method(typeof(ResourcesManager), nameof(ResourcesManager.LoadFromNameInternal), generics: new Type[] { typeof(TextAsset) });
-            //var prefix = AccessTools.Method(typeof(ResourcePatch), nameof(LoadFromName));
-
-            var methodPtr = Utils.NativeMethod(typeof(ResourcesManager), nameof(ResourcesManager.LoadFromNameInternal));
-            var methodPatchPtr = AccessTools.Method(typeof(ResourcePatch), nameof(LoadFromName)).MethodHandle.GetFunctionPointer();
-
-            MelonUtils.NativeHookAttach((IntPtr)(&methodPtr), methodPatchPtr);
-
+            Log.Debug($"assetName {assetName}");
         }
     }
     class AssetPatch
@@ -79,15 +77,6 @@ namespace CustomAlbums.Patch
             }
         }
 #endif
-
-        //[HarmonyPatch(typeof(ResourcesManager), nameof(ResourcesManager.LoadFromNameInternal))]
-        //[HarmonyPrefix]
-        //public static void DoPatching(string assetName, Il2CppSystem.Action<Sprite> callback)
-        //{
-        //    Log.Debug($"assetName : {assetName} type: Sprite");
-        //}
-        //[HarmonyPatch(typeof(ResourcesManager), nameof(ResourcesManager.LoadFromNameInternal))]
-        //[HarmonyPrefix]
 
         public static void AddCustomAssets(IL2CppGeneric.Dictionary<string, ResourcesManager.AssetData> ___m_AssetDatas)
         {
@@ -368,19 +357,24 @@ namespace CustomAlbums.Patch
             #endregion
 
             AddCustomAssets(resourceManager.m_AssetDatas);
-            // Inject ALBUM1000.json
+            Log.Debug($"m_ResourceLocators:{Addressables.m_Addressables.m_ResourceLocators[0].Locator.LocatorId}");
+            Log.Debug($"m_ResourceLocators:{Addressables.m_Addressables.m_ResourceLocators[1].Locator.LocatorId}");
 
-            // ALBUM1000.json
-            //var data = new ResourcesManager.AssetData();
-            //data.guid = "";
-            //data.path = "";
-            //data.type = Il2CppType.Of<TextAsset>();
-            //__instance.m_AssetDatas.Add(AlbumManager.JsonName, new ResourcesManager.AssetData());
-            //Injected = true;
-            //Log.Debug($"Injected: {AlbumManager.JsonName}");
+            //ClassInjector.RegisterTypeInIl2CppWithInterfaces<ResourceProviderEmpty>(true,typeof(IResourceProvider));
+            //ClassInjector.RegisterTypeInIl2CppWithInterfaces<ResourceLocatorEmpty>(true, typeof(IResourceLocator));
+            //ClassInjector.RegisterTypeInIl2CppWithInterfaces<ResourceLocationEmpty>(true, typeof(IResourceLocation));
+
+            //var providerPtr = ClassInjector.DerivedConstructorPointer<ResourceProvider>();
+            //var locatorPtr = ClassInjector.DerivedConstructorPointer<ResourceLocator>();
+            //var locationPtr = ClassInjector.DerivedConstructorPointer<ResourceLocation>();
+            //var providerPtr = new ResourceProviderEmpty().Pointer;
+            //var locatorPtr = new ResourceLocatorEmpty().Pointer;
+            //var locationPtr = new ResourceLocationEmpty().Pointer;
+
+            //Addressables.ResourceManager.m_ResourceProviders.Add(new IResourceProvider(providerPtr));
+            //Addressables.AddResourceLocator(new IResourceLocator(locatorPtr), remoteCatalogLocation: new IResourceLocation(locationPtr));
 
         }
-
 
         [HarmonyPatch(typeof(ConfigManager), nameof(ConfigManager.LoadConfigFile))]
         [HarmonyPrefix]
