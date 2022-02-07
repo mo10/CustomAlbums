@@ -175,9 +175,14 @@ namespace CustomAlbums
         /// </summary>
         /// <param name="bytes"></param>
         /// <returns></returns>
-        public static Il2CppSystem.IO.MemoryStream ToIL2CppStream(this byte[] bytes)
+        unsafe public static Il2CppSystem.IO.MemoryStream ToIL2CppStream(this byte[] bytes)
         {
-            return new Il2CppSystem.IO.MemoryStream(bytes);
+            var array = new Il2CppStructArray<byte>(bytes.Length);
+            for(var i=0;i<bytes.Length;i++)
+            {
+                array[i] = bytes[i];
+            }
+            return new Il2CppSystem.IO.MemoryStream(array);
         }
         public static System.IO.MemoryStream ToStream(this byte[] bytes)
         {

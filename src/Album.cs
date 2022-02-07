@@ -11,10 +11,16 @@ using UnityEngine.AddressableAssets;
 
 using ManagedGeneric = System.Collections.Generic;
 using System.IO;
-
 using Il2CppGeneric = Il2CppSystem.Collections.Generic;
 using Il2CppMemoryStream = Il2CppSystem.IO.MemoryStream;
 using Assets.Scripts.GameCore.Managers;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp.Processing;
+using NAudio.Wave;
+using NVorbis.NAudioSupport;
+using UnhollowerBaseLib;
+using MP3Sharp;
 
 namespace CustomAlbums
 {
@@ -34,7 +40,6 @@ namespace CustomAlbums
         public bool IsPackaged { get; private set; }
         public ManagedGeneric.Dictionary<int, string> availableMaps = new ManagedGeneric.Dictionary<int, string>();
         public int Index;
-
 
         public Texture2D CoverTex { get; private set; }
         public Sprite CoverSprite { get; private set; }
@@ -105,28 +110,28 @@ namespace CustomAlbums
         /// Get cover sprite
         /// </summary>
         /// <returns></returns>
-        public Sprite GetCover()
+        unsafe public Sprite GetCover()
         {
-            if (CoverSprite != null)
-                return CoverSprite;
-            try
+            using (Stream stream = Open("cover.png"))
             {
-                using (Stream stream = Open("cover.png"))
-                {
-                    CoverTex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
-                    CoverTex.hideFlags = HideFlags.HideAndDontSave;
-                   // CoverTex.LoadImage(stream.ToArray(),false);
-                }
-                CoverSprite = Sprite.Create(CoverTex,
-                    new Rect(0, 0, CoverTex.width, CoverTex.height),
-                    new Vector2(CoverTex.width / 2, CoverTex.height / 2));
-                CoverSprite.name = AlbumManager.GetAlbumKeyByIndex(Index) + "_cover";
+                var image = Image.Load<Rgba32>(stream);
+                image.Mutate(processor => processor.Flip(FlipMode.Vertical));
+                image.TryGetSinglePixelSpan(out var pixels);
+
+                CoverTex = new Texture2D(image.Width, image.Height, TextureFormat.RGBA32, false);
+
+                fixed (void* pixelsPtr = pixels)
+                    CoverTex.LoadRawTextureData((IntPtr)pixelsPtr, pixels.Length * 4);
+                CoverTex.Apply(false, true);
+
+                Log.Debug($"{CoverTex.width}x{CoverTex.height}");
             }
-            catch (Exception ex)
-            {
-                Log.Error($"Error:{ex}");
-                DestoryCover();
-            }
+
+            CoverSprite = Sprite.Create(CoverTex,
+                new Rect(0, 0, CoverTex.width, CoverTex.height),
+                new Vector2(CoverTex.width / 2, CoverTex.height / 2));
+            CoverSprite.name = AlbumManager.GetAlbumKeyByIndex(Index) + "_cover";
+
             return CoverSprite;
         }
         /// <summary>
@@ -136,33 +141,64 @@ namespace CustomAlbums
         /// <returns></returns>
         public AudioClip GetMusic(string name = "music")
         {
-            //DestoryAudio(); // Destory old audio
             ManagedGeneric.List<string> fileNames = new ManagedGeneric.List<string>();
             foreach (var ext in AudioFormatMapping.Keys)
-            {
                 fileNames.Add(name + ext);
-            }
 
-            AudioFormat format = AudioFormat.unknown;
-
-            if (MusicStream != null)
+            if (!TryOpenOne(fileNames, out var fileName, out var buffer))
             {
-                MusicStream.Dispose();
-                MusicStream = null;
+                Log.Debug($"Not found: {name} from: {BasePath}");
+                return null;
             }
-            MusicStream = OpenOneOf(fileNames, out string fileName).ToIL2CppStream();
 
-            AudioFormatMapping.TryGetValue(Path.GetExtension(fileName), out format);
-            MusicAudio = RuntimeAudioClipLoader.Manager.Load(
-                dataStream: MusicStream,
-                audioFormat: format,
-                unityAudioClipName: AlbumManager.GetAlbumKeyByIndex(Index) + "_" + name,
-                doStream: false,
-                loadInBackground: true,
-                diposeDataStreamIfNotNeeded: true);
+            try
+            {
+                var stream = buffer.ToIL2CppStream();
+                if (!AudioFormatMapping.TryGetValue(Path.GetExtension(fileName), out var format))
+                {
+                    Log.Debug($"Unknown audio format: {fileName} from: {BasePath}");
+                    stream.Close();
+                    stream.Dispose();
+                    return null;
+                }
 
-            MusicAudio.LoadAudioData();
-            return MusicAudio;
+                WaveStream waveStream = null;
+                switch (format)
+                {
+                    case AudioFormat.aiff:
+                        waveStream = new AiffFileReader(stream);
+                        break;
+                    case AudioFormat.mp3:
+                        Log.Debug("MP3 Decode start");
+                        var a = new MP3Stream(buffer.ToStream());
+                        Log.Debug($"MP3 Decode {a.Length}");
+                        break;
+                    case AudioFormat.wav:
+                        waveStream = new WaveFileReader(stream);
+                        break;
+                    case AudioFormat.ogg:
+                        waveStream = new VorbisWaveReader(stream);
+                        break;
+                }
+                if (waveStream == null)
+                    return null;
+
+                Log.Debug($"Audio length: {waveStream.Length}");
+                var samplesCount = (int)(waveStream.Length / (long)(waveStream.WaveFormat.BitsPerSample / 8));
+                var audioClip = AudioClip.Create("test", samplesCount / waveStream.WaveFormat.Channels, waveStream.WaveFormat.Channels, waveStream.WaveFormat.SampleRate,false);
+                var dataSet = new Il2CppStructArray<float>(samplesCount);
+                var rawSet = new Il2CppStructArray<byte>(dataSet.Pointer);
+                var len = waveStream.Read(rawSet, 0, rawSet.Length * sizeof(float));
+                Log.Debug($"read: {len}");
+
+                audioClip.SetData(dataSet, 0);
+                return audioClip;
+            }
+            catch (Exception ex)
+            {
+                Log.Debug($"error {ex}");
+            }
+            return null;
         }
         /// <summary>
         /// Load map.
@@ -291,7 +327,7 @@ namespace CustomAlbums
         /// <param name="filePaths"></param>
         /// <param name="openedFilePath"></param>
         /// <returns></returns>
-        private byte[] OpenOneOf(ManagedGeneric.IEnumerable<string> filePaths, out string openedFilePath)
+        private bool TryOpenOne(ManagedGeneric.IEnumerable<string> filePaths, out string openedFilePath, out byte[] buffer)
         {
             if (IsPackaged)
             {
@@ -304,21 +340,27 @@ namespace CustomAlbums
                             continue;
                         openedFilePath = filePath;
                         // CrcCalculatorStream doesn't support set_position. We read all bytes
-                        return zip[filePath].OpenReader().ToArray();
+                        buffer = zip[filePath].OpenReader().ToArray();
+                        return true;
                     }
                 }
-                throw new FileNotFoundException($"No such as file(s):{filePaths} in {BasePath}");
             }
-            // Load from folder
-            foreach (var filePath in filePaths)
+            else
             {
-                var fullPath = Path.Combine(BasePath, filePath);
-                if (!File.Exists(fullPath))
-                    continue;
-                openedFilePath = filePath;
-                return File.ReadAllBytes(fullPath);
+                // Load from folder
+                foreach (var filePath in filePaths)
+                {
+                    var fullPath = Path.Combine(BasePath, filePath);
+                    if (!File.Exists(fullPath))
+                        continue;
+                    openedFilePath = filePath;
+                    buffer = File.ReadAllBytes(fullPath);
+                    return true;
+                }
             }
-            throw new FileNotFoundException($"No such as file(s):{filePaths} in {BasePath}");
+            openedFilePath = null;
+            buffer = null;
+            return false;
         }
     }
 }
