@@ -1,141 +1,146 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project>
-	<!--<ItemGroup>
-		<Compile Remove="CustomAlbums\**" />
-		<Compile Remove="MelonCustom\**" />
-		<Compile Remove="Patches\**" />
-		<Compile Remove="src\**" />
-		<EmbeddedResource Remove="CustomAlbums\**" />
-		<EmbeddedResource Remove="MelonCustom\**" />
-		<EmbeddedResource Remove="Patches\**" />
-		<EmbeddedResource Remove="src\**" />
-		<None Remove="CustomAlbums\**" />
-		<None Remove="MelonCustom\**" />
-		<None Remove="Patches\**" />
-		<None Remove="src\**" />
-	</ItemGroup>-->
-
-	<!-- Shared source files -->
-	<ItemGroup>
-		<Compile Include="..\src\**"/>
-	</ItemGroup>
-	<!-- Shared references -->
-	<ItemGroup>
-	
-		<Reference Include="Assembly-CSharp" >
-			<HintPath>$(RefPath)Assembly-CSharp.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="Assembly-CSharp-firstpass">
-			<HintPath>$(RefPath)Assembly-CSharp-firstpass.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="Il2Cppmscorlib">
-			<HintPath>$(RefPath)Il2Cppmscorlib.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="NAudio">
-			<HintPath>$(RefPath)NAudio.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="Newtonsoft.Json">
-			<HintPath>$(RefPath)Newtonsoft.Json.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="PeroTools2">
-			<HintPath>$(RefPath)PeroTools2.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="PeroTools2.Account">
-			<HintPath>$(RefPath)PeroTools2.Account.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="PeroTools2.GeneralLocalization">
-			<HintPath>$(RefPath)PeroTools2.GeneralLocalization.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="PeroTools2.Pool">
-			<HintPath>$(RefPath)PeroTools2.Pool.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="PeroTools2.UI">
-			<HintPath>$(RefPath)PeroTools2.UI.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="Sirenix.Serialization">
-			<HintPath>$(RefPath)Sirenix.Serialization.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="Sirenix.Serialization.Config">
-			<HintPath>$(RefPath)Sirenix.Serialization.Config.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="Sirenix.Utilities">
-			<HintPath>$(RefPath)Sirenix.Utilities.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="Unity.Addressables">
-			<HintPath>$(RefPath)Unity.Addressables.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="Unity.ResourceManager">
-			<HintPath>$(RefPath)Unity.ResourceManager.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="UnityEngine">
-			<HintPath>$(RefPath)UnityEngine.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="UnityEngine.AssetBundleModule">
-			<HintPath>$(RefPath)UnityEngine.AssetBundleModule.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="UnityEngine.AudioModule">
-			<HintPath>$(RefPath)UnityEngine.AudioModule.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="UnityEngine.CoreModule">
-			<HintPath>$(RefPath)UnityEngine.CoreModule.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="UnityEngine.ImageConversionModule">
-			<HintPath>$(RefPath)UnityEngine.ImageConversionModule.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="UnityEngine.UI">
-			<HintPath>$(RefPath)UnityEngine.UI.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="UnityEngine.UnityWebRequestModule">
-			<HintPath>$(RefPath)UnityEngine.UnityWebRequestModule.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-		<Reference Include="UnityEngine.UnityWebRequestWWWModule">
-			<HintPath>$(RefPath)UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
-			<Private>false</Private>
-			<SpecificVersion>false</SpecificVersion>
-		</Reference>
-	</ItemGroup>
+    <!-- Shared references -->
+    <ItemGroup>
+        <Reference Include="UnhollowerBaseLib">
+            <HintPath>$(RefPath)UnhollowerBaseLib.dll</HintPath>
+            <Private>False</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="UnhollowerRuntimeLib">
+            <HintPath>$(RefPath)UnhollowerRuntimeLib.dll</HintPath>
+            <Private>False</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="Assembly-CSharp" >
+            <HintPath>$(RefPath)Assembly-CSharp.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="Assembly-CSharp-firstpass">
+            <HintPath>$(RefPath)Assembly-CSharp-firstpass.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="Il2Cppmscorlib">
+            <HintPath>$(RefPath)Il2Cppmscorlib.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="NAudio">
+            <HintPath>$(RefPath)NAudio.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="E7.NativeAudio">
+            <HintPath>$(RefPath)E7.NativeAudio.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="Newtonsoft.Json">
+            <HintPath>$(RefPath)Newtonsoft.Json.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="Il2CppNewtonsoft.Json">
+            <HintPath>$(RefPath)Il2CppNewtonsoft.Json.dll</HintPath>
+            <Private>False</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="PeroTools2">
+            <HintPath>$(RefPath)PeroTools2.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="PeroTools2.Account">
+            <HintPath>$(RefPath)PeroTools2.Account.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="PeroTools2.GeneralLocalization">
+            <HintPath>$(RefPath)PeroTools2.GeneralLocalization.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="PeroTools2.Pool">
+            <HintPath>$(RefPath)PeroTools2.Pool.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="PeroTools2.UI">
+            <HintPath>$(RefPath)PeroTools2.UI.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="com.rlabrecque.steamworks.net">
+            <HintPath>$(RefPath)com.rlabrecque.steamworks.net.dll</HintPath>
+            <Private>False</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="Sirenix.Serialization">
+            <HintPath>$(RefPath)Sirenix.Serialization.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="Sirenix.Serialization.Config">
+            <HintPath>$(RefPath)Sirenix.Serialization.Config.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="Sirenix.Utilities">
+            <HintPath>$(RefPath)Sirenix.Utilities.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="Unity.Addressables">
+            <HintPath>$(RefPath)Unity.Addressables.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="Unity.ResourceManager">
+            <HintPath>$(RefPath)Unity.ResourceManager.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="UnityEngine">
+            <HintPath>$(RefPath)UnityEngine.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="UnityEngine.AssetBundleModule">
+            <HintPath>$(RefPath)UnityEngine.AssetBundleModule.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="UnityEngine.AudioModule">
+            <HintPath>$(RefPath)UnityEngine.AudioModule.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule">
+            <HintPath>$(RefPath)UnityEngine.CoreModule.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="UnityEngine.ImageConversionModule">
+            <HintPath>$(RefPath)UnityEngine.ImageConversionModule.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="UnityEngine.UI">
+            <HintPath>$(RefPath)UnityEngine.UI.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="UnityEngine.UnityWebRequestModule">
+            <HintPath>$(RefPath)UnityEngine.UnityWebRequestModule.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+        <Reference Include="UnityEngine.UnityWebRequestWWWModule">
+            <HintPath>$(RefPath)UnityEngine.UnityWebRequestWWWModule.dll</HintPath>
+            <Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+        </Reference>
+    </ItemGroup>
 </Project>
