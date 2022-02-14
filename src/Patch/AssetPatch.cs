@@ -67,6 +67,7 @@ namespace CustomAlbums.Patch
             }
 
             var assetPtr = OriginalLoadFromName(instance, assetName, nativeMethodInfo);
+            var noCache = false;
 
             if (_assetName == "LocalizationSettings")
                 return assetPtr;
@@ -186,6 +187,10 @@ namespace CustomAlbums.Patch
                         AlbumManager.LoadedAlbums.TryGetValue(albumKey, out var album);
                         if(suffix.StartsWith("_map")) {
                             newAsset = album?.GetMap(int.Parse(suffix.Substring(4)));
+
+                            // Don't cache chart StageInfos
+                            // This is to ensure the full loading process occurs every time
+                            noCache = true;
                         } else {
                             switch(suffix) {
                                 case "_demo":
@@ -209,8 +214,12 @@ namespace CustomAlbums.Patch
             // Add to cache
             if (newAsset != null)
             {
-                Log.Debug($"Cached {_assetName}");
-                LoadedAssets.Add(_assetName, newAsset);
+                if(!noCache) {
+                    Log.Debug($"Cached {_assetName}");
+                    LoadedAssets.Add(_assetName, newAsset);
+                } else {
+                    Log.Debug($"Loaded {_assetName}");
+                }
                 return newAsset.Pointer;
             }
 
