@@ -19,7 +19,7 @@ namespace CustomAlbums
             Application.runInBackground = true;
 
             AlbumManager.LoadAll();
-            harmony.PatchAll(typeof(SteamPatch));
+            //harmony.PatchAll(typeof(SteamPatch));
 
             //harmony.PatchAll(typeof(AssetPatch));
             WebApiPatch.DoPatching();

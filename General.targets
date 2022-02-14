@@ -27,6 +27,11 @@
             <Private>false</Private>
             <SpecificVersion>false</SpecificVersion>
         </Reference>
+		<Reference Include="Il2CppSystem.Core">
+			<HintPath>$(RefPath)\Il2CppSystem.Core.dll</HintPath>
+			<Private>false</Private>
+            <SpecificVersion>false</SpecificVersion>
+		</Reference>
         <Reference Include="NAudio">
             <HintPath>$(RefPath)NAudio.dll</HintPath>
             <Private>false</Private>

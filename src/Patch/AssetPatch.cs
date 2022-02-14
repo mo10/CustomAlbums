@@ -10,6 +10,8 @@ using MelonLoader;
 using System.Reflection;
 using UnhollowerBaseLib;
 using System.Runtime.InteropServices;
+using Assets.Scripts.PeroTools.Commons;
+using Assets.Scripts.PeroTools.Managers;
 
 namespace CustomAlbums.Patch
 {
@@ -50,15 +52,22 @@ namespace CustomAlbums.Patch
         {
             var _assetName = IL2CPP.Il2CppStringToManaged(assetName);
             //Log.Debug($"assetName {_assetName}");
+            if(_assetName == null) return OriginalLoadFromName(instance, assetName, nativeMethodInfo);
 
             // Cached asset
             if (LoadedAssets.TryGetValue(_assetName, out var asset))
             {
-                Log.Debug($"Use cache: {_assetName}");
-                return asset.Pointer;
+                if(asset != null) {
+                    Log.Debug($"Use cache: {_assetName}");
+                    return asset.Pointer;
+                } else {
+                    Log.Debug("Replacing null asset");
+                    LoadedAssets.Remove(_assetName);
+                }
             }
 
             var assetPtr = OriginalLoadFromName(instance, assetName, nativeMethodInfo);
+            var noCache = false;
 
             if (_assetName == "LocalizationSettings")
                 return assetPtr;
@@ -82,6 +91,7 @@ namespace CustomAlbums.Patch
                     free = true,
                 }));
                 newAsset = CreateTextAsset(_assetName, jArray.JsonSerialize());
+                if(!Singleton<ConfigManager>.instance.m_Dictionary.ContainsKey(_assetName)) Singleton<ConfigManager>.instance.Add(_assetName, ((TextAsset)newAsset).text);
             }
             else if (_assetName == AlbumManager.JsonName)
             {
@@ -123,6 +133,7 @@ namespace CustomAlbums.Patch
                     jArray.Add(jObject);
                 }
                 newAsset = CreateTextAsset(_assetName, jArray.JsonSerialize());
+                if(!Singleton<ConfigManager>.instance.m_Dictionary.ContainsKey(_assetName)) Singleton<ConfigManager>.instance.Add(_assetName, ((TextAsset)newAsset).text);
             }
             else if (_assetName == $"albums_{lang}")
             {
@@ -133,6 +144,7 @@ namespace CustomAlbums.Patch
                     title = AlbumManager.Langs[lang],
                 }));
                 newAsset = CreateTextAsset(_assetName, jArray.JsonSerialize());
+                if(!Singleton<ConfigManager>.instance.m_Dictionary.ContainsKey(_assetName)) Singleton<ConfigManager>.instance.Add(_assetName, ((TextAsset)newAsset).text);
             }
             else if (_assetName == $"{AlbumManager.JsonName}_{lang}")
             {
@@ -146,6 +158,7 @@ namespace CustomAlbums.Patch
                     }));
                 }
                 newAsset = CreateTextAsset(_assetName, jArray.JsonSerialize());
+                if(!Singleton<ConfigManager>.instance.m_Dictionary.ContainsKey(_assetName)) Singleton<ConfigManager>.instance.Add(_assetName, ((TextAsset)newAsset).text);
             }
             else if (_assetName == "defaultTag")
             {
@@ -159,6 +172,7 @@ namespace CustomAlbums.Patch
                 music_tag["music_list"] = JArray.FromObject(AlbumManager.GetAllUid());
 
                 newAsset = CreateTextAsset(_assetName, jArray.JsonSerialize());
+                if(!Singleton<ConfigManager>.instance.m_Dictionary.ContainsKey(_assetName)) Singleton<ConfigManager>.instance.Add(_assetName, ((TextAsset)newAsset).text);
             }
 
             if (assetPtr == IntPtr.Zero)
@@ -171,20 +185,27 @@ namespace CustomAlbums.Patch
                     {
                         var albumKey = _assetName.RemoveFromEnd(suffix);
                         AlbumManager.LoadedAlbums.TryGetValue(albumKey, out var album);
-                        switch (suffix)
-                        {
-                            case "_demo":
-                                newAsset = album?.GetMusic("demo");
-                                break;
-                            case "_music":
-                                newAsset = album?.GetMusic();
-                                break;
-                            case "_cover":
-                                newAsset = album?.GetCover();
-                                break;
-                            default:
-                                Log.Debug($"Unknown suffix: {suffix}");
-                                break;
+                        if(suffix.StartsWith("_map")) {
+                            newAsset = album?.GetMap(int.Parse(suffix.Substring(4)));
+
+                            // Don't cache chart StageInfos
+                            // This is to ensure the full loading process occurs every time
+                            noCache = true;
+                        } else {
+                            switch(suffix) {
+                                case "_demo":
+                                    newAsset = album?.GetMusic("demo");
+                                    break;
+                                case "_music":
+                                    newAsset = album?.GetMusic();
+                                    break;
+                                case "_cover":
+                                    newAsset = album?.GetCover();
+                                    break;
+                                default:
+                                    Log.Debug($"Unknown suffix: {suffix}");
+                                    break;
+                            }
                         }
                     }
                 }
@@ -193,8 +214,12 @@ namespace CustomAlbums.Patch
             // Add to cache
             if (newAsset != null)
             {
-                Log.Debug($"Cached {_assetName}");
-                LoadedAssets.Add(_assetName, newAsset);
+                if(!noCache) {
+                    Log.Debug($"Cached {_assetName}");
+                    LoadedAssets.Add(_assetName, newAsset);
+                } else {
+                    Log.Debug($"Loaded {_assetName}");
+                }
                 return newAsset.Pointer;
             }
 

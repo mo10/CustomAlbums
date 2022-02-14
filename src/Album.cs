@@ -29,10 +29,10 @@ namespace CustomAlbums
         private static readonly Logger Log = new Logger("Album");
         public static readonly ManagedGeneric.Dictionary<string, AudioFormat> AudioFormatMapping = new ManagedGeneric.Dictionary<string, AudioFormat>()
             {
-                {".aiff", AudioFormat.aiff},
-                {".mp3", AudioFormat.mp3},
+                //{".aiff", AudioFormat.aiff},
+                //{".mp3", AudioFormat.mp3},
                 {".ogg", AudioFormat.ogg},
-                {".wav", AudioFormat.wav},
+                //{".wav", AudioFormat.wav},
             };
 
         public AlbumInfo Info { get; private set; }
@@ -166,15 +166,15 @@ namespace CustomAlbums
                 switch (format)
                 {
                     case AudioFormat.aiff:
-                        waveStream = new AiffFileReader(stream);
+                        //waveStream = new AiffFileReader(stream);
                         break;
                     case AudioFormat.mp3:
-                        Log.Debug("MP3 Decode start");
-                        var a = new MP3Stream(buffer.ToStream());
-                        Log.Debug($"MP3 Decode {a.Length}");
+                        //Log.Debug("MP3 Decode start");
+                        //var a = new MP3Stream(buffer.ToStream());
+                        //Log.Debug($"MP3 Decode {a.Length}");
                         break;
                     case AudioFormat.wav:
-                        waveStream = new WaveFileReader(stream);
+                        //waveStream = new WaveFileReader(stream);
                         break;
                     case AudioFormat.ogg:
                         waveStream = new VorbisWaveReader(stream);
@@ -219,35 +219,40 @@ namespace CustomAlbums
                      * 3.´´½¨StageInfo
                      * */
 
-                    //var bms = BMSCLoader.Load(stream, $"map_{index}");
-                    var bms = Singleton<iBMSCManager>.instance.Load("test");
+                    var pkgName = $"{(IsPackaged ? "pkg" : "fs")}_{Info.name}";
+                    var mapName = $"{pkgName}_map{index}";
+
+                    var bms = BMSCLoader.Load(stream, mapName);
                     if (bms == null)
                     {
                         return null;
                     }
 
-                    MusicConfigReader reader = GameLogic.MusicConfigReader.Instance;
+                    MusicConfigReader reader = MusicConfigReader.Instance;
                     reader.ClearData();
                     reader.bms = bms;
-                    reader.Init("");
+                    reader.Init(mapName);
 
-
-                    //var info = LinqUtils.Cast<MusicData>(reader.GetData());
-                    var musicDatas = reader.GetData().Cast<Il2CppGeneric.IEnumerable<MusicData>>();
+                    var musicDatas = reader.GetData();
+                    var il2cppDatas = new Il2CppGeneric.List<MusicData>();
+                    foreach(var data in musicDatas) {
+                        il2cppDatas.Add(data.Cast<MusicData>());
+                    }
 
                     StageInfo stageInfo = new StageInfo
                     {
-                        musicDatas = new Il2CppGeneric.List<MusicData>(musicDatas),
+                        musicDatas = il2cppDatas,
                         delay = reader.delay,
-                        mapName = (string)reader.bms.info["TITLE"],
-                        //music = ((string)reader.bms.info["WAV10"]).BeginBefore('.'),
+                        mapName = mapName,
+                        music = $"{pkgName}_music",
                         scene = (string)reader.bms.info["GENRE"],
                         difficulty = index,
                         bpm = reader.bms.GetBpm(),
                         md5 = reader.bms.md5,
-                        sceneEvents = reader.sceneEvents
+                        sceneEvents = reader.sceneEvents,
+                        name = Info.name
                     };
-                    Log.Debug($"Delay: {reader.delay}");
+                    Log.Debug($"Delay: {reader.delay.ToString()}");
                     return stageInfo;
                 }
             }
