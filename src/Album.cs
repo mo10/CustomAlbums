@@ -31,7 +31,7 @@ namespace CustomAlbums
                 //{".aiff", AudioFormat.aiff},
                 {".mp3", AudioFormat.mp3},
                 {".ogg", AudioFormat.ogg},
-                {".wav", AudioFormat.wav},
+                //{".wav", AudioFormat.wav},
             };
 
         public AlbumInfo Info { get; private set; }
@@ -153,7 +153,7 @@ namespace CustomAlbums
 
             try
             { 
-                var stream = buffer.ToIL2CppStream();
+                var stream = new Il2CppSystem.IO.MemoryStream(buffer);
                 if (!AudioFormatMapping.TryGetValue(Path.GetExtension(fileName), out var format))
                 {
                     Log.Debug($"Unknown audio format: {fileName} from: {BasePath}");
@@ -169,20 +169,16 @@ namespace CustomAlbums
                         //waveStream = new AiffFileReader(stream);
                         break;
                     case AudioFormat.mp3:
-                      
-                        MpegFile mpegFile = new MpegFile(new MemoryStream(buffer));
-                        
-                        AudioClip ac = AudioClip.Create("test",
-                            (int)(mpegFile.Length / sizeof(float) / mpegFile.Channels),
-                            mpegFile.Channels,
-                            mpegFile.SampleRate,
-                            true
-                            );
-                        float[] data = new float[mpegFile.Length];
-                        mpegFile.ReadSamples(data, 0, data.Length);
-                        ac.SetData(data, 0);
-                        return ac;
-                        break;
+                    {
+                        using var s = new MemoryStream(buffer);
+                        var mpgFile = new MpegFile(s);
+                        var samples = new float[mpgFile.Length];
+                        mpgFile.ReadSamples(samples, 0, (int) mpgFile.Length);
+
+                        var clip = AudioClip.Create("test", samples.Length, mpgFile.Channels, mpgFile.SampleRate, false);
+                        clip.SetData(samples, 0);
+                        return clip;
+                    }
                     case AudioFormat.wav:
                         //waveStream = new WaveFileReader(stream);
                         break;
@@ -202,6 +198,8 @@ namespace CustomAlbums
                 Log.Debug($"read: {len}");
 
                 audioClip.SetData(dataSet, 0);
+                waveStream.Dispose();
+                stream.Dispose();
                 return audioClip;
             }
             catch (Exception ex)
