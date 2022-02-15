@@ -128,7 +128,7 @@ namespace CustomAlbums.Patch
         {
             string result = Singleton<DataManager>.instance["Account"]["SelectedMusicUid"].GetResult<string>();
 
-            if (result.StartsWith("999-"))
+            if (result.StartsWith($"{AlbumManager.Uid}-"))
             {
                 Log.Debug($"Game/Finish sceneName:{sceneName} withBack:{backToPnlStage} SelectedMusicUid:{result}");
             }
