@@ -15,7 +15,8 @@ namespace CustomAlbums
     public static class SaveManager
     {
         private static readonly Logger Log = new Logger("SaveManager");
-        public static readonly string FilePath = "Mods/CustomAlbums.json";
+        public static readonly string OldFilePath = "Mods/CustomAlbums.json";
+        public static readonly string FilePath = "UserData/CustomAlbums.json";
 
         public static CustomData CustomData = new CustomData();
 
@@ -27,7 +28,15 @@ namespace CustomAlbums
 
         public static void Load()
         {
+            var oldPath = Path.Combine(Directory.GetCurrentDirectory(), OldFilePath);
             var path = Path.Combine(Directory.GetCurrentDirectory(), FilePath);
+            
+            // Relocate old save files
+            if(File.Exists(oldPath) && !File.Exists(path))
+            {
+                File.Move(oldPath, path);
+            }
+
             if (File.Exists(path))
             {
                 CustomData = File.ReadAllText(path).JsonDeserialize<CustomData>();
