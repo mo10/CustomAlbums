@@ -107,7 +107,4 @@
     <PropertyGroup>
         <OutputPath>$(MsBuildThisFileDirectory)\Output\$(Configuration)\</OutputPath>
     </PropertyGroup>
-    <Target Name="CopyModToModsFolder" AfterTargets="GenerateModJson" Condition="'$(CopyToMods)' == 'true' And '$(CIVAR)'==''">
-        <Exec Command="xcopy /c /f /y $(OutputPath)\$(AssemblyName).dll $(VRChatFolder)\Mods" />
-    </Target>
 </Project>
