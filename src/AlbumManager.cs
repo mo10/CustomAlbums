@@ -78,15 +78,16 @@ namespace CustomAlbums
                     if (album.Info != null)
                     {
                         album.Index = nextIndex;
+                        album.Name = $"pkg_{fileName}".Replace("/", "_").Replace("\\", "_").Replace(".", "_");
                         nextIndex++;
 
-                        LoadedAlbums.Add($"pkg_{fileName}".Replace("/", "_").Replace("\\", "_").Replace(".", "_"), album);
-                        Log.Debug($"Album \"pkg_{fileName}\" loaded.");
+                        LoadedAlbums.Add(album.Name, album);
+                        Log.Debug($"Album \"{album.Name}\" loaded.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log.Debug($"Load album failed: pkg_{fileName}, reason: {ex.Message}");
+                    Log.Debug($"Load album failed: {fileName}, reason: {ex.Message}");
                     CorruptedAlbums.Add(file, ex.Message);
                 }
             }
@@ -101,15 +102,16 @@ namespace CustomAlbums
                     if (album.Info != null)
                     {
                         album.Index = nextIndex;
+                        album.Name = $"fs_{folderName}".Replace("/", "_").Replace("\\", "_").Replace(".", "_");
                         nextIndex++;
 
-                        LoadedAlbums.Add($"fs_{folderName}".Replace("/", "_").Replace("\\", "_").Replace(".", "_"), album);
-                        Log.Debug($"Album \"fs_{folderName}\" loaded.");
+                        LoadedAlbums.Add(album.Name, album);
+                        Log.Debug($"Album \"{album.Name}\" loaded.");
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log.Debug($"Load album failed: fs_{folderName}, reason: {ex.Message}");
+                    Log.Debug($"Load album failed: {folderName}, reason: {ex.Message}");
                     CorruptedAlbums.Add(path, ex.Message);
                 }
             }

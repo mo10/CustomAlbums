@@ -40,6 +40,7 @@ namespace CustomAlbums
         public bool IsPackaged { get; private set; }
         public ManagedGeneric.Dictionary<int, string> availableMaps = new ManagedGeneric.Dictionary<int, string>();
         public int Index;
+        public string Name;
 
         public Texture2D CoverTex { get; private set; }
         public Sprite CoverSprite { get; private set; }
@@ -219,8 +220,7 @@ namespace CustomAlbums
                      * 3.´´½¨StageInfo
                      * */
 
-                    var pkgName = $"{(IsPackaged ? "pkg" : "fs")}_{Info.name}";
-                    var mapName = $"{pkgName}_map{index}";
+                    var mapName = $"{Name}_map{index}";
 
                     var bms = BMSCLoader.Load(stream, mapName);
                     if (bms == null)
@@ -244,7 +244,7 @@ namespace CustomAlbums
                         musicDatas = il2cppDatas,
                         delay = reader.delay,
                         mapName = mapName,
-                        music = $"{pkgName}_music",
+                        music = $"{Name}_music",
                         scene = (string)reader.bms.info["GENRE"],
                         difficulty = index,
                         bpm = reader.bms.GetBpm(),
