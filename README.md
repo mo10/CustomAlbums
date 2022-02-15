@@ -25,6 +25,11 @@ First BuildId: 7903791
 `ver170_final` For old game. No more updates.
 `ver180_wip` Current working branch.
 
+### Building veril2cpp_wip
+1. Clone repository and switch branch
+2. Simply edit the `GameFolder` tag in `Directory.Build.props` to point towards your own installation
+3. Click build
+
 
 ### ILRepack
 A copy of [ILRepack.Lib.MSBuild.Task](https://github.com/ravibpatel/ILRepack.Lib.MSBuild.Task) and [ILRepack](https://github.com/gluck/il-repack) are included in the repo to build the solution
