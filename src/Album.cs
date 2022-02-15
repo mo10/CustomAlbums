@@ -6,32 +6,32 @@ using Newtonsoft.Json.Linq;
 using RuntimeAudioClipLoader;
 using System;
 using UnityEngine;
-using Assets.Scripts.PeroTools.Commons;
 using UnityEngine.AddressableAssets;
 
 using ManagedGeneric = System.Collections.Generic;
 using System.IO;
+using NLayer;
 using Il2CppGeneric = Il2CppSystem.Collections.Generic;
 using Il2CppMemoryStream = Il2CppSystem.IO.MemoryStream;
-using Assets.Scripts.GameCore.Managers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using NAudio.Wave;
 using NVorbis.NAudioSupport;
 using UnhollowerBaseLib;
 
+
 namespace CustomAlbums
 {
+
     public class Album
     {
         private static readonly Logger Log = new Logger("Album");
         public static readonly ManagedGeneric.Dictionary<string, AudioFormat> AudioFormatMapping = new ManagedGeneric.Dictionary<string, AudioFormat>()
             {
                 //{".aiff", AudioFormat.aiff},
-                //{".mp3", AudioFormat.mp3},
+                {".mp3", AudioFormat.mp3},
                 {".ogg", AudioFormat.ogg},
-                //{".wav", AudioFormat.wav},
+                {".wav", AudioFormat.wav},
             };
 
         public AlbumInfo Info { get; private set; }
@@ -152,7 +152,7 @@ namespace CustomAlbums
             }
 
             try
-            {
+            { 
                 var stream = buffer.ToIL2CppStream();
                 if (!AudioFormatMapping.TryGetValue(Path.GetExtension(fileName), out var format))
                 {
@@ -162,21 +162,31 @@ namespace CustomAlbums
                     return null;
                 }
 
-                WaveStream waveStream = null;
+                NAudio.Wave.WaveStream waveStream = null;
                 switch (format)
                 {
                     case AudioFormat.aiff:
                         //waveStream = new AiffFileReader(stream);
                         break;
                     case AudioFormat.mp3:
-                        //Log.Debug("MP3 Decode start");
-                        //var a = new MP3Stream(buffer.ToStream());
-                        //Log.Debug($"MP3 Decode {a.Length}");
+                      
+                        MpegFile mpegFile = new MpegFile(new MemoryStream(buffer));
+                        
+                        AudioClip ac = AudioClip.Create("test",
+                            (int)(mpegFile.Length / sizeof(float) / mpegFile.Channels),
+                            mpegFile.Channels,
+                            mpegFile.SampleRate,
+                            true
+                            );
+                        float[] data = new float[mpegFile.Length];
+                        mpegFile.ReadSamples(data, 0, data.Length);
+                        ac.SetData(data, 0);
+                        return ac;
                         break;
                     case AudioFormat.wav:
                         //waveStream = new WaveFileReader(stream);
                         break;
-                    case AudioFormat.ogg:
+                    case AudioFormat.ogg: 
                         waveStream = new VorbisWaveReader(stream);
                         break;
                 }
@@ -188,7 +198,7 @@ namespace CustomAlbums
                 var audioClip = AudioClip.Create("test", samplesCount / waveStream.WaveFormat.Channels, waveStream.WaveFormat.Channels, waveStream.WaveFormat.SampleRate,false);
                 var dataSet = new Il2CppStructArray<float>(samplesCount);
                 var rawSet = new Il2CppStructArray<byte>(dataSet.Pointer);
-                var len = waveStream.Read(rawSet, 0, rawSet.Length * sizeof(float));
+                var len = waveStream.Read(rawSet, 0, rawSet.Length);
                 Log.Debug($"read: {len}");
 
                 audioClip.SetData(dataSet, 0);
@@ -200,6 +210,7 @@ namespace CustomAlbums
             }
             return null;
         }
+        
         /// <summary>
         /// Load map.
         /// 1. Load map*.bms.

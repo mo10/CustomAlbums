@@ -42,6 +42,16 @@
             <Private>false</Private>
             <HintPath>$(MelonManaged)\NAudio.dll</HintPath>
         </Reference>
+        <!--
+        <Reference Include="NAudio-Unity, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Aliases>NAudioManaged</Aliases>
+            <HintPath>$(MsBuildThisFileDirectory)\Dependencies\NAudio-Unity.dll</HintPath>
+        </Reference> -->
+        <Reference Include="NLayer, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <HintPath>$(MsBuildThisFileDirectory)\Dependencies\NLayer.dll</HintPath>
+        </Reference>
         <Reference Include="Newtonsoft.Json, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
             <SpecificVersion>false</SpecificVersion>
             <Private>false</Private>
