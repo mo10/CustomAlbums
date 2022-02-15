@@ -22,7 +22,7 @@ namespace CustomAlbums.Patch
     public static class SavesPatch
     {
         private static readonly Logger Log = new Logger("SavesPatch");
-        public static readonly string BackupPath = "Mods/saves_backup";
+        public static readonly string BackupPath = "UserData/saves_backup";
 
         public static readonly System.Collections.Generic.List<Type> ISyncTypes = new System.Collections.Generic.List<Type> {
             typeof(SteamSync)
