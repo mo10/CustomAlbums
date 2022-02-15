@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using UnhollowerBaseLib;
+using Assets.Scripts.PeroTools.Nice.Interface;
 
 namespace CustomAlbums
 {
@@ -219,6 +220,18 @@ namespace CustomAlbums
                 t => t.IsClass && !t.IsAbstract && t.IsSubclassOf(type));
 
             return classes;
+        }
+
+        public static T GetResult<T>(this IVariable data) {
+            try {
+                return VariableUtils.GetResult<T>(data);
+            } catch(Exception e) {
+                MelonLoader.MelonLogger.LogError(typeof(T).ToString() + " " + e.ToString());
+                return default(T);
+            }
+        }
+        public static void SetResult(this IVariable data, Il2CppSystem.Object value) {
+            VariableUtils.SetResult(data, value);
         }
     }
 }
