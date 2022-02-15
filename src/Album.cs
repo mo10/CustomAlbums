@@ -20,7 +20,6 @@ using SixLabors.ImageSharp.Processing;
 using NAudio.Wave;
 using NVorbis.NAudioSupport;
 using UnhollowerBaseLib;
-using MP3Sharp;
 
 namespace CustomAlbums
 {

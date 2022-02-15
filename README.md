@@ -24,3 +24,7 @@ First BuildId: 7903791
 `master` Same as `ver170_final`.
 `ver170_final` For old game. No more updates.
 `ver180_wip` Current working branch.
+
+
+### ILRepack
+A copy of [ILRepack.Lib.MSBuild.Task](https://github.com/ravibpatel/ILRepack.Lib.MSBuild.Task) and [ILRepack](https://github.com/gluck/il-repack) are included in the repo to build the solution

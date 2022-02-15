@@ -1,0 +1,113 @@
+<Project>
+    <PropertyGroup>
+        <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+        <ClearOutputDirectory>False</ClearOutputDirectory>
+        <GameFolder>E:\Windows\Programs\Software\SteamLibrary\steamapps\common\Muse Dash\</GameFolder>
+        <MelonManaged>$(GameFolder)\MelonLoader\Managed\</MelonManaged>
+        <MelonLoader>$(GameFolder)\MelonLoader\</MelonLoader>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(MelonRefs)' == 'true'">
+        <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\Assembly-CSharp.dll</HintPath>
+        </Reference>
+        <Reference Include="Google.Protobuf, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\Google.Protobuf.dll</HintPath>
+        </Reference>
+        <Reference Include="Il2Cppmscorlib, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\Il2Cppmscorlib.dll</HintPath>
+        </Reference>
+        <Reference Include="Il2CppNewtonsoft.Json, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\Il2CppNewtonsoft.Json.dll</HintPath>
+        </Reference>
+        <Reference Include="Il2CppSystem.Core, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\Il2CppSystem.Core.dll</HintPath>
+        </Reference>
+        <Reference Include="MelonLoader, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonLoader)\MelonLoader.dll</HintPath>
+        </Reference>
+        <Reference Include="NAudio, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\NAudio.dll</HintPath>
+        </Reference>
+        <Reference Include="Newtonsoft.Json, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\Newtonsoft.Json.dll</HintPath>
+        </Reference>
+        <Reference Include="PeroTools2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\PeroTools2.dll</HintPath>
+        </Reference>
+        <Reference Include="PeroTools2, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\PeroTools2.dll</HintPath>
+        </Reference>
+        <Reference Include="PeroTools2.Account, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\PeroTools2.Account.dll</HintPath>
+        </Reference>
+        <Reference Include="Sirenix.Serialization, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\Sirenix.Serialization.dll</HintPath>
+        </Reference>
+        <Reference Include="UnhollowerBaseLib, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\UnhollowerBaseLib.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.Addressables, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\Unity.Addressables.dll</HintPath>
+        </Reference>
+        <Reference Include="Unity.ResourceManager, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\Unity.ResourceManager.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.AudioModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\UnityEngine.AudioModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\UnityEngine.CoreModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.CoreModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\UnityEngine.CoreModule.dll</HintPath>
+        </Reference>
+        <Reference Include="UnityEngine.UnityWebRequestModule, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonManaged)\UnityEngine.UnityWebRequestModule.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+
+    <PropertyGroup>
+        <OutputPath>$(MsBuildThisFileDirectory)\Output\$(Configuration)\</OutputPath>
+    </PropertyGroup>
+    <Target Name="CopyModToModsFolder" AfterTargets="GenerateModJson" Condition="'$(CopyToMods)' == 'true' And '$(CIVAR)'==''">
+        <Exec Command="xcopy /c /f /y $(OutputPath)\$(AssemblyName).dll $(VRChatFolder)\Mods" />
+    </Target>
+</Project>
