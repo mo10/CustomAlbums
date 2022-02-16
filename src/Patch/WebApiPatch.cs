@@ -11,6 +11,8 @@ using UnhollowerBaseLib;
 using HarmonyLib;
 using System.Runtime.InteropServices;
 using System.Linq;
+using CustomAlbums.Data;
+using Assets.Scripts.Database;
 #if MELON
 using MelonLoader;
 #endif
@@ -79,13 +81,12 @@ namespace CustomAlbums.Patch
             if (failCallback != IntPtr.Zero)
                 _failCallback = new Il2CppSystem.Action<IL2CppJson.JObject>(failCallback);
 
-            
             // Store original callback reference
             var originalSucceedCallback = _succeedCallback;
             var originalFailCallback = _failCallback;
 
             Log.Debug($"[SendToUrlPatch] url:{_url} method:{_method}");
-
+            
             switch (_url)
             {
                 // Add custom tag.
@@ -106,6 +107,18 @@ namespace CustomAlbums.Patch
                         originalSucceedCallback?.Invoke(newJObject);
                     });
                     OriginalSendToUrl(hiddenStructReturn, thisPtr, url, method, datas, _succeedCallback.Pointer, failCallback, startCallback, completeCallback, headers, nativeMethodInfo);
+                    break;
+                case "statistics/pc-play-statistics-feedback":
+                    if(_datas["music_uid"].ToString().StartsWith($"{AlbumManager.Uid}")) {
+                        Log.Debug("[SendToUrlPatch] Blocked play feedback upload:" + _datas["music_uid"].ToString());
+                        blockThisRequest = true;
+                    }
+                    break;
+                case "musedash/v2/pcleaderboard/high-score":
+                    if(GlobalDataBase.dbBattleStage.musicUid.StartsWith($"{AlbumManager.Uid}")) {
+                        Log.Debug("[SendToUrlPatch] Blocked high score upload:" + GlobalDataBase.dbBattleStage.musicUid);
+                        blockThisRequest = true;
+                    }
                     break;
             }
 
