@@ -170,13 +170,15 @@ namespace CustomAlbums
                     case AudioFormat.aiff:
                         //waveStream = new AiffFileReader(stream);
                         break;
-                    case AudioFormat.mp3:
-                        var mpgFile = new MpegFile(buffer.ToStream());
-                        var samples = new float[mpgFile.Length / sizeof(float)];
-                        mpgFile.ReadSamples(samples, 0, samples.Length);
-                        audioClip = AudioClip.Create(Info.name, samples.Length / mpgFile.Channels, mpgFile.Channels, mpgFile.SampleRate, false);
-                        audioClip.SetData(samples, 0);
-                        break;
+                    case AudioFormat.mp3: {
+                            using var s = buffer.ToStream();
+                            var mpgFile = new MpegFile(buffer.ToStream());
+                            var samples = new float[mpgFile.Length / sizeof(float)];
+                            mpgFile.ReadSamples(samples, 0, samples.Length);
+                            audioClip = AudioClip.Create(Info.name, samples.Length / mpgFile.Channels, mpgFile.Channels, mpgFile.SampleRate, false);
+                            audioClip.SetData(samples, 0);
+                            break;
+                        }
                     case AudioFormat.wav:
                         //waveStream = new NAudio.Wave.WaveFileReader(stream);
                         break;
@@ -196,6 +198,8 @@ namespace CustomAlbums
                     audioClip.SetData(dataSet, 0);
                 }
 
+                waveStream?.Dispose();
+                stream.Dispose();
                 return audioClip;
             }
             catch (Exception ex)
