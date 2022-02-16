@@ -172,7 +172,7 @@ namespace CustomAlbums
                         break;
                     case AudioFormat.mp3: {
                             using var s = buffer.ToStream();
-                            var mpgFile = new MpegFile(buffer.ToStream());
+                            var mpgFile = new MpegFile(s);
                             var samples = new float[mpgFile.Length / sizeof(float)];
                             mpgFile.ReadSamples(samples, 0, samples.Length);
                             audioClip = AudioClip.Create(Info.name, samples.Length / mpgFile.Channels, mpgFile.Channels, mpgFile.SampleRate, false);
