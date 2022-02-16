@@ -18,7 +18,8 @@ using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using NVorbis.NAudioSupport;
 using UnhollowerBaseLib;
-
+using Assets.Scripts.PeroTools.Managers;
+using Assets.Scripts.PeroTools.Commons;
 
 namespace CustomAlbums
 {
@@ -153,7 +154,7 @@ namespace CustomAlbums
 
             try
             { 
-                var stream = new Il2CppSystem.IO.MemoryStream(buffer);
+                var stream = buffer.ToIL2CppStream();
                 if (!AudioFormatMapping.TryGetValue(Path.GetExtension(fileName), out var format))
                 {
                     Log.Debug($"Unknown audio format: {fileName} from: {BasePath}");
@@ -162,6 +163,7 @@ namespace CustomAlbums
                     return null;
                 }
 
+                AudioClip audioClip = null;
                 NAudio.Wave.WaveStream waveStream = null;
                 switch (format)
                 {
@@ -169,37 +171,31 @@ namespace CustomAlbums
                         //waveStream = new AiffFileReader(stream);
                         break;
                     case AudioFormat.mp3:
-                    {
-                        using var s = new MemoryStream(buffer);
-                        var mpgFile = new MpegFile(s);
-                        var samples = new float[mpgFile.Length];
-                        mpgFile.ReadSamples(samples, 0, (int) mpgFile.Length);
-
-                        var clip = AudioClip.Create("test", samples.Length, mpgFile.Channels, mpgFile.SampleRate, false);
-                        clip.SetData(samples, 0);
-                        return clip;
-                    }
+                        var mpgFile = new MpegFile(buffer.ToStream());
+                        var samples = new float[mpgFile.Length / sizeof(float)];
+                        mpgFile.ReadSamples(samples, 0, samples.Length);
+                        audioClip = AudioClip.Create(Info.name, samples.Length / mpgFile.Channels, mpgFile.Channels, mpgFile.SampleRate, false);
+                        audioClip.SetData(samples, 0);
+                        break;
                     case AudioFormat.wav:
-                        //waveStream = new WaveFileReader(stream);
+                        //waveStream = new NAudio.Wave.WaveFileReader(stream);
                         break;
                     case AudioFormat.ogg: 
                         waveStream = new VorbisWaveReader(stream);
                         break;
                 }
-                if (waveStream == null)
-                    return null;
+                if(waveStream != null) {
+                    Log.Debug($"Audio length: {waveStream.Length}");
+                    var samplesCount = (int)(waveStream.Length / (long)(waveStream.WaveFormat.BitsPerSample / 8));
+                    audioClip = AudioClip.Create(Info.name, samplesCount / waveStream.WaveFormat.Channels, waveStream.WaveFormat.Channels, waveStream.WaveFormat.SampleRate, false);
+                    var dataSet = new Il2CppStructArray<float>(samplesCount);
+                    var rawSet = new Il2CppStructArray<byte>(dataSet.Pointer);
+                    var len = waveStream.Read(rawSet, 0, rawSet.Length);
+                    Log.Debug($"read: {len}");
 
-                Log.Debug($"Audio length: {waveStream.Length}");
-                var samplesCount = (int)(waveStream.Length / (long)(waveStream.WaveFormat.BitsPerSample / 8));
-                var audioClip = AudioClip.Create("test", samplesCount / waveStream.WaveFormat.Channels, waveStream.WaveFormat.Channels, waveStream.WaveFormat.SampleRate,false);
-                var dataSet = new Il2CppStructArray<float>(samplesCount);
-                var rawSet = new Il2CppStructArray<byte>(dataSet.Pointer);
-                var len = waveStream.Read(rawSet, 0, rawSet.Length);
-                Log.Debug($"read: {len}");
+                    audioClip.SetData(dataSet, 0);
+                }
 
-                audioClip.SetData(dataSet, 0);
-                waveStream.Dispose();
-                stream.Dispose();
                 return audioClip;
             }
             catch (Exception ex)
