@@ -6,31 +6,31 @@ using Newtonsoft.Json.Linq;
 using RuntimeAudioClipLoader;
 using System;
 using UnityEngine;
-using Assets.Scripts.PeroTools.Commons;
 using UnityEngine.AddressableAssets;
 
 using ManagedGeneric = System.Collections.Generic;
 using System.IO;
+using NLayer;
 using Il2CppGeneric = Il2CppSystem.Collections.Generic;
 using Il2CppMemoryStream = Il2CppSystem.IO.MemoryStream;
-using Assets.Scripts.GameCore.Managers;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
-using NAudio.Wave;
 using NVorbis.NAudioSupport;
 using UnhollowerBaseLib;
-using MP3Sharp;
+using Assets.Scripts.PeroTools.Managers;
+using Assets.Scripts.PeroTools.Commons;
 
 namespace CustomAlbums
 {
+
     public class Album
     {
         private static readonly Logger Log = new Logger("Album");
         public static readonly ManagedGeneric.Dictionary<string, AudioFormat> AudioFormatMapping = new ManagedGeneric.Dictionary<string, AudioFormat>()
             {
                 //{".aiff", AudioFormat.aiff},
-                //{".mp3", AudioFormat.mp3},
+                {".mp3", AudioFormat.mp3},
                 {".ogg", AudioFormat.ogg},
                 //{".wav", AudioFormat.wav},
             };
@@ -153,7 +153,7 @@ namespace CustomAlbums
             }
 
             try
-            {
+            { 
                 var stream = buffer.ToIL2CppStream();
                 if (!AudioFormatMapping.TryGetValue(Path.GetExtension(fileName), out var format))
                 {
@@ -163,36 +163,43 @@ namespace CustomAlbums
                     return null;
                 }
 
-                WaveStream waveStream = null;
+                AudioClip audioClip = null;
+                NAudio.Wave.WaveStream waveStream = null;
                 switch (format)
                 {
                     case AudioFormat.aiff:
                         //waveStream = new AiffFileReader(stream);
                         break;
-                    case AudioFormat.mp3:
-                        //Log.Debug("MP3 Decode start");
-                        //var a = new MP3Stream(buffer.ToStream());
-                        //Log.Debug($"MP3 Decode {a.Length}");
-                        break;
+                    case AudioFormat.mp3: {
+                            using var s = buffer.ToStream();
+                            var mpgFile = new MpegFile(s);
+                            var samples = new float[mpgFile.Length / sizeof(float)];
+                            mpgFile.ReadSamples(samples, 0, samples.Length);
+                            audioClip = AudioClip.Create(Info.name, samples.Length / mpgFile.Channels, mpgFile.Channels, mpgFile.SampleRate, false);
+                            audioClip.SetData(samples, 0);
+                            break;
+                        }
                     case AudioFormat.wav:
-                        //waveStream = new WaveFileReader(stream);
+                        //waveStream = new NAudio.Wave.WaveFileReader(stream);
                         break;
-                    case AudioFormat.ogg:
+                    case AudioFormat.ogg: 
                         waveStream = new VorbisWaveReader(stream);
                         break;
                 }
-                if (waveStream == null)
-                    return null;
+                if(waveStream != null) {
+                    Log.Debug($"Audio length: {waveStream.Length}");
+                    var samplesCount = (int)(waveStream.Length / (long)(waveStream.WaveFormat.BitsPerSample / 8));
+                    audioClip = AudioClip.Create(Info.name, samplesCount / waveStream.WaveFormat.Channels, waveStream.WaveFormat.Channels, waveStream.WaveFormat.SampleRate, false);
+                    var dataSet = new Il2CppStructArray<float>(samplesCount);
+                    var rawSet = new Il2CppStructArray<byte>(dataSet.Pointer);
+                    var len = waveStream.Read(rawSet, 0, rawSet.Length);
+                    Log.Debug($"read: {len}");
 
-                Log.Debug($"Audio length: {waveStream.Length}");
-                var samplesCount = (int)(waveStream.Length / (long)(waveStream.WaveFormat.BitsPerSample / 8));
-                var audioClip = AudioClip.Create("test", samplesCount / waveStream.WaveFormat.Channels, waveStream.WaveFormat.Channels, waveStream.WaveFormat.SampleRate,false);
-                var dataSet = new Il2CppStructArray<float>(samplesCount);
-                var rawSet = new Il2CppStructArray<byte>(dataSet.Pointer);
-                var len = waveStream.Read(rawSet, 0, rawSet.Length * sizeof(float));
-                Log.Debug($"read: {len}");
+                    audioClip.SetData(dataSet, 0);
+                }
 
-                audioClip.SetData(dataSet, 0);
+                waveStream?.Dispose();
+                stream.Dispose();
                 return audioClip;
             }
             catch (Exception ex)
@@ -201,6 +208,7 @@ namespace CustomAlbums
             }
             return null;
         }
+        
         /// <summary>
         /// Load map.
         /// 1. Load map*.bms.
