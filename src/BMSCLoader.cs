@@ -10,7 +10,6 @@ namespace CustomAlbums
 {
 	public static class BMSCLoader
 	{
-		private static readonly Regex MainDataRegex = new Regex("^([0-9]{3})([0-9]{2}):(.*)$");
 		/// <summary>
 		/// A bms loader copied from MuseDash.
 		/// 
@@ -20,158 +19,139 @@ namespace CustomAlbums
 		/// <param name="bmsName"></param>
 		/// <returns></returns>
 		public static BMS Load(Stream stream, string bmsName) {
-			JObject header = new JObject();
-			Dictionary<string, float> BPMExt = new Dictionary<string, float>();
-			List<JObject> BPMList = new List<JObject>();
+			Dictionary<string, float> bpmTones = new Dictionary<string, float>();
+			Dictionary<int, JToken> notesPercentDict = new Dictionary<int, JToken>();
+
+			JObject info = new JObject();
 			JArray notes = new JArray();
+
 			JArray notesPercent = new JArray();
+			List<JObject> list = new List<JObject>();
 
 			// Calculate MD5 of bms bytes
 			string md5 = stream.ToArray().GetMD5().ToString("x2");
-			stream.Position = 0; // reset position
-
+			stream.Position = 0;
 			StreamReader streamReader = new StreamReader(stream);
-			string line;
-			// Parse bms file
-			while((line = streamReader.ReadLine()) != null) {
-				line = line.Trim();
-				if(!line.StartsWith("#"))
-					continue;
 
-				line = line.Substring(1); // Remove start '#'
+			string txtLine;
+			// Parse bms
+			while((txtLine = streamReader.ReadLine()) != null) {
+				txtLine = txtLine.Trim();
+				if(!string.IsNullOrEmpty(txtLine) && txtLine.StartsWith("#")) {
+					txtLine = txtLine.Remove(0, 1); // Remove left right space and start '#'
 
-				// Parse header field
-				if(line.Contains(" ")) {
-					var fileds = line.Split(new char[] { ' ' }, 2);
-					string key = fileds[0];
-					string value = fileds[1];
+					if(txtLine.Contains(" ")) {
+						// Parse info
+						string infoKey = txtLine.Split(' ')[0];
+						string infoValue = txtLine.Remove(0, infoKey.Length + 1);
 
-					header[key] = value;
-
-					if(key == "BPM") {
-						// Set default bpm
-						float freq = 60f / float.Parse(value) * 4f;
-						JObject jObject = new JObject();
-						jObject["tick"] = 0f;
-						jObject["freq"] = freq;
-						BPMList.Add(jObject);
-					} else if(key.Contains("BPM")) {
-						// Extended BPM
-						BPMExt.Add(key.RemoveFromStart("BPM"), float.Parse(value));
-					}
-					continue;
-				}
-
-				// Parse main data field
-				var match = MainDataRegex.Match(line);
-				if(!match.Success)
-					continue;
-
-				var measure = int.Parse(match.Groups[1].Value);
-				var channel = match.Groups[2].Value;
-				var rawData = match.Groups[3].Value;
-
-				int dataLength = rawData.Length / 2;
-				for(int i = 0; i < dataLength; i++) {
-					string data = rawData.Substring(i * 2, 2);
-					if("00" == data)
-						continue; // Skip
-
-					float currentTick = (float)i / (float)dataLength + (float)measure;
-
-					if("02" == channel) {
-						// 小节的缩短
-						JObject jObject = new JObject();
-						jObject["beat"] = channel;
-						jObject["percent"] = float.Parse(rawData);
-						notesPercent.Add(jObject);
-						break; // 跳过剩余数据
-					} else if("03" == channel || "08" == channel) {
-						// 变速
-						float bpm = 0f;
-						if("08" == channel && BPMExt.ContainsKey(data))
-							bpm = BPMExt[data];// 扩展变速
-						else
-							bpm = Convert.ToInt32(data, 16);
-						JObject jObject = new JObject();
-						jObject["tick"] = currentTick;
-						jObject["freq"] = 60f / bpm * 4f;
-						BPMList.Add(jObject);
-						// 按照Tick从高到低排序
-						BPMList.Sort((x, y) => {
-							if((float)x["tick"] > (float)y["tick"]) {
-								return -1;
-							}
-							return 1;
-						});
-					} else {
-						// note
-						float num3 = 0f;
-						float totalTick = 0f;
-						var BPMListBeforeTick = BPMList.FindAll((o) => (float)o["tick"] < currentTick);
-						for(int k = BPMListBeforeTick.Count - 1; k >= 0; k--) {
-							var BPM = BPMListBeforeTick[k];
-							var freq = (float)BPM["freq"];
-							float keepTick = 0f;
-							if(k - 1 >= 0) {
-								// 下一个速度与上一个速度相差的tick
-								var nextBPM = BPMListBeforeTick[k - 1];
-								keepTick = (float)nextBPM["tick"] - (float)BPM["tick"];
-							}
-							if(k == 0) {
-								// 最后一个
-								keepTick = currentTick - (float)BPM["tick"];
-							}
-
-							float curTick = totalTick;
-							totalTick += keepTick;
-
-							int _curTick = Mathf.FloorToInt(curTick); // 最小取整
-							int _totalTick = Mathf.CeilToInt(totalTick);    // 最大取整
-							for(int m = _curTick; m < _totalTick; m++) {
-								int index = m;
-								float num10 = 1f;
-								if(m == _curTick) {
-									num10 = (float)(m + 1) - curTick;
-								}
-								if(m == _totalTick - 1) {
-									num10 = totalTick - (float)(_totalTick - 1);
-								}
-								if(_totalTick == _curTick + 1) {
-									num10 = totalTick - curTick;
-								}
-
-								JToken jtoken = null;
-								for(int x = 0; x < notesPercent.Count; x++) {
-									if((int)notesPercent[x]["beat"] == index) {
-										jtoken = notesPercent[x];
-										break;
-									}
-								}
-								float num11 = (jtoken == null) ? 1f : ((float)jtoken["percent"]);
-								num3 += (float)Mathf.RoundToInt(num10 * num11 * freq / 1E-06f) * 1E-06f;
-							}
-
+						info[infoKey] = infoValue;
+						if(infoKey == "BPM") {
+							float freq = 60f / float.Parse(infoValue) * 4f;
+							JObject jObject = new JObject();
+							jObject["tick"] = 0f;
+							jObject["freq"] = freq;
+							list.Add(jObject);
+						} else if(infoKey.Contains("BPM")) {
+							bpmTones.Add(infoKey.Replace("BPM", string.Empty), float.Parse(infoValue));
 						}
-						JObject jObject = new JObject();
-						jObject["time"] = num3;
-						jObject["value"] = data;
-						jObject["tone"] = channel;
-						notes.Add(jObject);
+					} else if(txtLine.Contains(":")) {
+						string[] keyValue = txtLine.Split(':');
+
+						//string text4 = array3[0];
+						int beat = int.Parse(keyValue[0].Substring(0, 3));
+						string type = keyValue[0].Substring(3, 2);
+
+						string value = keyValue[1];
+						if(type == "02") {
+							JObject jObject = new JObject();
+							jObject["beat"] = beat;
+							jObject["percent"] = float.Parse(value);
+							notesPercent.Add(jObject);
+							notesPercentDict[beat] = jObject;
+						} else {
+							int objLength = value.Length / 2;
+							for(int i = 0; i < objLength; i++) {
+								string note = value.Substring(i * 2, 2);
+								if(note == "00") {
+									continue;
+								}
+								float theTick = (float)i / (float)objLength + (float)beat;
+								// "Variable speed"
+								if(type == "03" || type == "08") {
+									float freq = 60f / ((type != "08" || !bpmTones.ContainsKey(note)) ? ((float)Convert.ToInt32(note, 16)) : bpmTones[note]) * 4f;
+									JObject jObject = new JObject();
+									jObject["tick"] = theTick;
+									jObject["freq"] = freq;
+									list.Add(jObject);
+									list.Sort(delegate (JObject l, JObject r) {
+										float num12 = (float)l["tick"];
+										float num13 = (float)r["tick"];
+										if(num12 > num13) {
+											return -1;
+										}
+										return 1;
+									});
+								} else {
+									float num3 = 0f;
+									float num4 = 0f;
+									List<JObject> list2 = list.FindAll((JObject b) => (float)b["tick"] < theTick);
+									for(int k = list2.Count - 1; k >= 0; k--) {
+										JObject jobject5 = list2[k];
+										float num5 = 0f;
+										float num6 = (float)jobject5["freq"];
+										if(k - 1 >= 0) {
+											JObject jobject6 = list2[k - 1];
+											num5 = (float)jobject6["tick"] - (float)jobject5["tick"];
+										}
+										if(k == 0) {
+											num5 = theTick - (float)jobject5["tick"];
+										}
+										float num7 = num4;
+										num4 += num5;
+										int num8 = Mathf.FloorToInt(num7);
+										int num9 = Mathf.CeilToInt(num4);
+										for(int m = num8; m < num9; m++) {
+											int index = m;
+											float num10 = 1f;
+											if(m == num8) {
+												num10 = (float)(m + 1) - num7;
+											}
+											if(m == num9 - 1) {
+												num10 = num4 - (float)(num9 - 1);
+											}
+											if(num9 == num8 + 1) {
+												num10 = num4 - num7;
+											}
+											notesPercentDict.TryGetValue(index, out JToken jtoken);
+											float num11 = (jtoken == null) ? 1f : ((float)jtoken["percent"]);
+											num3 += (float)Mathf.RoundToInt(num10 * num11 * num6 / 1E-06f) * 1E-06f;
+										}
+									}
+									JObject jobject7 = new JObject();
+									jobject7["time"] = num3;
+									jobject7["value"] = note;
+									jobject7["tone"] = type;
+									notes.Add(jobject7);
+								}
+							}
+						}
 					}
 				}
 			}
-
-			notes._values.Sort((Il2CppSystem.Comparison<JToken>)((x, y) => {
-				if((float)x["time"] > (float)y["time"])
+			notes._values.Sort((Il2CppSystem.Comparison<JToken>)((l, r) => {
+				float num12 = (float)l["time"];
+				float num13 = (float)r["time"];
+				if(num12 > num13) {
 					return 1;
-				if((float)y["time"] > (float)x["time"])
+				}
+				if(num13 > num12) {
 					return -1;
+				}
 				return 0;
 			}));
-
 			BMS bms = new BMS {
-				info = header,
+				info = info,
 				notes = notes,
 				notesPercent = notesPercent,
 				md5 = md5
@@ -184,8 +164,6 @@ namespace CustomAlbums
 			} else {
 				bms.info["BANNER"] = "cover/" + (string)bms.info["BANNER"];
 			}
-
-			var str = bms.info.ToString();
 			return bms;
 		}
 	}
