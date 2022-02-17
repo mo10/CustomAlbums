@@ -53,7 +53,7 @@ namespace CustomAlbums
         public override void OnApplicationStart()
         {
             LoggerInstance.Msg($"CustomAlbums is loaded!");
-
+            ModSettings.RegisterSettings();
             Entry.DoPatching(HarmonyInstance);
         }
     }

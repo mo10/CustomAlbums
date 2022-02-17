@@ -23,6 +23,8 @@ namespace CustomAlbums
         }
         public void Debug(object data)
         {
+            if (!ModSettings.DebugLoggingEnabled)
+                return;
 #if BEPINEX
             Log.LogDebug(data);
 #elif MELON
