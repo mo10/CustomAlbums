@@ -192,7 +192,7 @@ namespace CustomAlbums
                     audioClip = AudioClip.Create(Info.name, samplesCount / waveStream.WaveFormat.Channels, waveStream.WaveFormat.Channels, waveStream.WaveFormat.SampleRate, false);
                     var dataSet = new Il2CppStructArray<float>(samplesCount);
                     var rawSet = new Il2CppStructArray<byte>(dataSet.Pointer);
-                    var len = waveStream.Read(rawSet, 0, rawSet.Length);
+                    var len = waveStream.Read(rawSet, 0, rawSet.Length * sizeof(float));
                     Log.Debug($"read: {len}");
 
                     audioClip.SetData(dataSet, 0);
