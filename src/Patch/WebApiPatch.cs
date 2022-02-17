@@ -89,25 +89,6 @@ namespace CustomAlbums.Patch
             
             switch (_url)
             {
-                // Add custom tag.
-                case "musedash/v1/music_tag":
-                    _succeedCallback = new Action<IL2CppJson.JObject>(jObject =>
-                    {
-                        Log.Debug("Injected: musedash/v1/music_tag");
-                        var JObj = jObject.IL2CppJsonSerialize().JsonDeserialize<JObject>();
-                        var jArray = JObj["music_tag_list"];
-                        var music_tag = jArray.First(o => o["sort_key"].Value<int>() == 8);
-
-                        music_tag["tag_name"] = JObject.FromObject(AlbumManager.Langs);
-                        music_tag["tag_picture"] = "https://mdmc.moe/cdn/melon.png";
-                        music_tag["icon_name"] = "";
-                        music_tag["music_list"] = JArray.FromObject(AlbumManager.GetAllUid());
-
-                        var newJObject = JObj.JsonSerialize().IL2CppJsonDeserialize<IL2CppJson.JObject>();
-                        originalSucceedCallback?.Invoke(newJObject);
-                    });
-                    OriginalSendToUrl(hiddenStructReturn, thisPtr, url, method, datas, _succeedCallback.Pointer, failCallback, startCallback, completeCallback, headers, nativeMethodInfo);
-                    break;
                 case "statistics/pc-play-statistics-feedback":
                     if(_datas["music_uid"].ToString().StartsWith($"{AlbumManager.Uid}")) {
                         Log.Debug("[SendToUrlPatch] Blocked play feedback upload:" + _datas["music_uid"].ToString());
