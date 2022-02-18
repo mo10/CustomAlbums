@@ -140,14 +140,20 @@ namespace CustomAlbums
 				}
 			}
 			notes._values.Sort((Il2CppSystem.Comparison<JToken>)((l, r) => {
-				float num12 = (float)l["time"];
-				float num13 = (float)r["time"];
-				if(num12 > num13) {
+				float lTime = (float)l["time"];
+				float rTime = (float)r["time"];
+				if(lTime > rTime) {
 					return 1;
 				}
-				if(num13 > num12) {
+				if(rTime > lTime) {
 					return -1;
 				}
+
+				// Ensure that speed changes on the same tick apply first
+				if((string)l["tone"] == "15") {
+					return -1;
+                }
+
 				return 0;
 			}));
 			BMS bms = new BMS {
