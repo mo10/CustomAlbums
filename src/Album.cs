@@ -27,8 +27,6 @@ namespace CustomAlbums
 
     public class Album
     {
-        public const int ASYNC_READ_SPEED = 4096;
-
         private static readonly Logger Log = new Logger("Album");
         public static readonly ManagedGeneric.Dictionary<string, AudioFormat> AudioFormatMapping = new ManagedGeneric.Dictionary<string, AudioFormat>()
             {
@@ -173,10 +171,10 @@ namespace CustomAlbums
                         audioClip = Manager.Load(buffer.ToIL2CppStream(), format, audioName);
                         break;
                     case AudioFormat.ogg:
-                        audioClip = BeginAsyncOgg(buffer.ToIL2CppStream(), audioName);
+                        audioClip = Utils.BeginAsyncOgg(buffer.ToIL2CppStream(), audioName);
                         break;
                     case AudioFormat.mp3:
-                        audioClip = BeginAsyncMp3(buffer.ToStream(), audioName);
+                        audioClip = Utils.BeginAsyncMp3(buffer.ToStream(), audioName);
                         break;
                 }
 
@@ -189,71 +187,7 @@ namespace CustomAlbums
             return null;
         }
 
-        private static AudioClip BeginAsyncMp3(Stream stream, string name) {
-            var mpgFile = new MpegFile(stream);
-            var sampleCount = mpgFile.Length / sizeof(float);
-            var remaining = sampleCount;
-            var index = 0;
-            var audioClip = AudioClip.Create(name, (int)sampleCount / mpgFile.Channels, mpgFile.Channels, mpgFile.SampleRate, false);
-
-            SingletonMonoBehaviour<CoroutineManager>.instance.StartCoroutine(
-                (Il2CppSystem.Action)delegate { },
-                (Il2CppSystem.Func<bool>)delegate {
-                    // Stop if the asset is unloaded during read
-                    if(audioClip == null) return true;
-
-                    var sampArr = new float[Math.Min(ASYNC_READ_SPEED, remaining)];
-                    var readCount = mpgFile.ReadSamples(sampArr, 0, sampArr.Length);
-
-                    audioClip.SetData(sampArr, index / 2);
-
-                    index += readCount;
-                    remaining -= readCount;
-
-                    if(remaining <= 0) {
-                        stream.Dispose();
-                        Log.Debug($"Finished async read of {name}.mp3");
-                        return true;
-                    }
-
-                    return false;
-                });
-
-            return audioClip;
-        }
-
-        private static AudioClip BeginAsyncOgg(Il2CppSystem.IO.Stream stream, string name) {
-            var waveStream = new VorbisWaveReader(stream);
-            var sampleCount = (int)(waveStream.Length / (waveStream.WaveFormat.BitsPerSample / 8));
-            var remaining = sampleCount;
-            var index = 0;
-            var audioClip = AudioClip.Create(name, sampleCount / waveStream.WaveFormat.Channels, waveStream.WaveFormat.Channels, waveStream.WaveFormat.SampleRate, false);
-
-            SingletonMonoBehaviour<CoroutineManager>.instance.StartCoroutine(
-                (Il2CppSystem.Action)delegate { },
-                (Il2CppSystem.Func<bool>)delegate {
-                    // Stop if the asset is unloaded during read
-                    if(audioClip == null) return true;
-
-                    var dataSet = new Il2CppStructArray<float>(Math.Min(ASYNC_READ_SPEED, remaining));
-                    var readCount = waveStream.Read(dataSet, 0, dataSet.Length);
-
-                    audioClip.SetData(dataSet, index / 2);
-
-                    index += readCount;
-                    remaining -= readCount;
-
-                    if(remaining <= 0) {
-                        waveStream.Dispose();
-                        Log.Debug($"Finished async read of {name}.ogg");
-                        return true;
-                    }
-
-                    return false;
-                });
-
-            return audioClip;
-        }
+        
 
         /// <summary>
         /// Load map.
