@@ -20,19 +20,22 @@ using NVorbis.NAudioSupport;
 using UnhollowerBaseLib;
 using Assets.Scripts.PeroTools.Managers;
 using Assets.Scripts.PeroTools.Commons;
+using NAudio.Wave;
 
 namespace CustomAlbums
 {
 
     public class Album
     {
+        public const int ASYNC_READ_SPEED = 4096;
+
         private static readonly Logger Log = new Logger("Album");
         public static readonly ManagedGeneric.Dictionary<string, AudioFormat> AudioFormatMapping = new ManagedGeneric.Dictionary<string, AudioFormat>()
             {
-                //{".aiff", AudioFormat.aiff},
+                {".aiff", AudioFormat.aiff},
                 {".mp3", AudioFormat.mp3},
                 {".ogg", AudioFormat.ogg},
-                //{".wav", AudioFormat.wav},
+                {".wav", AudioFormat.wav},
             };
 
         public AlbumInfo Info { get; private set; }
@@ -153,53 +156,30 @@ namespace CustomAlbums
             }
 
             try
-            { 
-                var stream = buffer.ToIL2CppStream();
+            {
                 if (!AudioFormatMapping.TryGetValue(Path.GetExtension(fileName), out var format))
                 {
                     Log.Debug($"Unknown audio format: {fileName} from: {BasePath}");
-                    stream.Close();
-                    stream.Dispose();
                     return null;
                 }
 
+                var audioName = $"{Info.name}_{name}";
                 AudioClip audioClip = null;
-                NAudio.Wave.WaveStream waveStream = null;
+
                 switch (format)
                 {
                     case AudioFormat.aiff:
-                        //waveStream = new AiffFileReader(stream);
-                        break;
-                    case AudioFormat.mp3: {
-                            using var s = buffer.ToStream();
-                            var mpgFile = new MpegFile(s);
-                            var samples = new float[mpgFile.Length / sizeof(float)];
-                            mpgFile.ReadSamples(samples, 0, samples.Length);
-                            audioClip = AudioClip.Create(Info.name, samples.Length / mpgFile.Channels, mpgFile.Channels, mpgFile.SampleRate, false);
-                            audioClip.SetData(samples, 0);
-                            break;
-                        }
                     case AudioFormat.wav:
-                        //waveStream = new NAudio.Wave.WaveFileReader(stream);
+                        audioClip = Manager.Load(buffer.ToIL2CppStream(), format, audioName);
                         break;
-                    case AudioFormat.ogg: 
-                        waveStream = new VorbisWaveReader(stream);
+                    case AudioFormat.ogg:
+                        audioClip = BeginAsyncOgg(buffer.ToIL2CppStream(), audioName);
+                        break;
+                    case AudioFormat.mp3:
+                        audioClip = BeginAsyncMp3(buffer.ToStream(), audioName);
                         break;
                 }
-                if(waveStream != null) {
-                    Log.Debug($"Audio length: {waveStream.Length}");
-                    var samplesCount = (int)(waveStream.Length / (long)(waveStream.WaveFormat.BitsPerSample / 8));
-                    audioClip = AudioClip.Create(Info.name, samplesCount / waveStream.WaveFormat.Channels, waveStream.WaveFormat.Channels, waveStream.WaveFormat.SampleRate, false);
-                    var dataSet = new Il2CppStructArray<float>(samplesCount);
-                    var rawSet = new Il2CppStructArray<byte>(dataSet.Pointer);
-                    var len = waveStream.Read(rawSet, 0, rawSet.Length * sizeof(float));
-                    Log.Debug($"read: {len}");
 
-                    audioClip.SetData(dataSet, 0);
-                }
-
-                waveStream?.Dispose();
-                stream.Dispose();
                 return audioClip;
             }
             catch (Exception ex)
@@ -208,7 +188,73 @@ namespace CustomAlbums
             }
             return null;
         }
-        
+
+        private static AudioClip BeginAsyncMp3(Stream stream, string name) {
+            var mpgFile = new MpegFile(stream);
+            var sampleCount = mpgFile.Length / sizeof(float);
+            var remaining = sampleCount;
+            var index = 0;
+            var audioClip = AudioClip.Create(name, (int)sampleCount / mpgFile.Channels, mpgFile.Channels, mpgFile.SampleRate, false);
+
+            SingletonMonoBehaviour<CoroutineManager>.instance.StartCoroutine(
+                (Il2CppSystem.Action)delegate { },
+                (Il2CppSystem.Func<bool>)delegate {
+                    // Stop if the asset is unloaded during read
+                    if(audioClip == null) return true;
+
+                    var sampArr = new float[Math.Min(ASYNC_READ_SPEED, remaining)];
+                    var readCount = mpgFile.ReadSamples(sampArr, 0, sampArr.Length);
+
+                    audioClip.SetData(sampArr, index / 2);
+
+                    index += readCount;
+                    remaining -= readCount;
+
+                    if(remaining <= 0) {
+                        stream.Dispose();
+                        Log.Debug($"Finished async read of {name}.mp3");
+                        return true;
+                    }
+
+                    return false;
+                });
+
+            return audioClip;
+        }
+
+        private static AudioClip BeginAsyncOgg(Il2CppSystem.IO.Stream stream, string name) {
+            var waveStream = new VorbisWaveReader(stream);
+            var sampleCount = (int)(waveStream.Length / (waveStream.WaveFormat.BitsPerSample / 8));
+            var remaining = sampleCount;
+            var index = 0;
+            var audioClip = AudioClip.Create(name, sampleCount / waveStream.WaveFormat.Channels, waveStream.WaveFormat.Channels, waveStream.WaveFormat.SampleRate, false);
+
+            SingletonMonoBehaviour<CoroutineManager>.instance.StartCoroutine(
+                (Il2CppSystem.Action)delegate { },
+                (Il2CppSystem.Func<bool>)delegate {
+                    // Stop if the asset is unloaded during read
+                    if(audioClip == null) return true;
+
+                    var dataSet = new Il2CppStructArray<float>(Math.Min(ASYNC_READ_SPEED, remaining));
+                    var readCount = waveStream.Read(dataSet, 0, dataSet.Length);
+
+                    audioClip.SetData(dataSet, index / 2);
+
+                    index += readCount;
+                    remaining -= readCount;
+
+                    if(remaining <= 0) {
+                        waveStream.Dispose();
+                        Log.Debug($"Finished async read of {name}.ogg");
+                        return true;
+                    }
+
+                    return false;
+                });
+
+            return audioClip;
+        }
+
         /// <summary>
         /// Load map.
         /// 1. Load map*.bms.
