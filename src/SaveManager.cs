@@ -246,7 +246,7 @@ namespace CustomAlbums
                 var albumIndex = AlbumManager.LoadedAlbums[albumKey].Index;
 
                 var value = $"{AlbumManager.Uid}-{albumIndex}";
-                if (!GameCollections.Contains(value))
+                //if (!GameCollections.Contains(value))
                     GameCollections.Add(value);
             }
             // Account.Hide
@@ -260,7 +260,7 @@ namespace CustomAlbums
                 var albumIndex = AlbumManager.LoadedAlbums[albumKey].Index;
 
                 var value = $"{AlbumManager.Uid}-{albumIndex}";
-                if (!GameHides.Contains(value))
+                //if (!GameHides.Contains(value))
                     GameHides.Add(value);
             }
             // Account.History
@@ -274,7 +274,7 @@ namespace CustomAlbums
                 var albumIndex = AlbumManager.LoadedAlbums[albumKey].Index;
 
                 var value = $"{AlbumManager.Uid}-{albumIndex}";
-                if (!GameHistory.Contains(value))
+                //if (!GameHistory.Contains(value))
                     GameHistory.Add(value);
             }
             // Achievement.highest, Achievement.fail_count, Achievement.easy_pass, Achievement.hard_pass, Achievement.master_pass
@@ -302,32 +302,32 @@ namespace CustomAlbums
                     data["accuracy"].SetResult(new Il2CppSystem.Single() { m_value = score.Accuracy }.BoxIl2CppObject());
                     data["accuracyStr"].SetResult(score.AccuracyStr);
                     data["clear"].SetResult(new Il2CppSystem.Single() { m_value = score.Clear }.BoxIl2CppObject());
-                    if (GameHighest.Exists((Il2CppSystem.Predicate<IData>)(d => d["uid"].GetResult<string>() == dUid)))
-                        GameHighest.RemoveAll((Il2CppSystem.Predicate<IData>)(d => d["uid"].GetResult<string>() == dUid));
+                    //if (GameHighest.Exists((Il2CppSystem.Predicate<IData>)(d => d["uid"].GetResult<string>() == dUid)))
+                    //    GameHighest.RemoveAll((Il2CppSystem.Predicate<IData>)(d => d["uid"].GetResult<string>() == dUid));
                     GameHighest.Add(data.Cast<IData>());
 
                     // Achievement.fail_count
                     data = new NiceData.Data();
                     data["uid"].SetResult(dUid);
                     data["count"].SetResult(new Il2CppSystem.Int32() { m_value = score.FailCount }.BoxIl2CppObject());
-                    if (GameFailCount.Exists((Il2CppSystem.Predicate<IData>)(d => d["uid"].GetResult<string>() == dUid)))
-                        GameFailCount.RemoveAll((Il2CppSystem.Predicate<IData>)(d => d["uid"].GetResult<string>() == dUid));
+                    //if (GameFailCount.Exists((Il2CppSystem.Predicate<IData>)(d => d["uid"].GetResult<string>() == dUid)))
+                    //    GameFailCount.RemoveAll((Il2CppSystem.Predicate<IData>)(d => d["uid"].GetResult<string>() == dUid));
                     GameFailCount.Add(data.Cast<IData>());
 
                     // Achievement.easy_pass, Achievement.hard_pass, Achievement.master_pass
                     switch (difficulty)
                     {
                         case 1:
-                            if(!GameEasyPass.Contains(dUid))
+                            //if(!GameEasyPass.Contains(dUid))
                                 GameEasyPass.Add(dUid);
                             break;
                         case 2:
-                            if (!GameHardPass.Contains(dUid))
+                            //if (!GameHardPass.Contains(dUid))
                                 GameHardPass.Add(dUid);
                             break;
                         case 3:
                         case 4:
-                            if (!GameMasterPass.Contains(dUid))
+                            //if (!GameMasterPass.Contains(dUid))
                                 GameMasterPass.Add(dUid);
                             break;
                     }
@@ -348,7 +348,7 @@ namespace CustomAlbums
                 {
                     var dUid = $"{AlbumManager.Uid}-{albumIndex}_{difficulty}";
 
-                    if (!GameFullComboMusic.Contains(dUid))
+                    //if (!GameFullComboMusic.Contains(dUid))
                         GameFullComboMusic.Add(dUid);
                 }
             }
