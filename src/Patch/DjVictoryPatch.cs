@@ -11,7 +11,7 @@ namespace CustomAlbums.Patch
     internal static class DjVictoryPatch
     {
         private static void Postfix(PnlVictory __instance) {
-            if(GlobalDataBase.dbOther.isDjMaxScene) {
+            if(__instance.m_CurControls.mainPnl.transform.parent.name == "Djmax") {
                 var titleObj = __instance.m_CurControls.mainPnl.transform.Find("PnlVictory_3D").Find("SongTittle").Find("ImgSongTittleMask");
                 var titleNormalTxt = titleObj.Find("TxtSongTittle").gameObject;
 
