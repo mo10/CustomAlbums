@@ -1,18 +1,11 @@
 ﻿using HarmonyLib;
-using Newtonsoft.Json.Linq;
-using IL2CppJson = Il2CppNewtonsoft.Json.Linq;
 using Il2CppSystem.Collections.Generic;
 using Assets.Scripts.Database;
-using Assets.Scripts.Database.DataClass;
-using static Assets.Scripts.Database.DBConfigCustomTags;
 using CustomAlbums.Data;
-using System;
 using Assets.Scripts.PeroTools.Commons;
-using Assets.Scripts.UI.Controls;
 using UnhollowerBaseLib;
 using Assets.Scripts.PeroTools.Managers;
 using Assets.Scripts.UI.Tips;
-using Assets.Scripts.UI.Panels;
 using PeroPeroGames.GlobalDefines;
 
 namespace CustomAlbums.Patch
@@ -27,14 +20,16 @@ namespace CustomAlbums.Patch
         private static void Postfix(SpecialSongManager __instance) {
             if(!runOnce) {
                 foreach(var album in AlbumManager.LoadedAlbums) {
+                    var albumUid = $"{AlbumManager.Uid}-{album.Value.Index}";
+                    // Enable hidden mode for charts containing map4
                     if(album.Value.availableMaps.ContainsKey(4)) {
                         __instance.m_HideBmsInfos.Add($"{AlbumManager.Uid}-{album.Value.Index}",
                         new SpecialSongManager.HideBmsInfo(
-                            $"{AlbumManager.Uid}-{album.Value.Index}",
+                            albumUid,
                             album.Value.Info.hideBmsDifficulty == 0 ? (album.Value.availableMaps.ContainsKey(3) ? 3 : 2) : album.Value.Info.hideBmsDifficulty,
                             4,
                             $"{album.Value.Name}_map4",
-                            (Il2CppSystem.Func<bool>)delegate { return __instance.IsInvokeHideBms($"{AlbumManager.Uid}-{album.Value.Index}"); }
+                            (Il2CppSystem.Func<bool>)delegate { return __instance.IsInvokeHideBms(albumUid); }
                         ));
 
                         // Add chart to the appropriate list for their hidden type
@@ -42,19 +37,19 @@ namespace CustomAlbums.Patch
                             case AlbumInfo.HideBmsMode.CLICK:
                                 var newClickArr = new Il2CppStringArray(__instance.m_ClickHideUids.Length + 1);
                                 for(int i = 0; i < __instance.m_ClickHideUids.Length; i++) newClickArr[i] = __instance.m_ClickHideUids[i];
-                                newClickArr[newClickArr.Length - 1] = ($"{AlbumManager.Uid}-{album.Value.Index}");
+                                newClickArr[newClickArr.Length - 1] = albumUid;
                                 __instance.m_ClickHideUids = newClickArr;
                                 break;
                             case AlbumInfo.HideBmsMode.PRESS:
                                 var newPressArr = new Il2CppStringArray(__instance.m_LongPressHideUids.Length + 1);
                                 for(int i = 0; i < __instance.m_LongPressHideUids.Length; i++) newPressArr[i] = __instance.m_LongPressHideUids[i];
-                                newPressArr[newPressArr.Length - 1] = ($"{AlbumManager.Uid}-{album.Value.Index}");
+                                newPressArr[newPressArr.Length - 1] = albumUid;
                                 __instance.m_LongPressHideUids = newPressArr;
                                 break;
                             case AlbumInfo.HideBmsMode.TOGGLE:
                                 var newToggleArr = new Il2CppStringArray(__instance.m_ToggleChangedHideUids.Length + 1);
                                 for(int i = 0; i < __instance.m_ToggleChangedHideUids.Length; i++) newToggleArr[i] = __instance.m_ToggleChangedHideUids[i];
-                                newToggleArr[newToggleArr.Length - 1] = ($"{AlbumManager.Uid}-{album.Value.Index}");
+                                newToggleArr[newToggleArr.Length - 1] = albumUid;
                                 __instance.m_ToggleChangedHideUids = newToggleArr;
                                 break;
                             default:
