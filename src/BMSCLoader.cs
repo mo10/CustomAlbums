@@ -139,6 +139,7 @@ namespace CustomAlbums
 					}
 				}
 			}
+
 			notes._values.Sort((Il2CppSystem.Comparison<JToken>)((l, r) => {
 				float lTime = (float)l["time"];
 				float rTime = (float)r["time"];
@@ -150,12 +151,14 @@ namespace CustomAlbums
 				}
 
 				// Ensure that speed changes on the same tick apply first
-				if((string)l["tone"] == "15") {
+				// I really didn't want to have to do this, but yes, I have to check for if we're colliding with ourselves now
+				if((string)l["tone"] == "15" && (string)r["tone"] != "15") {
 					return -1;
                 }
 
 				return 0;
 			}));
+
 			BMS bms = new BMS {
 				info = info,
 				notes = notes,
@@ -164,7 +167,7 @@ namespace CustomAlbums
 			};
 			bms.info["NAME"] = bmsName;
 			bms.info["NEW"] = true;
-
+			
 			if(Il2CppSystem.Linq.Enumerable.ToList(bms.info.Properties()).Find((Il2CppSystem.Predicate<JProperty>)((JProperty p) => p.Name == "BANNER")) == null) {
 				bms.info["BANNER"] = "cover/none_cover.png";
 			} else {
