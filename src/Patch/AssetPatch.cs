@@ -160,20 +160,6 @@ namespace CustomAlbums.Patch
                 newAsset = CreateTextAsset(_assetName, jArray.JsonSerialize());
                 if(!Singleton<ConfigManager>.instance.m_Dictionary.ContainsKey(_assetName)) Singleton<ConfigManager>.instance.Add(_assetName, ((TextAsset)newAsset).text);
             }
-            else if (_assetName == "defaultTag")
-            {
-                var textAsset = new TextAsset(assetPtr);
-                var jArray = textAsset.text.JsonDeserialize<JArray>();
-                // Replace Cute tag
-                var music_tag = jArray.First(o => o.Value<int>("sort_key") == 8);
-                music_tag["tag_name"] = JObject.FromObject(AlbumManager.Langs);
-                music_tag["tag_picture"] = "https://mdmc.moe/cdn/melon.png";
-                music_tag["pic_name"] = "";
-                music_tag["music_list"] = JArray.FromObject(AlbumManager.GetAllUid());
-
-                newAsset = CreateTextAsset(_assetName, jArray.JsonSerialize());
-                if(!Singleton<ConfigManager>.instance.m_Dictionary.ContainsKey(_assetName)) Singleton<ConfigManager>.instance.Add(_assetName, ((TextAsset)newAsset).text);
-            }
 
             if (assetPtr == IntPtr.Zero)
             {
