@@ -18,14 +18,16 @@ namespace CustomAlbums
         {
             Application.runInBackground = true;
 
+            WebApiPatch.DoPatching();
+            AssetPatch.DoPatching();
+            SavesPatch.DoPatching(harmony);
+
             AlbumManager.LoadAll();
             SaveManager.Load();
             //harmony.PatchAll(typeof(SteamPatch));
 
             //harmony.PatchAll(typeof(AssetPatch));
-            WebApiPatch.DoPatching();
-            AssetPatch.DoPatching();
-            SavesPatch.DoPatching(harmony);
+            
             //ResourcePatch.DoPatching();
             //harmony.PatchAll(typeof(WebApiPatch));
             //harmony.PatchAll(typeof(ResourcePatch));
