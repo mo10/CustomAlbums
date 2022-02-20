@@ -18,7 +18,6 @@ namespace CustomAlbums
         {
             Application.runInBackground = true;
 
-            AlbumManager.LoadAll();
             SaveManager.Load();
             //harmony.PatchAll(typeof(SteamPatch));
 
@@ -30,6 +29,8 @@ namespace CustomAlbums
             //harmony.PatchAll(typeof(WebApiPatch));
             //harmony.PatchAll(typeof(ResourcePatch));
             //ResourcePatch.DoPatching(harmony);
+
+            AlbumManager.LoadAll();
         }
     }
 
