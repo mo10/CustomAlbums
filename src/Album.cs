@@ -161,7 +161,7 @@ namespace CustomAlbums
                     return null;
                 }
 
-                var audioName = $"{Info.name}_{name}";
+                var audioName = $"{Name}_{name}";
                 AudioClip audioClip = null;
 
                 switch (format)
@@ -171,10 +171,10 @@ namespace CustomAlbums
                         audioClip = Manager.Load(buffer.ToIL2CppStream(), format, audioName);
                         break;
                     case AudioFormat.ogg:
-                        audioClip = Utils.BeginAsyncOgg(buffer.ToIL2CppStream(), audioName);
+                        audioClip = AsyncBgmManager.BeginAsyncOgg(buffer.ToIL2CppStream(), audioName);
                         break;
                     case AudioFormat.mp3:
-                        audioClip = Utils.BeginAsyncMp3(buffer.ToStream(), audioName);
+                        audioClip = AsyncBgmManager.BeginAsyncMp3(buffer.ToStream(), audioName);
                         break;
                 }
 

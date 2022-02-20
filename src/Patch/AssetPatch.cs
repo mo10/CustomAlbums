@@ -58,7 +58,11 @@ namespace CustomAlbums.Patch
             if (LoadedAssets.TryGetValue(_assetName, out var asset))
             {
                 if(asset != null) {
-                    Log.Debug($"Use cache: {_assetName}");
+                    if(AsyncBgmManager.TrySwitchLoad(_assetName)) {
+                        Log.Debug($"Resuming async load of {_assetName}");
+                    } else {
+                        Log.Debug($"Use cache: {_assetName}");
+                    }
                     return asset.Pointer;
                 } else {
                     Log.Debug("Replacing null asset");
