@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 
@@ -6,6 +7,13 @@ namespace CustomAlbums.Data
 {
     public class AlbumInfo
     {
+        public enum HideBmsMode
+        {
+            CLICK,
+            PRESS,
+            TOGGLE
+        }
+
         public string name;
         public string name_en;
         public string name_ko;
@@ -38,6 +46,11 @@ namespace CustomAlbums.Data
 
         [DefaultValue("0")]
         public string unlockLevel;
+
+        [DefaultValue("CLICK")]
+        public string hideBmsMode;
+        public int hideBmsDifficulty;
+        public string hideBmsMessage;
 
         public string GetName(string lang = null)
         {
@@ -168,6 +181,10 @@ namespace CustomAlbums.Data
                 map.Add(4, levelDesigner4);
 
             return map;
+        }
+
+        public HideBmsMode GetHideBmsMode() {
+            return Enum.TryParse(hideBmsMode, out HideBmsMode result) ? result : HideBmsMode.CLICK;
         }
     }
 }
