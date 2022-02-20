@@ -26,8 +26,6 @@ namespace CustomAlbums.Patch
 
         private static void Postfix(SpecialSongManager __instance) {
             if(!runOnce) {
-                var albumList = new List<string>();
-
                 foreach(var album in AlbumManager.LoadedAlbums) {
                     if(album.Value.availableMaps.ContainsKey(4)) {
                         __instance.m_HideBmsInfos.Add($"{AlbumManager.Uid}-{album.Value.Index}",
@@ -62,21 +60,8 @@ namespace CustomAlbums.Patch
                             default:
                                 break;
                         }
-
-                        // Add chart to the "With Hidden Chart" tag
-                        /*albumList.Add($"{AlbumManager.Uid}-{album.Value.Index}");
-
-                        var newArr = new Il2CppStringArray(DBMusicTagDefine.s_HiddenLocal.Length + 1);
-                        for(int i = 0; i < DBMusicTagDefine.s_HiddenLocal.Count; i++) {
-                            newArr[i] = DBMusicTagDefine.s_HiddenLocal[i];
-                        }
-                        newArr[newArr.Length - 1] = $"{AlbumManager.Uid}-{album.Value.Index}";
-                        DBMusicTagDefine.s_HiddenLocal = newArr;*/
                     }
                 }
-
-                //var tagInfo = GlobalDataBase.dbMusicTag.GetAlbumTagInfo(32776);
-                //tagInfo.AddTagUids(albumList);
 
                 // This may run multiple times, but creates data which can only be generated once
                 runOnce = true;
@@ -99,8 +84,10 @@ namespace CustomAlbums.Patch
 
                     ActivateHidden(hideBms);
 
-                    var msgBox = PnlTipsManager.instance.GetMessageBox("PnlSpecialsBmsAsk");
-                    msgBox.Show("TIPS", album.Info.hideBmsMessage);
+                    if(album.Info.hideBmsMessage != null) {
+                        var msgBox = PnlTipsManager.instance.GetMessageBox("PnlSpecialsBmsAsk");
+                        msgBox.Show("TIPS", album.Info.hideBmsMessage);
+                    }
                     SpecialSongManager.onTriggerHideBmsEvent?.Invoke();
                     if(album.Info.GetHideBmsMode() == AlbumInfo.HideBmsMode.PRESS) Singleton<EventManager>.instance.Invoke("UI/OnSpecialsMusic", null);
                 }
@@ -153,31 +140,10 @@ namespace CustomAlbums.Patch
                 info.AddMaskValue(levelDesignToHide, levelDesignStr);
                 info.SetDifficulty(targetDiff, hideBms.m_HideDiff);
 
-                MelonLoader.MelonLogger.Log($"Activated hidden chart {hideBms.uid}");
                 success = true;
             }
 
             return success;
-        }
-    }
-
-    /// <summary>
-    /// Turns off custom hiddens when leaving a chart
-    /// </summary>
-    [HarmonyPatch(typeof(PnlStage), "PreWarm")]
-    internal static class FixInvokeHideBms
-    {
-        private static void Postfix() {
-            var invokeHideKeys = Singleton<SpecialSongManager>.instance.m_IsInvokeHideDic.Keys;
-            var newKeys = new List<string>();
-            foreach(var key in invokeHideKeys) {
-                if(key.StartsWith(AlbumManager.Uid.ToString())) {
-                    newKeys.Add(key);
-                }
-            }
-            foreach(var key in newKeys) {
-                Singleton<SpecialSongManager>.instance.m_IsInvokeHideDic[key] = false;
-            }
         }
     }
 
