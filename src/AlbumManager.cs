@@ -30,8 +30,8 @@ namespace CustomAlbums
         public static readonly Dictionary<string, string> Langs = new Dictionary<string, string>()
         {
             { "English", "Custom Albums" },
-            { "ChineseS", "×Ô¶¨Òå" },
-            { "ChineseT", "×Ô¶¨Áx" },
+            { "ChineseS", "è‡ªå®šä¹‰" },
+            { "ChineseT", "è‡ªå®šç¾©" },
             { "Japanese", "Custom Albums" },
             { "Korean", "Custom Albums" },
         };
