@@ -114,27 +114,35 @@ namespace CustomAlbums
         /// <returns></returns>
         unsafe public Sprite GetCover()
         {
-            using (Stream stream = Open("cover.png"))
-            {
-                var image = Image.Load<Rgba32>(stream);
-                image.Mutate(processor => processor.Flip(FlipMode.Vertical));
-                image.TryGetSinglePixelSpan(out var pixels);
+            try {
+                using(Stream stream = Open("cover.png")) {
+                    var image = Image.Load<Rgba32>(stream);
+                    image.Mutate(processor => processor.Flip(FlipMode.Vertical));
+                    image.TryGetSinglePixelSpan(out var pixels);
 
-                CoverTex = new Texture2D(image.Width, image.Height, TextureFormat.RGBA32, false);
+                    CoverTex = new Texture2D(image.Width, image.Height, TextureFormat.RGBA32, false);
 
-                fixed (void* pixelsPtr = pixels)
-                    CoverTex.LoadRawTextureData((IntPtr)pixelsPtr, pixels.Length * 4);
-                CoverTex.Apply(false, true);
+                    fixed(void* pixelsPtr = pixels)
+                        CoverTex.LoadRawTextureData((IntPtr)pixelsPtr, pixels.Length * 4);
+                    CoverTex.Apply(false, true);
 
-                Log.Debug($"{CoverTex.width}x{CoverTex.height}");
+                    Log.Debug($"{CoverTex.width}x{CoverTex.height}");
+                }
+
+                CoverSprite = Sprite.Create(CoverTex,
+                    new Rect(0, 0, CoverTex.width, CoverTex.height),
+                    new Vector2(CoverTex.width / 2, CoverTex.height / 2));
+                CoverSprite.name = AlbumManager.GetAlbumKeyByIndex(Index) + "_cover";
+
+                return CoverSprite;
+            } catch(FileNotFoundException e) {
+                Log.Warning(e.Message);
+            } catch(Exception e) {
+                Log.Warning("Failed to read cover image: " + e);
             }
 
-            CoverSprite = Sprite.Create(CoverTex,
-                new Rect(0, 0, CoverTex.width, CoverTex.height),
-                new Vector2(CoverTex.width / 2, CoverTex.height / 2));
-            CoverSprite.name = AlbumManager.GetAlbumKeyByIndex(Index) + "_cover";
-
-            return CoverSprite;
+            // Empty pixel
+            return Sprite.Create(new Texture2D(1, 1), new Rect(0, 0, 1, 1), new Vector2(0.5f, 0.5f));
         }
         /// <summary>
         /// Get music AudioClip.
@@ -149,7 +157,7 @@ namespace CustomAlbums
 
             if (!TryOpenOne(fileNames, out var fileName, out var buffer))
             {
-                Log.Debug($"Not found: {name} from: {BasePath}");
+                Log.Warning($"Not found: {name} from: {BasePath}");
                 return null;
             }
 
@@ -182,7 +190,7 @@ namespace CustomAlbums
             }
             catch (Exception ex)
             {
-                Log.Debug($"error {ex}");
+                Log.Error($"Could not load audio {Name}_{name}: {ex}");
             }
             return null;
         }
@@ -289,6 +297,7 @@ namespace CustomAlbums
         /// </summary>
         /// <param name="filePath"></param>
         /// <returns></returns>
+        /// <exception cref="FileNotFoundException"></exception>
         private Stream Open(string filePath)
         {
             if (IsPackaged)
@@ -297,7 +306,7 @@ namespace CustomAlbums
                 using (ZipFile zip = ZipFile.Read(BasePath))
                 {
                     if (!zip.ContainsEntry(filePath))
-                        throw new FileNotFoundException($"No such as file:{filePath} in {BasePath}");
+                        throw new FileNotFoundException($"File not found: {filePath} in {BasePath}");
                     // ModLogger.Debug($"Loaded:{BasePath}/{filePath}");
                     // CrcCalculatorStream not support set_position, Read all bytes then convert to MemoryStream
                     return zip[filePath].OpenReader().ToArray().ToStream();
@@ -309,7 +318,7 @@ namespace CustomAlbums
                 var fullPath = Path.Combine(BasePath, filePath);
 
                 if (!File.Exists(fullPath))
-                    throw new FileNotFoundException($"No such as file:{fullPath}");
+                    throw new FileNotFoundException($"File not found: {fullPath}");
                 // ModLogger.Debug($"Loaded:{BasePath}/{filePath}");
                 return File.OpenRead(fullPath);
             }

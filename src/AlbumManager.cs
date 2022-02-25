@@ -57,74 +57,78 @@ namespace CustomAlbums
         /// Clear all loaded custom albums and reload.
         /// </summary>
         public static void LoadAll() {
-            LoadedAlbums.Clear();
-            CorruptedAlbums.Clear();
+            try {
+                LoadedAlbums.Clear();
+                CorruptedAlbums.Clear();
 
-            if(!Directory.Exists(SearchPath)) {
-                // Target folder not exist, create it.
-                Directory.CreateDirectory(SearchPath);
-                return;
-            }
-
-            int nextIndex = 0;
-            // Load albums package
-            foreach(var file in Directory.GetFiles(SearchPath, $"*.{SearchExtension}")) {
-                string fileName = Path.GetFileNameWithoutExtension(file);
-
-                try {
-                    var album = new Album(file);
-                    if(album.Info != null) {
-                        album.Index = nextIndex;
-                        album.Name = $"pkg_{fileName}".Replace("/", "_").Replace("\\", "_").Replace(".", "_");
-                        nextIndex++;
-
-                        LoadedAlbums.Add(album.Name, album);
-                        Log.Debug($"Album \"{album.Name}\" loaded.");
-                    }
-                } catch(Exception ex) {
-                    Log.Debug($"Load album failed: {fileName}, reason: {ex.Message}");
-                    CorruptedAlbums.Add(file, ex.Message);
+                if(!Directory.Exists(SearchPath)) {
+                    // Target folder not exist, create it.
+                    Directory.CreateDirectory(SearchPath);
+                    return;
                 }
-            }
-            // Load albums folder
-            foreach(var path in Directory.GetDirectories(SearchPath)) {
-                string folderName = Path.GetFileNameWithoutExtension(path);
 
-                try {
-                    var album = new Album(path);
-                    if(album.Info != null) {
-                        album.Index = nextIndex;
-                        album.Name = $"fs_{folderName}".Replace("/", "_").Replace("\\", "_").Replace(".", "_");
-                        nextIndex++;
+                int nextIndex = 0;
+                // Load albums package
+                foreach(var file in Directory.GetFiles(SearchPath, $"*.{SearchExtension}")) {
+                    string fileName = Path.GetFileNameWithoutExtension(file);
 
-                        LoadedAlbums.Add(album.Name, album);
-                        Log.Debug($"Album \"{album.Name}\" loaded.");
+                    try {
+                        var album = new Album(file);
+                        if(album.Info != null) {
+                            album.Index = nextIndex;
+                            album.Name = $"pkg_{fileName}".Replace("/", "_").Replace("\\", "_").Replace(".", "_");
+                            nextIndex++;
+
+                            LoadedAlbums.Add(album.Name, album);
+                            Log.Debug($"Album \"{album.Name}\" loaded.");
+                        }
+                    } catch(Exception ex) {
+                        Log.Debug($"Load album failed: {fileName}, reason: {ex.Message}");
+                        CorruptedAlbums.Add(file, ex.Message);
                     }
-                } catch(Exception ex) {
-                    Log.Debug($"Load album failed: {folderName}, reason: {ex.Message}");
-                    CorruptedAlbums.Add(path, ex.Message);
                 }
-            }
-            // Get all asset keys
-            foreach(var album in LoadedAlbums) {
-                var albumKey = album.Key;
-                var info = album.Value.Info;
+                // Load albums folder
+                foreach(var path in Directory.GetDirectories(SearchPath)) {
+                    string folderName = Path.GetFileNameWithoutExtension(path);
 
-                AssetKeys.Add($"{albumKey}_demo");
-                AssetKeys.Add($"{albumKey}_music");
-                AssetKeys.Add($"{albumKey}_cover");
+                    try {
+                        var album = new Album(path);
+                        if(album.Info != null) {
+                            album.Index = nextIndex;
+                            album.Name = $"fs_{folderName}".Replace("/", "_").Replace("\\", "_").Replace(".", "_");
+                            nextIndex++;
 
-                if(!string.IsNullOrEmpty(info.difficulty1))
-                    AssetKeys.Add($"{albumKey}_map1");
-                if(!string.IsNullOrEmpty(info.difficulty2))
-                    AssetKeys.Add($"{albumKey}_map2");
-                if(!string.IsNullOrEmpty(info.difficulty3))
-                    AssetKeys.Add($"{albumKey}_map3");
-                if(!string.IsNullOrEmpty(info.difficulty4))
-                    AssetKeys.Add($"{albumKey}_map4");
+                            LoadedAlbums.Add(album.Name, album);
+                            Log.Debug($"Album \"{album.Name}\" loaded.");
+                        }
+                    } catch(Exception ex) {
+                        Log.Debug($"Load album failed: {folderName}, reason: {ex.Message}");
+                        CorruptedAlbums.Add(path, ex.Message);
+                    }
+                }
+                // Get all asset keys
+                foreach(var album in LoadedAlbums) {
+                    var albumKey = album.Key;
+                    var info = album.Value.Info;
 
-                // Preload chart cover, and never unload it
-                ResourcesManager.instance.LoadFromName<Sprite>($"{album.Key}_cover").hideFlags |= HideFlags.DontUnloadUnusedAsset;
+                    AssetKeys.Add($"{albumKey}_demo");
+                    AssetKeys.Add($"{albumKey}_music");
+                    AssetKeys.Add($"{albumKey}_cover");
+
+                    if(!string.IsNullOrEmpty(info.difficulty1))
+                        AssetKeys.Add($"{albumKey}_map1");
+                    if(!string.IsNullOrEmpty(info.difficulty2))
+                        AssetKeys.Add($"{albumKey}_map2");
+                    if(!string.IsNullOrEmpty(info.difficulty3))
+                        AssetKeys.Add($"{albumKey}_map3");
+                    if(!string.IsNullOrEmpty(info.difficulty4))
+                        AssetKeys.Add($"{albumKey}_map4");
+
+                    // Preload chart cover, and never unload it
+                    ResourcesManager.instance.LoadFromName<Sprite>($"{album.Key}_cover").hideFlags |= HideFlags.DontUnloadUnusedAsset;
+                }
+            } catch(Exception e) {
+                Log.Error("Exception while loading albums: " + e);
             }
         }
         /// <summary>
