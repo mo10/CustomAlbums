@@ -47,7 +47,11 @@ namespace CustomAlbums
             var remaining = sampleCount;
             var index = 0;
             var audioClip = AudioClip.Create(name, (int)sampleCount / mpgFile.Channels, mpgFile.Channels, mpgFile.SampleRate, false);
-            
+
+            if(name.EndsWith("_music") && mpgFile.SampleRate != 44100) {
+                Log.Warning($"{name}.mp3 is not 44.1khz, desyncs may occur! Consider switching to 44.1khz or using the .ogg format instead.");
+            }
+
             Coroutine routine = null;
             routine = SingletonMonoBehaviour<CoroutineManager>.instance.StartCoroutine(
                 (Il2CppSystem.Action)delegate { },
