@@ -165,7 +165,7 @@ namespace CustomAlbums
             {
                 if (!AudioFormatMapping.TryGetValue(Path.GetExtension(fileName), out var format))
                 {
-                    Log.Debug($"Unknown audio format: {fileName} from: {BasePath}");
+                    Log.Warning($"Unknown audio format: {fileName} from: {BasePath}");
                     return null;
                 }
 
