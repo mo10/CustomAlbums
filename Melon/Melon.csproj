@@ -36,7 +36,7 @@
           <IlRepackLibs Include="$(MelonLoader)" />
       </ItemGroup>
       <Message Text="MERGING: @(InputAssemblies->'%(Filename)') into $(OutputAssembly)" Importance="High" />
-      <ILRepack Internalize="true" LibraryPath="@(IlRepackLibs)" OutputFile="$(OutputPath)/$(AssemblyName).dll" InputAssemblies="@(InputAssemblies)" />
+      <ILRepack Internalize="false" LibraryPath="@(IlRepackLibs)" OutputFile="$(OutputPath)/$(AssemblyName).dll" InputAssemblies="@(InputAssemblies)" />
   </Target>
   <Target Name="PostILRepackCopy" AfterTargets="ILRepack">
      <Copy SourceFiles="$(OutputPath)\$(AssemblyName).dll" DestinationFolder="$(GameFolder)\Mods" />
