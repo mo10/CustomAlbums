@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using static Assets.Scripts.GameCore.Managers.iBMSCManager;
-using System.Text.RegularExpressions;
 
 namespace CustomAlbums
 {
@@ -141,22 +140,16 @@ namespace CustomAlbums
 			}
 
 			notes._values.Sort((Il2CppSystem.Comparison<JToken>)((l, r) => {
-				float lTime = (float)l["time"];
-				float rTime = (float)r["time"];
-				if(lTime > rTime) {
-					return 1;
-				}
-				if(rTime > lTime) {
-					return -1;
-				}
+				var lTime = (double)((float)l["time"]);
+				var rTime = (double)((float)r["time"]);
+				var lTone = (string)l["tone"];
+				var rTone = (string)r["tone"];
 
-				// Ensure that speed changes on the same tick apply first
-				// I really didn't want to have to do this, but yes, I have to check for if we're colliding with ourselves now
-				if((string)l["tone"] == "15" && (string)r["tone"] != "15") {
-					return -1;
-                }
+				// This should be accurate for note sorting up to 6 decimal places
+				var lScore = ((long)(lTime * 1_000_000) * 10) + (lTone == "15" ? 0 : 1);
+				var rScore = ((long)(rTime * 1_000_000) * 10) + (rTone == "15" ? 0 : 1);
 
-				return 0;
+				return Math.Sign(lScore - rScore);
 			}));
 
 			BMS bms = new BMS {
