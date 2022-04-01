@@ -13,7 +13,7 @@ namespace CustomAlbums.Patch
     /// <summary>
     /// Adds custom albums with hidden charts to the list
     /// </summary>
-    [HarmonyPatch(typeof(SpecialSongManager), "InitHideBmsInfoDic")]
+    [HarmonyPatch(typeof(SpecialSongManager), nameof(SpecialSongManager.InitHideBmsInfoDic))]
     internal static class HideBmsInfoDicPatch {
         private static bool runOnce;
 
@@ -67,13 +67,13 @@ namespace CustomAlbums.Patch
     /// <summary>
     /// Activates hidden charts when the conditions are met
     /// </summary>
-    [HarmonyPatch(typeof(SpecialSongManager), "InvokeHideBms")]
+    [HarmonyPatch(typeof(SpecialSongManager), nameof(SpecialSongManager.InvokeHideBms))]
     internal static class InvokeHideBmsPatch {
-        private static bool Prefix(DBConfigALBUM.MusicInfo musicInfo, SpecialSongManager __instance) {
+        private static bool Prefix(MusicInfo musicInfo, SpecialSongManager __instance) {
             if(musicInfo.uid.StartsWith(AlbumManager.Uid.ToString()) && __instance.m_HideBmsInfos.ContainsKey(musicInfo.uid)) {
                 var hideBms = __instance.m_HideBmsInfos[musicInfo.uid];
                 __instance.m_IsInvokeHideDic[hideBms.uid] = true;
-
+                
                 if(hideBms.extraCondition.Invoke()) {
                     var album = AlbumManager.LoadedAlbums[AlbumManager.GetAlbumKeyByIndex(musicInfo.musicIndex)];
 
@@ -145,7 +145,7 @@ namespace CustomAlbums.Patch
     /// <summary>
     /// Adds charts to the "With Hidden Sheet" tag
     /// </summary>
-    [HarmonyPatch(typeof(MusicTagManager), "InitDefaultInfo")]
+    [HarmonyPatch(typeof(MusicTagManager), nameof(MusicTagManager.InitDefaultInfo))]
     internal static class AddHiddenSheetTagPatch
     {
         private static bool runOnce;
