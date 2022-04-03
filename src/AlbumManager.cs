@@ -44,9 +44,13 @@ namespace CustomAlbums
         /// </summary>
         public static readonly string SearchExtension = "mdm";
         /// <summary>
-        /// Loaded custom album. 
+        /// Loaded custom albums, indexed by their filename
         /// </summary>
         public static Dictionary<string, Album> LoadedAlbums = new Dictionary<string, Album>();
+        /// <summary>
+        /// Loaded custom albums, indexed by their in-game UID
+        /// </summary>
+        public static Dictionary<string, Album> LoadedAlbumsByUid = new Dictionary<string, Album>();
         /// <summary>
         /// Failed to load custom album.
         /// </summary>
@@ -99,6 +103,7 @@ namespace CustomAlbums
                             nextIndex++;
 
                             LoadedAlbums.Add(album.Name, album);
+                            LoadedAlbumsByUid.Add($"{AlbumManager.Uid}-{album.Index}", album);
                             Log.Debug($"Album \"{album.Name}\" loaded.");
                         }
                     } catch(Exception ex) {
