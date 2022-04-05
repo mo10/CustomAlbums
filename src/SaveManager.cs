@@ -15,8 +15,8 @@ namespace CustomAlbums
     public static class SaveManager
     {
         private static readonly Logger Log = new Logger("SaveManager");
-        public static readonly string OldFilePath = "Mods/CustomAlbums.json";
-        public static readonly string FilePath = "UserData/CustomAlbums.json";
+        public static string OldFilePath => Path.Combine(Directory.GetCurrentDirectory(), "Mods/CustomAlbums.json");
+        public static string FilePath => Path.Combine(Directory.GetCurrentDirectory(), "UserData/CustomAlbums.json");
 
         public static CustomData CustomData = new CustomData();
 
@@ -28,18 +28,29 @@ namespace CustomAlbums
 
         public static void Load()
         {
-            var oldPath = Path.Combine(Directory.GetCurrentDirectory(), OldFilePath);
-            var path = Path.Combine(Directory.GetCurrentDirectory(), FilePath);
-            
             // Relocate old save files
-            if(File.Exists(oldPath) && !File.Exists(path))
-            {
-                File.Move(oldPath, path);
+            if(File.Exists(OldFilePath) && !File.Exists(FilePath)) {
+                File.Move(OldFilePath, FilePath);
             }
 
-            if (File.Exists(path))
-            {
-                CustomData = File.ReadAllText(path).JsonDeserialize<CustomData>();
+            var couldLoadSave = false;
+            if(File.Exists(FilePath)) {
+                try {
+                    CustomData = File.ReadAllText(FilePath).JsonDeserialize<CustomData>();
+                    couldLoadSave = true;
+                } catch(Exception e) {
+                    Log.Error("Error while loading save, loading backup if available!\n" + e);
+                    CustomData = new CustomData();
+                }
+            }
+
+            if(!couldLoadSave && File.Exists(Patch.SavesPatch.BackupCustom)) {
+                try {
+                    CustomData = File.ReadAllText(Patch.SavesPatch.BackupCustom).JsonDeserialize<CustomData>();
+                } catch(Exception e) {
+                    Log.Error("Could not load backup! Your save is probably dead now.\n" + e);
+                    CustomData = new CustomData();
+                }
             }
         }
 

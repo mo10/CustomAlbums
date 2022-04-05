@@ -16,13 +16,19 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEngine;
+using Ionic.Zip;
 
 namespace CustomAlbums.Patch
 {
     public static class SavesPatch
     {
         private static readonly Logger Log = new Logger("SavesPatch");
-        public static readonly string BackupPath = "UserData/saves_backup";
+        public static string BackupPath => Path.Combine(Directory.GetCurrentDirectory(), "UserData/saves_backup");
+        public static string BackupVanilla => Path.Combine(BackupPath, "bkp-Vanilla.sav");
+        public static string BackupVanillaDebug => Path.Combine(BackupPath, "bkp-Vanilla-debug.json");
+        public static string BackupCustom => Path.Combine(BackupPath, "bkp-CustomAlbums.json");
+        public static string BackupZip => Path.Combine(BackupPath, "backups.zip");
+        public static TimeSpan MaxBackupTime => TimeSpan.FromDays(30);
 
         public static readonly System.Collections.Generic.List<Type> ISyncTypes = new System.Collections.Generic.List<Type> {
             typeof(SteamSync)
@@ -151,22 +157,100 @@ namespace CustomAlbums.Patch
                 SaveManager.RestoreCustomData();
             }
         }
+
         public static void Backup()
         {
-            // Backup
-            var path = Path.Combine(Directory.GetCurrentDirectory(), BackupPath);
-            if (!Directory.Exists(path))
-                Directory.CreateDirectory(path);
+            Directory.CreateDirectory(BackupPath);
 
-            var now = DateTime.Now.ToString("yyyy_MM_dd_H_mm_ss");
-            var filePath = Path.Combine(path, $"{now}.sav");
-            File.WriteAllBytes(filePath, Singleton<DataManager>.instance.ToBytes());
-            Log.Debug($"Save backup: {filePath}");
-            // Backup as json
-            filePath = Path.Combine(path, $"{now}_debug.json");
-            File.WriteAllText(filePath, ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
-            Log.Debug($"Save backup: {filePath}");
+            CompressBackups();
+            CreateBackup(BackupVanilla, Singleton<DataManager>.instance.ToBytes());
+            CreateBackup(BackupVanillaDebug, ToJsonDict(Singleton<DataManager>.instance.datas).JsonSerialize());
+            CreateBackup(BackupCustom, SaveManager.CustomData.JsonSerialize());
+            ClearOldBackups();
         }
+
+        private static void CreateBackup(string filePath, object data) {
+            try {
+                if(data == null) {
+                    Log.Warning("Could not create backup of null data!");
+                    return;
+                }
+
+                var wroteFile = false;
+                if(data is string str) {
+                    File.WriteAllText(filePath, str);
+                    wroteFile = true;
+                } else if(data is byte[] bytes) {
+                    File.WriteAllBytes(filePath, bytes);
+                    wroteFile = true;
+                } else if(data is UnhollowerBaseLib.Il2CppStructArray<byte> ilBytes) {
+                    File.WriteAllBytes(filePath, ilBytes);
+                    wroteFile = true;
+                } else {
+                    Log.Warning("Could not create backup for unsupported data type " + data.GetType().FullName);
+                }
+
+                if(wroteFile) Log.Debug($"Saved backup: {filePath}");
+            } catch(Exception e) {
+                Log.Error("Backup failed: " + e);
+            }
+        }
+
+        private static void ClearOldBackups() {
+            try {
+                var backups = Directory.EnumerateFiles(BackupPath).ToList();
+                foreach(var backup in backups) {
+                    var bkpDate = Directory.GetLastWriteTime(backup);
+                    if((DateTime.Now - bkpDate).Duration() > MaxBackupTime.Duration()) {
+                        Log.Debug("Removing old backup: " + backup);
+                        File.Delete(backup);
+                    }
+                }
+
+                if(File.Exists(BackupZip)) {
+                    var zip = ZipFile.Read(BackupZip);
+                    var needsSave = false;
+                    foreach(var entry in zip.Entries.ToList()) {
+                        if((DateTime.Now - entry.CreationTime).Duration() > MaxBackupTime.Duration()) {
+                            Log.Debug("Removing compressed old backup: " + entry.FileName);
+                            zip.RemoveEntry(entry);
+                            needsSave = true;
+                        }
+                    }
+                    if(needsSave) zip.Save();
+                }
+            } catch(Exception e) {
+                Log.Error("Clearing old backups failed: " + e);
+            }
+        }
+
+        private static void CompressBackups() {
+            try {
+                ZipFile zip = null;
+                if(!File.Exists(BackupZip)) {
+                    zip = new ZipFile(BackupZip);
+                } else {
+                    zip = ZipFile.Read(BackupZip);
+                }
+
+                var files = Directory.EnumerateFiles(BackupPath).Where((fn) => !(Path.GetExtension(fn) == ".zip"));
+                if(files.Count() > 0) {
+                    zip.AddFiles(files);
+                    foreach(var filename in files) {
+                        var creationTime = zip[filename].CreationTime.ToString("yyyy_MM_dd_H_mm_ss-");
+                        zip[filename].FileName = creationTime + Path.GetFileName(zip[filename].FileName);
+                    }
+                    zip.Save();
+                }
+
+                foreach(var filename in files) {
+                    File.Delete(filename);
+                }
+            } catch(Exception e) {
+                Log.Error("Compressing previous backups failed: " + e);
+            }
+        }
+
         /// <summary>
         /// IData dict to JObject dict
         /// </summary>
