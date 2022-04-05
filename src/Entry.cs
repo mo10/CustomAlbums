@@ -6,7 +6,7 @@ using BepInEx.IL2CPP;
 using HarmonyLib;
 #elif MELON
 using MelonLoader;
-[assembly: MelonInfo(typeof(CustomAlbums.ModEntry), "CustomAlbums", "3.0.0", "Mo10")]
+[assembly: MelonInfo(typeof(CustomAlbums.ModEntry), "CustomAlbums", "3.1.0", "Mo10 & RobotLucca")]
 [assembly: MelonGame("PeroPeroGames", "MuseDash")]
 #endif
 
