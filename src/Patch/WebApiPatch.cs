@@ -36,17 +36,22 @@ namespace CustomAlbums.Patch
             IntPtr headers,
             IntPtr nativeMethodInfo
             );
-        private static SendToUrlDelegate OriginalSendToUrl;
+        private static SendToUrlDelegate _originalSendToUrl;
+        private static SendToUrlDelegate _ourPatchDelegate;
 
         unsafe public static void DoPatching()
         {
             var methodPtr = Utils.NativeMethod(typeof(GameAccountSystem), nameof(GameAccountSystem.SendToUrl));
-            var methodPatchPtr = AccessTools.Method(typeof(WebApiPatch), nameof(WebApiPatch.SendToUrlPatch)).MethodHandle.GetFunctionPointer();
 #if BEPINEX
             Log.Debug("Not implemented yet");
 #elif MELON
-            MelonUtils.NativeHookAttach((IntPtr)(&methodPtr), methodPatchPtr);
-            OriginalSendToUrl = Marshal.GetDelegateForFunctionPointer<SendToUrlDelegate>(methodPtr);
+            _ourPatchDelegate = SendToUrlPatch;
+            
+            var delegatePointer = Marshal.GetFunctionPointerForDelegate(_ourPatchDelegate);
+            
+            MelonUtils.NativeHookAttach((IntPtr)(&methodPtr), delegatePointer);
+            
+            _originalSendToUrl = Marshal.GetDelegateForFunctionPointer<SendToUrlDelegate>(methodPtr);
 #endif
         }
         /// <summary>
@@ -104,7 +109,7 @@ namespace CustomAlbums.Patch
             }
 
             if (!blockThisRequest)
-                return OriginalSendToUrl(hiddenStructReturn, thisPtr, url, method, datas, succeedCallback, failCallback, startCallback, completeCallback, headers, nativeMethodInfo);
+                return _originalSendToUrl(hiddenStructReturn, thisPtr, url, method, datas, succeedCallback, failCallback, startCallback, completeCallback, headers, nativeMethodInfo);
             // Request blocked
             return IntPtr.Zero;
         }

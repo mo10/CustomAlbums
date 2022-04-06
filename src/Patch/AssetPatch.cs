@@ -25,7 +25,8 @@ namespace CustomAlbums.Patch
             IntPtr assetName,
             IntPtr nativeMethodInfo
         );
-        private static LoadFromNameDelegate OriginalLoadFromName;
+        private static LoadFromNameDelegate _originalLoadFromName;
+        private static LoadFromNameDelegate _ourPatchDelegate;
 
         public static Dictionary<string, UnityEngine.Object> LoadedAssets = new Dictionary<string, UnityEngine.Object>();
         public static string[] AssetSuffixes = new string[] {
@@ -41,10 +42,14 @@ namespace CustomAlbums.Patch
         {
             var type = typeof(ResourcesManager).GetNestedNonPublicType("MethodInfoStoreGeneric_LoadFromName_Public_T_String_0`1").MakeGenericType(typeof(TextAsset));
             var originalMethod = *(IntPtr*)(IntPtr)(type.GetField("Pointer", BindingFlags.NonPublic | BindingFlags.Static).GetValue(type));
-            var methodPatchPtr = AccessTools.Method(typeof(AssetPatch), nameof(AssetPatch.LoadFromName)).MethodHandle.GetFunctionPointer();
 
-            MelonUtils.NativeHookAttach((IntPtr)(&originalMethod), methodPatchPtr);
-            OriginalLoadFromName = Marshal.GetDelegateForFunctionPointer<LoadFromNameDelegate>(originalMethod);
+            _ourPatchDelegate = LoadFromName;
+
+            var delegatePointer = Marshal.GetFunctionPointerForDelegate(_ourPatchDelegate);
+            
+            MelonUtils.NativeHookAttach((IntPtr)(&originalMethod), delegatePointer);
+            
+            _originalLoadFromName = Marshal.GetDelegateForFunctionPointer<LoadFromNameDelegate>(originalMethod);
             Log.Debug($"Patched LoadFromName");
         }
 
@@ -52,7 +57,7 @@ namespace CustomAlbums.Patch
         {
             var _assetName = IL2CPP.Il2CppStringToManaged(assetName);
             //Log.Debug($"assetName {_assetName}");
-            if(_assetName == null) return OriginalLoadFromName(instance, assetName, nativeMethodInfo);
+            if(_assetName == null) return _originalLoadFromName(instance, assetName, nativeMethodInfo);
 
             // Cached asset
             if (LoadedAssets.TryGetValue(_assetName, out var asset))
@@ -70,7 +75,7 @@ namespace CustomAlbums.Patch
                 }
             }
 
-            var assetPtr = OriginalLoadFromName(instance, assetName, nativeMethodInfo);
+            var assetPtr = _originalLoadFromName(instance, assetName, nativeMethodInfo);
             var noCache = false;
 
             if (_assetName == "LocalizationSettings")
