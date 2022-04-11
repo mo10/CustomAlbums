@@ -6,7 +6,7 @@ using BepInEx.IL2CPP;
 using HarmonyLib;
 #elif MELON
 using MelonLoader;
-[assembly: MelonInfo(typeof(CustomAlbums.ModEntry), "CustomAlbums", "3.1.0", "Mo10 & RobotLucca")]
+[assembly: MelonInfo(typeof(CustomAlbums.ModEntry), "CustomAlbums", "3.1.1", "Mo10 & RobotLucca")]
 [assembly: MelonGame("PeroPeroGames", "MuseDash")]
 #endif
 
@@ -24,10 +24,11 @@ namespace CustomAlbums
 
             AlbumManager.LoadAll();
             SaveManager.Load();
+
             //harmony.PatchAll(typeof(SteamPatch));
 
             //harmony.PatchAll(typeof(AssetPatch));
-            
+
             //ResourcePatch.DoPatching();
             //harmony.PatchAll(typeof(WebApiPatch));
             //harmony.PatchAll(typeof(ResourcePatch));
