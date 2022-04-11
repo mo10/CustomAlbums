@@ -238,7 +238,13 @@ namespace CustomAlbums.Patch
                     zip.AddFiles(files);
                     foreach(var filename in files) {
                         var creationTime = zip[filename].CreationTime.ToString("yyyy_MM_dd_H_mm_ss-");
-                        zip[filename].FileName = creationTime + Path.GetFileName(zip[filename].FileName);
+                        var onlyFileName = Path.GetFileName(zip[filename].FileName);
+                        var newFileName = creationTime + onlyFileName;
+                        int i = 1;
+                        while(zip[newFileName] != null) {
+                            newFileName = creationTime + $"{i++}-" + onlyFileName;
+                        }
+                        zip[filename].FileName = newFileName;
                     }
                     zip.Save();
                 }
