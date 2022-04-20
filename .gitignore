@@ -5,4 +5,3 @@ packages/*
 .vs/*
 Output
 *.user
-Directory.Build.props
