@@ -20,9 +20,14 @@ The current version of the mod is guaranteed to function on Muse Dash 2.2.0 (Apr
 `4.0` Work-in-progress overhaul.
 
 ### How to build v3.0+
-1. Clone repository and switch branch
-2. Simply edit the `GameFolder` tag in `Directory.Build.props` to point towards your own installation
-3. Click build
+
+## Windows
+Run `setx MD_DIRECTORY "[Game path ending in \Muse Dash]"` in the command prompt.
+Everything else should work out of the box.
+
+## Other
+Edit `Directory.Build.props` and replace `$(MD_DIRECTORY)` with your game path ending in `\Muse Dash`.
+If you do this, DO NOT submit commits containing this change.
 
 ### ILRepack
 A copy of [ILRepack.Lib.MSBuild.Task](https://github.com/ravibpatel/ILRepack.Lib.MSBuild.Task) and [ILRepack](https://github.com/gluck/il-repack) are included in the repo to build the solution
