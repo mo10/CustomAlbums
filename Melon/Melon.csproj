@@ -3,16 +3,10 @@
     <TargetFramework>net472</TargetFramework>
     <Version>3.1.1.0</Version>
     <LangVersion>9</LangVersion>
-    <DefineConstants>MELON</DefineConstants>
     <MelonRefs>true</MelonRefs>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <AssemblyName>CustomAlbums</AssemblyName>
-  </PropertyGroup>  
-    <ItemGroup>
-        <Compile Include="..\src\**\*.*">
-            <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
-        </Compile>
-    </ItemGroup>
+  </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="DotNetZip" Version="1.16.0" />
       <PackageReference Include="SixLabors.ImageSharp" Version="1.0.4" />
