@@ -17,7 +17,7 @@ The current version of the mod is guaranteed to function on Muse Dash 2.2.0 (Apr
 ### How to build v3.0+
 
 #### Windows
-Run `setx MD_DIRECTORY "[Game path ending in \Muse Dash]"` in the command prompt.  
+Run `setx MD_DIRECTORY "Game path ending in \Muse Dash"` in the command prompt.  
 This provides a path for the project to find various DLL references from the game and MelonLoader.  
 Everything else should work out of the box.
 

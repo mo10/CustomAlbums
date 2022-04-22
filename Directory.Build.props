@@ -42,6 +42,11 @@
             <Private>false</Private>
             <HintPath>$(MelonLoader)\MelonLoader.dll</HintPath>
         </Reference>
+        <Reference Include="0Harmony, Version=2.9.0.0, Culture=neutral, PublicKeyToken=null">
+            <SpecificVersion>false</SpecificVersion>
+            <Private>false</Private>
+            <HintPath>$(MelonLoader)\0Harmony.dll</HintPath>
+        </Reference>
         <Reference Include="NAudio, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null">
             <SpecificVersion>false</SpecificVersion>
             <Private>false</Private>
