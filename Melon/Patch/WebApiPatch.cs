@@ -34,8 +34,9 @@ namespace CustomAlbums.Patch
 
         unsafe public static void DoPatching() {
             var methodPtr = Utils.NativeMethod(typeof(GameAccountSystem), nameof(GameAccountSystem.SendToUrl));
-            var methodPatchPtr = AccessTools.Method(typeof(WebApiPatch), nameof(WebApiPatch.SendToUrlPatch)).MethodHandle.GetFunctionPointer();
-            MelonUtils.NativeHookAttach((IntPtr)(&methodPtr), methodPatchPtr);
+            var detourPtr = Marshal.GetFunctionPointerForDelegate((SendToUrlDelegate)SendToUrlPatch);
+       
+            MelonUtils.NativeHookAttach((IntPtr)(&methodPtr), detourPtr);
             OriginalSendToUrl = Marshal.GetDelegateForFunctionPointer<SendToUrlDelegate>(methodPtr);
         }
 
