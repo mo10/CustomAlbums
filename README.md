@@ -21,11 +21,11 @@ The current version of the mod is guaranteed to function on Muse Dash 2.2.0 (Apr
 
 ### How to build v3.0+
 
-## Windows
+#### Windows
 Run `setx MD_DIRECTORY "[Game path ending in \Muse Dash]"` in the command prompt.
 Everything else should work out of the box.
 
-## Other
+#### Other
 Edit `Directory.Build.props` and replace `$(MD_DIRECTORY)` with your game path ending in `\Muse Dash`.
 If you do this, DO NOT submit commits containing this change.
 
