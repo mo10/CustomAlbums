@@ -41,9 +41,9 @@ namespace CustomAlbums.Patch
         {
             var type = typeof(ResourcesManager).GetNestedNonPublicType("MethodInfoStoreGeneric_LoadFromName_Public_T_String_0`1").MakeGenericType(typeof(TextAsset));
             var originalMethod = *(IntPtr*)(IntPtr)(type.GetField("Pointer", BindingFlags.NonPublic | BindingFlags.Static).GetValue(type));
-            var methodPatchPtr = AccessTools.Method(typeof(AssetPatch), nameof(AssetPatch.LoadFromName)).MethodHandle.GetFunctionPointer();
-
-            MelonUtils.NativeHookAttach((IntPtr)(&originalMethod), methodPatchPtr);
+            var detourPtr = Marshal.GetFunctionPointerForDelegate((LoadFromNameDelegate)LoadFromName);
+            
+            MelonUtils.NativeHookAttach((IntPtr)(&originalMethod), detourPtr);
             OriginalLoadFromName = Marshal.GetDelegateForFunctionPointer<LoadFromNameDelegate>(originalMethod);
             Log.Debug($"Patched LoadFromName");
         }
